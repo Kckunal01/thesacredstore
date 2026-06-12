@@ -51,7 +51,10 @@ const Header = () => {
         <div className="flex items-center justify-between h-12">
           {/* Left: Logo */}
           <Link to="/" className="flex items-center font-display tracking-[0.15em] uppercase font-medium text-accent hover:text-accent transition-colors">
-            <img src="/assets/images/Logo-Nav.png" alt="Logo-Nav" className="w-16 h-16 object-contain" />
+            <picture>
+  <source srcSet="/assets/images/Logo-Nav.webp" type="image/webp" />
+  <img src="/assets/images/Logo-Nav.png" alt="Logo-Nav" className="w-16 h-16 object-contain" />
+</picture>
           </Link>
           
           {/* Center: Navigation - Sequence: Home, Shop, Book Now, Blogs */}
@@ -82,7 +85,7 @@ const Header = () => {
             </div>
             <NavLink to="/book-a-call">Book Now</NavLink>
             <NavLink to="/blogs">Blogs</NavLink>
-            <NavLink to="/about">About Us</NavLink>
+            <NavLink to="/aboutus">About Us</NavLink>
           </nav>
 
           {/* Right: Cart */}
@@ -111,7 +114,7 @@ const Header = () => {
         <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility & Decor</Link>
         <Link to="/book-a-call" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Book Now</Link>
         <Link to="/blogs" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Blogs</Link>
-            <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
+            <Link to="/aboutus" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
       </div>
     </header>
   );

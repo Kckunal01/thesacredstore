@@ -20,21 +20,7 @@ const Blogs = () => {
         "In a world filled with high-frequency notifications, sensory overload, and constant cognitive demands, anxiety has transitioned from an occasional reaction to a chronic state. While mainstream advice urges us to meditate or disconnect, sometimes physical anchors are needed to bring us back to reality. This is where high-density energy tools come in.",
         "From an energetic standpoint, anxiety is a state of upward scattering. Your energy leaves the root center and pools in the head, causing circular thinking, shallow breathing, and a feeling of being unmoored. To counteract this, you need minerals that carry deep physical gravity.",
         "Black Tourmaline and Obsidian are excellent starting points. Because of their rich iron and magnesium inclusion structure, they absorb ambient electric stress. Holding a heavy specimen of raw Black Tourmaline during high-stress moments physically prompts your attention downwards.",
-        "We recommend a daily five-minute grounding check: Sit with both feet flat on the floor. Hold your raw stone in your left hand (the receptive hand). Close your eyes and breathe deeply, matching the inhale and exhale duration. Visualize the excess mental static draining through your feet, anchored by the weight of the stone in your palm."
-      ]
-    },
-    {
-      id: 2,
-      tag: "Science of Energy",
-      title: "What is an Electromagnetic Field (Aura) and How to Care for It?",
-      excerpt: "Demystifying the subtle field that surrounds your body, and the daily rituals to keep it aligned.",
-      date: "May 24, 2026",
-      readTime: "8 Min Read",
-      content: [
-        "Every living organism generates an electromagnetic field. The human heart, in fact, produces the largest magnetic field in the body—measurable up to several feet away with sensitive instruments. In classical traditions, this field is referred to as the aura.",
-        "When you walk into a room and instantly feel tension, or meet someone and feel immediately at ease, you are interacting on an electromagnetic level. Constant exposure to blue screens, tense work environments, and urban pollution causes micro-tears in this energetic envelope, leading to chronic exhaustion.",
-        "Caring for your field does not require complex ceremonies. Simple energetic hygiene is enough. Using smoky quartz near your computer monitors helps absorb electromagnetic fog. At the end of the day, cleansing your personal space with a natural resin, such as frankincense, neutralizes accumulated foreign energies.",
-        "Remember, consistency beats intensity. Setting up a dedicated physical space—a small tray with a single grounding crystal, a candle, and a journal—creates a psychological cue for transition. Walking by it daily recalibrates your intention."
+        "We recommend a daily five‑minute grounding check: Sit with both feet flat on the floor. Hold your raw stone in your left hand (the receptive hand). Close your eyes and breathe deeply, matching the inhale and exhale duration. Visualize the excess mental static draining through your feet, anchored by the weight of the stone in your palm."
       ]
     },
     {
@@ -45,7 +31,7 @@ const Blogs = () => {
       date: "May 12, 2026",
       readTime: "5 Min Read",
       content: [
-        "The root center, located at the base of the spine, is the foundation of your energetic system. When this center is weak, you feel insecure, fearful, and easily overwhelmed by life's changes. The 7-day Root Reset is designed to rebuild this foundation using Red Jasper.",
+        "The root center, located at the base of the spine, is the foundation of your energetic system. When this center is weak, you feel insecure, fearful, and easily overwhelmed by life's changes. The 7‑day Root Reset is designed to rebuild this foundation using Red Jasper.",
         "Red Jasper is a stone of endurance, physical vitality, and deep earth connection. Its energy is slow, steady, and grounding, making it the perfect partner for this practice.",
         "Each day of the reset, spend 10 minutes in the morning sitting quietly with your Red Jasper. Place it near the base of your spine or hold it in your lap. Focus your attention on the point of contact between your body and the chair or floor, and feel the steady energy of the stone anchoring you.",
         "By the end of the 7 days, you will notice a greater sense of stability, a reduced reactivity to stressors, and a deeper connection to your physical body."
@@ -61,10 +47,10 @@ const Blogs = () => {
       content: [
         "Your environment dictates your state of mind. When a room is cluttered, noisy, or unorganized, your thoughts naturally mirror that chaos. Creating a dedicated sacred space—a corner, a shelf, or a small table—acts as an environmental anchor that cues your mind to rest.",
         "To begin, choose a space in your home that is relatively quiet. Cleanse the area physically first. Wipe down the surfaces, remove clutter, and let fresh air circulate.",
-        "Next, arrange your tools. We recommend a simple three-point grid: placing a grounding stone (like Black Tourmaline) near the entrance of the space, an amplifying stone (like Clear Quartz) in the center, and a soft healing stone (like Rose Quartz or Amethyst) at the back. This creates an energetic gradient that filters stress and anchors your intentions.",
+        "Next, arrange your tools. We recommend a simple three‑point grid: placing a grounding stone (like Black Tourmaline) near the entrance of the space, an amplifying stone (like Clear Quartz) in the center, and a soft healing stone (like Rose Quartz or Amethyst) at the back. This creates an energetic gradient that filters stress and anchors your intentions.",
         "Finally, introduce a sensory ritual. Light a stick of natural sandalwood incense or a beeswax candle, take three slow breaths, and sit in silence. Repeat this daily to program your subconscious to find immediate calm whenever you enter this space."
       ]
-    }
+    },
   ];
 
   const activePost = blogId ? posts.find(p => p.id === parseInt(blogId)) : null;
@@ -73,23 +59,33 @@ const Blogs = () => {
     return (
       <Section className="min-h-screen pt-32 bg-background">
         <Container className="max-w-3xl mx-auto">
-          <button 
-            onClick={() => setSearchParams({})} 
+          <button
+            onClick={() => setSearchParams({})}
             className="text-[10px] uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors mb-8 font-bold font-body"
           >
             ← Back to All Blogs
           </button>
-          
+
           <div className="space-y-6">
             {/* Post Cover Image (Same as card view) */}
-            <div className="w-full aspect-[21/9] bg-background border border-border flex items-center justify-center relative overflow-hidden mb-10">
-              <div className="absolute inset-0 bg-gradient-to-tr from-[#FAF9F6] to-[#EAE5D9]" />
-              <div className="w-16 h-16 rounded-full border border-accent/20 flex items-center justify-center relative">
-                <span className="font-display text-accent text-xl font-light tracking-widest uppercase">
-                  R
-                </span>
-              </div>
-            </div>
+            {activePost.id === 1 && (
+                  <picture>
+                    <source srcSet="/assets/images/Blogs/which-crystal-anxiety-honest-guide.webp, /assets/images/Blogs/which-crystal-anxiety-honest-guide@2x.webp 2x" type="image/webp" />
+                    <img src="/assets/images/Blogs/which-crystal-anxiety-honest-guide.png" alt={activePost.title} className="w-full h-full object-cover" />
+                  </picture>
+                )}
+                {activePost.id === 3 && (
+                  <picture>
+                    <source srcSet="/assets/images/Blogs/root-reset-practical-guide.webp, /assets/images/Blogs/root-reset-practical-guide@2x.webp 2x" type="image/webp" />
+                    <img src="/assets/images/Blogs/root-reset-practical-guide.png" alt={activePost.title} className="w-full h-full object-cover" />
+                  </picture>
+                )}
+                {activePost.id === 4 && (
+                  <picture>
+                    <source srcSet="/assets/images/Blogs/creating-sacred-space.webp, /assets/images/Blogs/creating-sacred-space@2x.webp 2x" type="image/webp" />
+                    <img src="/assets/images/Blogs/creating-sacred-space.png" alt={activePost.title} className="w-full h-full object-cover" />
+                  </picture>
+                )}
 
             <span className="inline-block text-[10px] uppercase tracking-[0.2em] text-accent font-bold font-body">
               {activePost.tag}
@@ -97,7 +93,7 @@ const Blogs = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-primary leading-tight font-medium">
               {activePost.title}
             </h1>
-            
+
             <div className="flex items-center space-x-6 text-[10px] uppercase tracking-[0.2em] text-muted font-bold font-body border-b border-border pb-8">
               <span>{activePost.date}</span>
               <span>·</span>
@@ -105,24 +101,28 @@ const Blogs = () => {
               <span>·</span>
               <span>By Ritualist Editorial</span>
             </div>
-            
+
             <div className="space-y-6 text-muted font-light font-body text-base leading-relaxed pt-4">
               <p className="text-xl text-primary font-display font-light leading-relaxed italic mb-8 border-l-2 border-accent pl-6">
                 {activePost.excerpt}
               </p>
-              
+
               {activePost.content.map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}
             </div>
-            
+
             {/* Elegant Callout for Conversion */}
             <div className="mt-16 p-8 bg-surface border border-border flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <h4 className="font-display text-lg text-primary font-medium mb-1">Looking for grounding tools?</h4>
-                <p className="text-xs text-muted font-body">Explore our ethically sourced and cleansed crystal collection.</p>
+                <h4 className="font-display text-lg text-primary font-medium mb-1">
+                  Looking for grounding tools?
+                </h4>
+                <p className="text-xs text-muted font-body">
+                  Explore our ethically sourced and cleansed crystal collection.
+                </p>
               </div>
-              <Button 
+              <Button
                 to="/shop-crystals"
                 variant="primary"
                 onClick={() => setSearchParams({})}
@@ -141,28 +141,40 @@ const Blogs = () => {
       <Container>
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-display font-medium text-primary mb-6">
-            <span className="text-primary">Insights</span> <span className="half-gold">& Practices</span>
+            <span className="text-primary">Insights</span> <span className="half-gold">&amp; Practices</span>
           </h1>
           <p className="text-muted font-light leading-relaxed">
             Honest guidance on grounding, energy hygiene, and mindful objects. Free of excessive jargon.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mt-16">
           {posts.map(post => (
-            <div 
-              key={post.id} 
-              className="group cursor-pointer flex flex-col bg-surface border border-border p-6 hover:-translate-y-1 transition-all duration-500" 
+            <div
+              key={post.id}
+              className="group cursor-pointer flex flex-col bg-surface border border-border p-6 hover:-translate-y-1 transition-all duration-500"
               onClick={() => setSearchParams({ id: post.id })}
             >
-              {/* Luxury Geometric placeholder for post cover */}
-                <div className="w-full aspect-[16/10] bg-background border-b border-border flex items-center justify-center overflow-hidden mb-6">
-                  {post.id === 1 && <img src="/assets/images/Blogs/Which Crystal for Anxiety — The Honest Guide.png" alt={post.title} className="w-full h-full object-cover" />}
-                  {post.id === 2 && <img src="/assets/images/Blogs/What is an Electromagnetic Field (Aura) and Care for It.png" alt={post.title} className="w-full h-full object-cover" />}
-                  {post.id === 3 && <img src="/assets/images/Blogs/The 7-Day Root Reset A Practical Grounding Guide.png" alt={post.title} className="w-full h-full object-cover" />}
-                  {post.id === 4 && <img src="/assets/images/Blogs/Creating Your Sacred Space.png" alt={post.title} className="w-full h-full object-cover" />}
-                </div>
-              
+              <div className="w-full aspect-[16/10] bg-background border-b border-border flex items-center justify-center overflow-hidden mb-6">
+                {post.id === 1 && (
+                  <picture>
+                    <source srcSet="/assets/images/Blogs/which-crystal-anxiety-honest-guide.webp, /assets/images/Blogs/which-crystal-anxiety-honest-guide@2x.webp 2x" type="image/webp" />
+                    <img src="/assets/images/Blogs/which-crystal-anxiety-honest-guide.png" alt={post.title} className="w-full h-full object-cover" />
+                  </picture>
+                )}
+                {post.id === 3 && (
+                  <picture>
+                    <source srcSet="/assets/images/Blogs/root-reset-practical-guide.webp, /assets/images/Blogs/root-reset-practical-guide@2x.webp 2x" type="image/webp" />
+                    <img src="/assets/images/Blogs/root-reset-practical-guide.png" alt={post.title} className="w-full h-full object-cover" />
+                  </picture>
+                )}
+                {post.id === 4 && (
+                  <picture>
+                    <source srcSet="/assets/images/Blogs/creating-sacred-space.webp, /assets/images/Blogs/creating-sacred-space@2x.webp 2x" type="image/webp" />
+                    <img src="/assets/images/Blogs/creating-sacred-space.png" alt={post.title} className="w-full h-full object-cover" />
+                  </picture>
+                )}
+              </div>
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold font-body">
                   {post.tag}
@@ -171,18 +183,20 @@ const Blogs = () => {
                   {post.readTime}
                 </span>
               </div>
-              
+
               <h3 className="text-2xl font-display text-primary mb-3 group-hover:text-accent transition-colors font-medium">
                 {post.title}
               </h3>
-              
+
               <p className="text-xs text-muted font-light font-body leading-relaxed mb-6 flex-grow">
                 {post.excerpt}
               </p>
-              
+
               <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.2em] font-bold font-body border-t border-border pt-4">
                 <span className="text-muted">{post.date}</span>
-                <span className="text-accent group-hover:translate-x-1 transition-transform">Read Entry →</span>
+                <span className="text-accent group-hover:translate-x-1 transition-transform">
+                  Read Entry →
+                </span>
               </div>
             </div>
           ))}
@@ -193,3 +207,4 @@ const Blogs = () => {
 };
 
 export default Blogs;
+

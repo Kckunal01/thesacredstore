@@ -31,7 +31,7 @@ const Footer = () => {
               <Link to="/shop-crystals" className="hover:text-primary transition-colors">Shop</Link>
               <Link to="/book-a-call" className="hover:text-primary transition-colors">Book Now</Link>
               <Link to="/blogs" className="hover:text-primary transition-colors">Blogs</Link>
-              <Link to="/about" className="hover:text-primary transition-colors">About Us</Link>
+              <Link to="/aboutus" className="hover:text-primary transition-colors">About Us</Link>
             </nav>
           </div>
 

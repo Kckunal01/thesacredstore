@@ -22,14 +22,22 @@ export async function createCustomer(data) {
       .single();
 
     if (error) {
-      console.error('Error creating customer:', error);
+      console.error(
+        "CUSTOMER INSERT ERROR:",
+        JSON.stringify(error, null, 2)
+      );
       throw error;
     }
 
-    console.log('Customer created:', customer);
+    console.log("Customer inserted successfully:", customer);
+
     return customer;
   } catch (err) {
-    console.error('createCustomer exception:', err);
+    console.error(
+      "CUSTOMER EXCEPTION JSON:",
+      JSON.stringify(err, null, 2)
+    );
+
     throw err;
   }
 }

@@ -32,7 +32,7 @@ function App() {
           <main className="flex-grow pt-20">
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
+              <Route path="/aboutus" element={<About />} />
               <Route path="/blogs" element={<Blogs />} />
               <Route path="/book-a-call" element={<BookCall />} />
               <Route path="/checkout" element={<Checkout />} />
