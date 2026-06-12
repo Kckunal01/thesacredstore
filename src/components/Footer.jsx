@@ -5,12 +5,12 @@ const Footer = () => {
   return (
     <footer className="bg-surface border-t border-border pt-20 pb-12">
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-24">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
           
           {/* Column 1: Brand */}
           <div className="flex flex-col">
-            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-primary mb-4">THE SACRED STORE</Link>
-            <p className="text-muted text-xs tracking-widest uppercase font-semibold mb-8">
+                        <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE <span className="text-[#D4AF37]">SACRED</span> STORE</Link>
+            <p className="text-muted text-base tracking-widest uppercase font-semibold mb-8">
               Make Space for Meaning.
             </p>
             {/* Instagram Icon (SVG) */}
@@ -25,8 +25,8 @@ const Footer = () => {
 
           {/* Column 2: Main Menu */}
           <div className="flex flex-col">
-            <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Main Menu</h4>
-            <nav className="flex flex-col space-y-4 text-xs font-semibold tracking-widest uppercase text-muted">
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Main Menu</h4>
+            <nav className="flex flex-col space-y-4 text-sm font-semibold tracking-widest uppercase text-muted">
               <Link to="/" className="hover:text-primary transition-colors">Home</Link>
               <Link to="/shop-crystals" className="hover:text-primary transition-colors">Shop</Link>
               <Link to="/book-a-call" className="hover:text-primary transition-colors">Book Now</Link>
@@ -37,8 +37,8 @@ const Footer = () => {
 
           {/* Column 3: Quick Links */}
           <div className="flex flex-col">
-            <h4 className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Quick Links</h4>
-            <nav className="flex flex-col space-y-4 text-xs font-semibold tracking-widest uppercase text-muted">
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Quick Links</h4>
+            <nav className="flex flex-col space-y-4 text-base font-semibold tracking-widest uppercase text-muted">
               <Link to="/track-order" className="hover:text-primary transition-colors">Track Order</Link>
               <Link to="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
               <Link to="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link>
@@ -46,9 +46,24 @@ const Footer = () => {
             </nav>
           </div>
 
+          {/* Column 4: Contact Us */}
+          <div className="flex flex-col">
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Contact Us</h4>
+            <div className="flex flex-col space-y-4">
+              <div>
+                <p className="text-base uppercase tracking-[0.15em] text-muted font-bold mb-1">Email</p>
+                                <p className="text-sm text-muted font-light">support@thesacredstore.co.in</p>
+              </div>
+              <div>
+                <p className="text-base uppercase tracking-[0.15em] text-muted font-bold mb-1">Phone</p>
+                                <p className="text-sm text-muted font-light">+91 95549 30456</p>
+              </div>
+            </div>
+          </div>
+
         </div>
 
-        <div className="mt-20 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-muted font-semibold">
+        <div className="mt-20 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center text-base uppercase tracking-widest text-muted font-semibold">
           <p>&copy; {new Date().getFullYear()} THE SACRED STORE. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
             <span>Ethically Sourced</span>

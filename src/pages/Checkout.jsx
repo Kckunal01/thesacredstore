@@ -8,9 +8,8 @@ import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
 import {
   createCustomer,
-  getCustomerByEmail,
+  getCustomerByPhone,
   createOrder,
-  createOrderItems,
 } from '../lib/supabase';
 
 // Temporary flag to disable real Razorpay integration
@@ -82,46 +81,33 @@ const Checkout = () => {
     // --------------------------- TEST MODE ---------------------------
     if (TEST_MODE) {
       try {
-        // 1️⃣ Ensure a customer record exists (avoid duplicate email)
-        let customer = await getCustomerByEmail(formData.email);
+        // 1️⃣ Ensure a customer record exists (avoid duplicate phone)
+        let customer = await getCustomerByPhone(formData.phone);
         if (!customer) {
-          await createCustomer({
-            name: `${formData.firstName} ${formData.lastName}`,
+          customer = await createCustomer({
+            full_name: `${formData.firstName} ${formData.lastName}`,
             email: formData.email,
             phone: formData.phone,
           });
-          customer = await getCustomerByEmail(formData.email);
         }
 
-        // 2️⃣ Create the order – Supabase generates order_number (TSS‑xxxx)
+        // 2️⃣ Create the order – Supabase generates order_id (TSS‑xxxx)
         const orderPayload = {
           customer_id: customer.id,
-          subtotal: totalOriginal,
-          discount: totalDiscount,
-          shipping: 0,
-          total: getCartTotal(),
-          address: formData.address,
-          city: formData.city,
-          state: formData.state,
-          pincode: formData.pinCode,
-          order_status: 'pending',
+          products: cart.map(item => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price
+          })),
+          amount: getCartTotal(),
           payment_status: 'test_paid',
+          payment_method: 'test',
         };
 
         const order = await createOrder(orderPayload);
 
-        // 3️⃣ Create order_items linked to the newly created order
-        const items = cart.map((item) => ({
-          order_id: order.id,
-          product_name: item.name,
-          product_price: item.price,
-          quantity: item.quantity,
-          line_total: item.price * item.quantity,
-        }));
-        await createOrderItems(items);
-
-        // 4️⃣ Show success UI
-        setOrderId(order.order_number); // Supabase‑generated TSS‑xxxx
+        // 3️⃣ Show success UI
+        setOrderId(order.order_id); // Supabase‑generated TSS‑xxxx
         setStep(3);
         clearCart();
       } catch (err) {
@@ -171,42 +157,31 @@ const Checkout = () => {
         handler: async function (response) {
           // After successful payment, run the same Supabase flow as in TEST_MODE
           try {
-            // Ensure customer exists (duplicate‑email safe)
-            let customer = await getCustomerByEmail(formData.email);
+            // Ensure customer exists (duplicate‑phone safe)
+            let customer = await getCustomerByPhone(formData.phone);
             if (!customer) {
-              await createCustomer({
-                name: `${formData.firstName} ${formData.lastName}`,
+              customer = await createCustomer({
+                full_name: `${formData.firstName} ${formData.lastName}`,
                 email: formData.email,
                 phone: formData.phone,
               });
-              customer = await getCustomerByEmail(formData.email);
             }
 
             const orderPayload = {
               customer_id: customer.id,
-              subtotal: totalOriginal,
-              discount: totalDiscount,
-              shipping: 0,
-              total: getCartTotal(),
-              address: formData.address,
-              city: formData.city,
-              state: formData.state,
-              pincode: formData.pinCode,
-              order_status: 'pending',
+              products: cart.map(item => ({
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+              })),
+              amount: getCartTotal(),
               payment_status: 'paid',
+              payment_method: 'razorpay',
             };
 
             const order = await createOrder(orderPayload);
-            const items = cart.map((item) => ({
-              order_id: order.id,
-              product_name: item.name,
-              product_price: item.price,
-              quantity: item.quantity,
-              line_total: item.price * item.quantity,
-            }));
-            await createOrderItems(items);
 
-            setOrderId(order.order_number);
+            setOrderId(order.order_id);
             setStep(3);
             clearCart();
           } catch (err) {

@@ -5,8 +5,8 @@ import Button from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
 import {
   createCustomer,
-  createConsultation,
-  getCustomerByEmail
+  createBooking,
+  getCustomerByPhone
 } from '../lib/supabase';
 
 
@@ -77,11 +77,11 @@ const BookCall = () => {
     }
     if (TEST_MODE) {
       try {
-        let customer = await getCustomerByEmail(email);
+        let customer = await getCustomerByPhone(phone);
 
         if (!customer) {
           customer = await createCustomer({
-            name,
+            full_name: name,
             email,
             phone
           });
@@ -89,30 +89,28 @@ const BookCall = () => {
 
         console.log('Using customer:', customer);
 
-        const consultationData = {
+        const bookingData = {
           customer_id: customer.id,
-          consultation_type: 'private',
-          preferred_datetime: `${selectedDate}T${selectedTime}:00`,
-          focus_area: focusArea,
-          notes: '',
-          amount: sessionPrice,
-          payment_status: 'test_paid',
-          consultation_status: 'pending'
+          service_name: 'Private Consultation',
+          booking_date: selectedDate,
+          booking_time: selectedTime,
+          phone: phone,
+          status: 'pending'
         };
 
         console.log(
-          'Consultation payload:',
-          consultationData
+          'Booking payload:',
+          bookingData
         );
 
-        const consultation =
-          await createConsultation(
-            consultationData
+        const booking =
+          await createBooking(
+            bookingData
           );
 
         console.log(
-          'Consultation response:',
-          consultation
+          'Booking response:',
+          booking
         );
 
         // Store booked slot to prevent future selection

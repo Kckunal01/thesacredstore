@@ -42,17 +42,17 @@ export async function createCustomer(data) {
   }
 }
 
-export async function getCustomerByEmail(email) {
+export async function getCustomerByPhone(phone) {
   try {
     const { data: customer, error } = await supabase
       .from('customers')
       .select('*')
-      .eq('email', email)
+      .eq('phone', phone)
       .maybeSingle();
 
     if (error) {
       console.error(
-        'Error fetching customer by email:',
+        'Error fetching customer by phone:',
         JSON.stringify(error, null, 2)
       );
       throw error;
@@ -60,7 +60,7 @@ export async function getCustomerByEmail(email) {
 
     return customer;
   } catch (err) {
-    console.error('getCustomerByEmail exception:', err);
+    console.error('getCustomerByPhone exception:', err);
     throw err;
   }
 }
@@ -90,48 +90,27 @@ export async function createOrder(data) {
   }
 }
 
-export async function createOrderItems(items) {
-  try {
-    console.log("INSERTING ORDER ITEMS:", JSON.stringify(items, null, 2));
-    const { data: createdItems, error } = await supabase
-      .from('order_items')
-      .insert(items)
-      .select();
-
-    if (error) {
-      console.error("ORDER ITEMS ERROR:", JSON.stringify(error, null, 2));
-      throw error;
-    }
-
-    console.log("ORDER ITEMS SUCCESS:", JSON.stringify(createdItems, null, 2));
-    return createdItems;
-  } catch (err) {
-    console.error("ORDER ITEMS EXCEPTION:", JSON.stringify(err, null, 2));
-    throw err;
-  }
-}
-
 // =========================
-// CONSULTATION FUNCTIONS
+// BOOKING / CONSULTATION FUNCTIONS
 // =========================
 
-export async function createConsultation(data) {
+export async function createBooking(data) {
   try {
-    const { data: consultation, error } = await supabase
-      .from('consultations')
+    const { data: booking, error } = await supabase
+      .from('bookings')
       .insert([data])
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating consultation:', error);
+      console.error('Error creating booking:', error);
       throw error;
     }
 
-    console.log('Consultation created:', consultation);
-    return consultation;
+    console.log('Booking created:', booking);
+    return booking;
   } catch (err) {
-    console.error('createConsultation exception:', err);
+    console.error('createBooking exception:', err);
     throw err;
   }
 }

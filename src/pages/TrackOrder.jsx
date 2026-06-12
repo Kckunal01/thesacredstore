@@ -49,7 +49,7 @@ const TrackOrder = () => {
     const { data, error } = await supabase
       .from('orders')
       .select('*')
-      .eq('order_number', id)
+      .eq('order_id', id)
       .single();
     setLoading(false);
     if (error) {
@@ -68,7 +68,7 @@ const TrackOrder = () => {
 
   // Determine current stage index for the timeline
   const currentStageIdx = order
-    ? timelineStages.findIndex((stage) => stage.key === order.order_status)
+    ? timelineStages.findIndex((stage) => stage.key === order.status)
     : -1;
 
   return (
@@ -116,7 +116,7 @@ const TrackOrder = () => {
                     Order Reference
                   </span>
                   <h3 className="text-2xl font-display font-medium text-primary mt-1">
-                    {order.order_number}
+                    {order.order_id}
                   </h3>
                 </div>
                 <div className="text-right">
@@ -132,19 +132,17 @@ const TrackOrder = () => {
               {/* Mapped Status & Payment */}
               <div className="space-y-2 mb-6">
                 <p className="text-sm text-muted font-body">
-                  <strong>Status:</strong> {statusMap[order.order_status] || order.order_status}
+                  <strong>Status:</strong> {statusMap[order.status] || order.status}
                 </p>
                 <p className="text-sm text-muted font-body">
                   <strong>Payment:</strong> {paymentMap[order.payment_status] || order.payment_status}
                 </p>
-                {order.courier_name && (
+                <p className="text-sm text-muted font-body">
+                  <strong>Amount:</strong> ₹{order.amount?.toLocaleString('en-IN') ?? '0'}
+                </p>
+                {order.tracking_id && (
                   <p className="text-sm text-muted font-body">
-                    <strong>Courier:</strong> {order.courier_name}
-                  </p>
-                )}
-                {order.tracking_number && (
-                  <p className="text-sm text-muted font-body">
-                    <strong>Tracking #:</strong> {order.tracking_number}
+                    <strong>Tracking ID:</strong> {order.tracking_id}
                   </p>
                 )}
               </div>
@@ -178,29 +176,29 @@ const TrackOrder = () => {
               {/* Luxury Status Message */}
               <div className="border-t border-border pt-6">
                 <p className="text-primary font-display text-xl mb-2">
-                  {statusMap[order.order_status] || order.order_status}
+                  {statusMap[order.status] || order.status}
                 </p>
 
                 <p className="text-muted font-body leading-relaxed">
-                  {order.order_status === 'pending' &&
+                  {order.status === 'pending' &&
                     'Your order has been received and is awaiting preparation.'}
 
-                  {order.order_status === 'preparing' &&
+                  {order.status === 'preparing' &&
                     'Your crystals are currently being inspected and packaged.'}
 
-                  {order.order_status === 'shipped' &&
+                  {order.status === 'shipped' &&
                     'Your package is now on its way to you.'}
 
-                  {order.order_status === 'delivered' &&
+                  {order.status === 'delivered' &&
                     'Your order has been successfully delivered.'}
                 </p>
               </div>
 
               {/* Tracking Button */}
-              {order.tracking_url && (
+              {order.tracking_id && (
                 <Button
                   variant="primary"
-                  onClick={() => window.open(order.tracking_url, '_blank')}
+                  onClick={() => window.open(`https://track.tracking-service.com/${order.tracking_id}`, '_blank')}
                 >
                   Track Package
                 </Button>

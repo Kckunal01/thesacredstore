@@ -40,13 +40,12 @@ const Home = () => {
 
   return (
     <div className="w-full bg-background overflow-hidden">
-      
+
       {/* 1. Hero Sections */}
       {/* Top Hero: Rolling Images Carousel */}
 
 
-      {/* Shorter Hero: Text/CTA Left, Image Right */}
-      <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[80vh]">
+      <section className="flex flex-col md:flex-row border-b border-border bg-background">
         <div className="w-full md:w-7/12 p-8 md:p-16 lg:p-24 flex flex-col justify-center items-center text-center">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] font-display font-medium text-accent uppercase mb-4 whitespace-nowrap">
             The <span className="font-cursive normal-case text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal mx-1 select-none text-black">Sacred</span> Store
@@ -63,13 +62,12 @@ const Home = () => {
             <Button to="/book-a-call" variant="ghost">Book Consultation</Button>
           </div>
         </div>
-        <div className="w-full md:w-5/12 h-[50vh] md:h-auto bg-surface border-l border-border relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[#F8F5EF] to-[#EAE5D9] transition-transform duration-1000 group-hover:scale-105" />
-          <div className="absolute inset-0 flex items-center justify-center">
-             <div className="w-32 h-32 rounded-full border border-accent/40 flex items-center justify-center">
-                <span className="font-display text-accent tracking-widest uppercase text-[10px]">Explore</span>
-             </div>
-          </div>
+        <div className="w-full md:w-5/12 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden">
+          <img
+            src="/assets/images/HeroImage.png"
+            alt="The Sacred Store Healing Crystals"
+            className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-105"
+          />
         </div>
       </section>
 
@@ -110,7 +108,8 @@ const Home = () => {
         </Container>
       </Section>
 
-      {/* 4. Social Reels: Watch Us More */}
+      {/* Temporarily hidden until future launch phase */}
+      {/*
       <section className="bg-surface border-b border-border overflow-hidden py-12 md:py-16">
         <Container>
           <div className="text-center mb-12">
@@ -131,28 +130,27 @@ const Home = () => {
           </div>
         </Container>
       </section>
+      */}
 
       {/* 5. Consultation Section */}
       <section className="flex flex-col md:flex-row border-b border-border bg-background">
         <div className="w-full md:w-1/2 p-8 md:p-16 lg:p-24 flex flex-col justify-center">
           <h3 className="text-4xl md:text-5xl font-display font-medium text-primary mb-6">
-             <span className="text-primary">Book your</span> <span className="half-gold">call</span>
+            <span className="text-primary">Book your</span> <span className="half-gold">call</span>
           </h3>
           <p className="text-base text-muted font-light mb-8 leading-relaxed max-w-md">
             Unsure which mineral aligns with your current focus? Book a private 1-on-1 reading to map your space and energy accurately.
           </p>
           <div>
-            <Button to="/book-a-call" variant="primary" className="text-[10px] px-6 py-3">Book Your Session — ₹699</Button>
+            <Button to="/book-a-call" variant="primary" className="text-[10px] px-6 py-3">Book Your Session</Button>
           </div>
         </div>
-        <div className="w-full md:w-1/2 h-[40vh] md:h-auto bg-surface border-l border-border relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-bl from-[#F8F5EF] to-[#EAE5D9] transition-transform duration-1000 group-hover:scale-105" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <svg className="w-24 h-24 text-accent/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M12 2v20 M2 12h20"/>
-            </svg>
-          </div>
+        <div className="w-full md:w-1/2 flex items-center justify-center bg-surface border-l border-border p-0 group overflow-hidden">
+          <img
+            src="/assets/images/Bookyourcall.JPG.jpeg"
+            alt="Book Private Consultation"
+            className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-105"
+          />
         </div>
       </section>
 
@@ -164,12 +162,12 @@ const Home = () => {
               <span className="text-primary">Loved By the</span> <span className="half-gold">Community</span>
             </h3>
           </div>
-          
+
           <div className="relative flex items-center max-w-7xl mx-auto">
             <button onClick={prevTestimonial} className="absolute left-0 z-10 p-2 text-muted hover:text-accent bg-background rounded-full border border-border -ml-4 shadow-sm">&larr;</button>
-            
+
             <div className="w-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="flex transition-transform duration-500 ease-out"
                 style={{ transform: `translateX(-${currentTestimonial * (100 / 3)}%)` }}
               >
@@ -192,7 +190,7 @@ const Home = () => {
                 ))}
               </motion.div>
             </div>
-            
+
             <button onClick={nextTestimonial} className="absolute right-0 z-10 p-2 text-muted hover:text-accent bg-background rounded-full border border-border -mr-4 shadow-sm">&rarr;</button>
           </div>
         </Container>
@@ -206,7 +204,7 @@ const Home = () => {
               <span className="text-primary">Learn</span> <span className="half-gold">More</span>
             </h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-10">
             {/* Sample Blog 1 */}
             <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">
@@ -227,7 +225,7 @@ const Home = () => {
               <p className="text-xs text-muted font-light leading-relaxed">How to arrange your crystals for maximum energetic flow and aesthetic balance in any room.</p>
             </Link>
           </div>
-          
+
           <div className="flex justify-center">
             <Button to="/blogs" variant="gold" className="text-[10px] px-6 py-3">Discover more</Button>
           </div>
