@@ -12,12 +12,8 @@ const About = () => {
 
           {/* Image & Text Split */}
           <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center mb-32">
-            <div className="w-full lg:w-1/2 aspect-[4/5] bg-surface relative overflow-hidden border border-border group">
-               <div className="absolute inset-0 bg-gradient-to-tr from-[#F8F5EF] to-[#EAE5D9] transition-transform duration-1000 group-hover:scale-105" />
-               <svg className="w-32 h-32 text-accent/30 relative z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="0.5">
-                <circle cx="50" cy="50" r="40" />
-                <circle cx="50" cy="50" r="30" />
-              </svg>
+            <div className="w-full lg:w-1/2 aspect-[4/5] overflow-hidden rounded-lg border border-border">
+              <img src="/assets/images/About Us.JPG.jpeg" alt="About Us" className="w-full h-full object-cover" />
             </div>
             <div className="w-full lg:w-1/2 flex flex-col justify-center">
               <span className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold block mb-4">Our Founder</span>
@@ -25,7 +21,7 @@ const About = () => {
                 <span className="half-gold">Guided by Energy.</span>
               </h3>
               <p className="text-muted font-light leading-relaxed mb-6">
-                Ritualist was born from a deep connection to the Earth's energy, founded by a master Reiki healer dedicated to bringing authentic, potent healing into your everyday life.
+                The Sacred Store was born from a deep connection to the Earth's energy, founded by a master Reiki healer dedicated to bringing authentic, potent healing into your everyday life.
               </p>
               <p className="text-muted font-light leading-relaxed mb-8">
                 As a certified Reiki master, our founder believes that true healing begins when we align our external environment with our internal intentions. Every crystal is chosen not just for its beauty, but for its energetic signature.

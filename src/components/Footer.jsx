@@ -9,7 +9,7 @@ const Footer = () => {
           
           {/* Column 1: Brand */}
           <div className="flex flex-col">
-            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-primary mb-4">RITUALIST</Link>
+            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-primary mb-4">THE SACRED STORE</Link>
             <p className="text-muted text-xs tracking-widest uppercase font-semibold mb-8">
               Make Space for Meaning.
             </p>
@@ -49,7 +49,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-20 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center text-[10px] uppercase tracking-widest text-muted font-semibold">
-          <p>&copy; {new Date().getFullYear()} RITUALIST. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} THE SACRED STORE. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
             <span>Ethically Sourced</span>
             <span>·</span>

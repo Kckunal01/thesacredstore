@@ -5,6 +5,10 @@ import Section from '../components/ui/Section';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
+import { createOrder, createOrderItems } from '../lib/supabase';
+
+// Temporary flag to disable real Razorpay integration
+const TEST_MODE = true; // Set to false to enable actual payment flow
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -27,6 +31,7 @@ const Checkout = () => {
     email: '',
     address: '',
     city: '',
+    state: '',
     pinCode: '',
     phone: ''
   });
@@ -45,6 +50,54 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
+    if (TEST_MODE) {
+      // Bypass Razorpay, create order and order items directly in Supabase
+      try {
+        const orderData = {
+          order_number: `ORD-${Date.now()}`,
+          customer_id: null, // TODO: replace with actual customer ID when available
+          subtotal: totalOriginal,
+          discount: totalDiscount,
+          shipping: 0,
+          total: getCartTotal(),
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pinCode,
+          order_status: 'pending',
+          payment_status: 'test_paid'
+        };
+        console.log("ORDER PAYLOAD JSON:", JSON.stringify(orderData, null, 2));
+
+        const order = await createOrder(orderData);
+
+        console.log("ORDER RESPONSE:", order);
+        console.log('Order created (test mode):', order);
+        const items = cart.map(item => ({
+          order_id: order.id,
+          product_name: item.name,
+          product_price: item.price,
+          quantity: item.quantity,
+          line_total: item.price * item.quantity
+        }));
+
+        console.log(
+          "ORDER ITEMS JSON:",
+          JSON.stringify(items, null, 2)
+        );
+        const createdItems = await createOrderItems(items);
+        console.log('Order items created (test mode):', createdItems);
+        setOrderId(order.id);
+        setStep(3);
+        clearCart();
+      } catch (err) {
+        console.error('Error creating order:', JSON.stringify(err, null, 2));
+        alert('An error occurred while creating order.');
+      }
+      setIsProcessing(false);
+      return;
+    }
+
     const res = await loadRazorpayScript();
 
     if (!res) {
@@ -55,7 +108,7 @@ const Checkout = () => {
 
     try {
       // Attempt to call the Serverless function
-      let razorpayOrderId = `order_mock_${Math.floor(Math.random() * 1000000)}`;
+      let orderId = `order_mock_${Math.floor(Math.random() * 1000000)}`;
       try {
         const result = await fetch('/api/razorpay', {
           method: 'POST',
@@ -64,26 +117,24 @@ const Checkout = () => {
         });
         if (result.ok) {
           const data = await result.json();
-          if (data.id) razorpayOrderId = data.id;
+          if (data.id) orderId = data.id;
         }
       } catch (err) {
         console.log("Using mock order ID due to local environment.");
       }
 
       const options = {
-        key: "rzp_test_mock_key", // Enter the Key ID generated from the Dashboard
+        key: "rzp_test_mock_key",
         amount: getCartTotal() * 100,
         currency: "INR",
         name: "RITUALIST",
         description: "Purchase Order",
         image: "https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop",
-        order_id: razorpayOrderId,
+        order_id: orderId,
         handler: function (response) {
-          // Payment successful
           const finalOrderId = `RIT-${Math.floor(10000 + Math.random() * 90000)}`;
           setOrderId(finalOrderId);
-          
-          // Store in localStorage for Tracking
+
           const activeOrders = JSON.parse(localStorage.getItem('ritualist_orders') || '{}');
           activeOrders[finalOrderId] = {
             id: finalOrderId,
@@ -94,7 +145,7 @@ const Checkout = () => {
             shipping: formData
           };
           localStorage.setItem('ritualist_orders', JSON.stringify(activeOrders));
-          
+
           setStep(3);
           clearCart();
           setIsProcessing(false);
@@ -134,7 +185,7 @@ const Checkout = () => {
       <Section className="min-h-[80vh] flex items-center justify-center bg-background pt-32">
         <Container className="text-center max-w-lg">
           <div className="w-16 h-16 rounded-full border border-accent flex items-center justify-center mx-auto mb-8">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B89968" strokeWidth="2"><path d="M5 12l5 5l10 -10"/></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B89968" strokeWidth="2"><path d="M5 12l5 5l10 -10" /></svg>
           </div>
           <h2 className="text-4xl font-display text-primary mb-4">Order Placed.</h2>
           <p className="text-muted leading-relaxed mb-6 font-light font-body">
@@ -158,12 +209,12 @@ const Checkout = () => {
   return (
     <Section className="min-h-[80vh] bg-background pt-32">
       <Container>
-        <SectionHeader 
+        <SectionHeader
           eyebrow="Shopping bag"
-          title={step === 1 ? "Your Cart" : "Checkout details"} 
-          description={step === 1 ? "Verify the weight, intention, and quantity of your chosen tools before proceeding." : "All shipments are handled with premium care and fully insured packaging."} 
+          title={step === 1 ? "Your Cart" : "Checkout details"}
+          description={step === 1 ? "Verify the weight, intention, and quantity of your chosen tools before proceeding." : "All shipments are handled with premium care and fully insured packaging."}
         />
-        
+
         {cart.length === 0 && step === 1 ? (
           <div className="text-center py-24 bg-surface border border-border max-w-2xl mx-auto flex flex-col items-center justify-center p-8 mt-12">
             <div className="w-12 h-12 rounded-full border border-accent/20 flex items-center justify-center mb-6">
@@ -174,7 +225,7 @@ const Checkout = () => {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 mt-12">
-            
+
             {/* Left Column: Cart Items or Form */}
             <div className="w-full lg:w-2/3">
               {step === 1 ? (
@@ -182,8 +233,8 @@ const Checkout = () => {
                   {cart.map(item => (
                     <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-surface border border-border gap-6">
                       <div className="flex items-center space-x-6">
-                        <div 
-                          style={getPlaceholderStyle(item.name)} 
+                        <div
+                          style={getPlaceholderStyle(item.name)}
                           className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-accent font-semibold font-display"
                         >
                           {item.images && item.images.length > 0 ? (
@@ -198,23 +249,23 @@ const Checkout = () => {
                       </div>
                       <div className="flex items-center justify-between w-full sm:w-auto space-x-6 sm:space-x-12 border-t sm:border-t-0 pt-4 sm:pt-0 border-border">
                         <div className="flex items-center border border-border bg-background">
-                          <button 
-                            className="px-3 py-2 hover:bg-surface text-primary" 
+                          <button
+                            className="px-3 py-2 hover:bg-surface text-primary"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
                             -
                           </button>
                           <span className="px-4 py-2 text-xs font-semibold text-primary">{item.quantity}</span>
-                          <button 
-                            className="px-3 py-2 hover:bg-surface text-primary" 
+                          <button
+                            className="px-3 py-2 hover:bg-surface text-primary"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
                             +
                           </button>
                         </div>
                         <div className="text-right">
-                          <button 
-                            onClick={() => removeFromCart(item.id)} 
+                          <button
+                            onClick={() => removeFromCart(item.id)}
                             className="text-[10px] uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors font-bold font-body"
                           >
                             Remove
@@ -223,7 +274,7 @@ const Checkout = () => {
                       </div>
                     </div>
                   ))}
-                  
+
                   <div className="flex justify-between items-center pt-8 border-t border-border">
                     <Link to="/shop-crystals" className="text-xs uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors font-semibold font-body">
                       ← Continue Shopping
@@ -235,94 +286,94 @@ const Checkout = () => {
                 <form id="checkout-form" onSubmit={handleCheckout} className="bg-surface border border-border p-8 md:p-10 space-y-8">
                   <div className="flex justify-between items-center border-b border-border pb-4">
                     <h3 className="font-display text-2xl text-primary font-medium">Shipping & Delivery</h3>
-                    <button 
-                      type="button" 
-                      onClick={() => setStep(1)} 
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
                       className="text-[10px] uppercase tracking-widest text-accent hover:text-primary font-bold font-body"
                     >
                       ← Edit Cart
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 gap-6">
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">First Name</label>
-                      <input 
-                        type="text" 
-                        name="firstName" 
-                        value={formData.firstName} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Last Name</label>
-                      <input 
-                        type="text" 
-                        name="lastName" 
-                        value={formData.lastName} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
-                    
+
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Email Address</label>
-                      <input 
-                        type="email" 
-                        name="email" 
-                        value={formData.email} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Phone Number</label>
-                      <input 
-                        type="tel" 
-                        name="phone" 
-                        value={formData.phone} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
 
                     <div className="col-span-2">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Delivery Address</label>
-                      <input 
-                        type="text" 
-                        name="address" 
-                        value={formData.address} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
-                    
+
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">City / Town</label>
-                      <input 
-                        type="text" 
-                        name="city" 
-                        value={formData.city} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
                     <div className="col-span-2 md:col-span-1">
                       <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Postal PIN Code</label>
-                      <input 
-                        type="text" 
-                        name="pinCode" 
-                        value={formData.pinCode} 
-                        onChange={handleInputChange} 
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" 
-                        required 
+                      <input
+                        type="text"
+                        name="pinCode"
+                        value={formData.pinCode}
+                        onChange={handleInputChange}
+                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                        required
                       />
                     </div>
                   </div>
@@ -363,10 +414,10 @@ const Checkout = () => {
                   <span className="font-semibold text-accent">₹{getCartTotal().toLocaleString('en-IN')}</span>
                 </div>
                 {step === 2 && (
-                  <Button 
-                    type="submit" 
-                    form="checkout-form" 
-                    variant="primary" 
+                  <Button
+                    type="submit"
+                    form="checkout-form"
+                    variant="primary"
                     className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
                     disabled={isProcessing}
                   >
@@ -384,3 +435,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+

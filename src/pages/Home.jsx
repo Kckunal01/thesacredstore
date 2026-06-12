@@ -31,7 +31,7 @@ const Home = () => {
     { quote: "They didn't just tell me my root chakra was blocked. They explained why I felt so ungrounded at work, and the black tourmaline actually shifted things.", author: "Priya K." },
     { quote: "Zero pseudo-spirituality. Just a calm, clear reading of where my energy was stuck. The simplest 30 minutes that brought so much clarity.", author: "Rahul S." },
     { quote: "I was skeptical, but the practitioner picked up on my solar plexus exhaustion immediately. I ordered the citrine and followed their simple practice.", author: "Ananya T." },
-    { quote: "The packaging, the quality of the stones, the philosophy. Everything about Ritualist screams intentionality.", author: "Kunal M." },
+    { quote: "The packaging, the quality of the stones, the philosophy. Everything about The Sacred Store screams intentionality.", author: "Kunal M." },
     { quote: "My space feels completely different after placing the amethyst clusters as recommended. A brilliant service.", author: "Neha V." }
   ];
 
@@ -47,14 +47,18 @@ const Home = () => {
 
       {/* Shorter Hero: Text/CTA Left, Image Right */}
       <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[80vh]">
-        <div className="w-full md:w-7/12 p-8 md:p-16 lg:p-24 flex flex-col justify-center">
-          <h2 className="text-5xl md:text-7xl lg:text-8xl leading-[1.1] font-display font-medium text-primary mb-6">
-            <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
+        <div className="w-full md:w-7/12 p-8 md:p-16 lg:p-24 flex flex-col justify-center items-center text-center">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] font-display font-medium text-accent uppercase mb-4 whitespace-nowrap">
+            The <span className="font-cursive normal-case text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal mx-1 select-none text-black">Sacred</span> Store
+          </h1>
+          <h2 className="text-2xl md:text-3xl font-display font-light mb-10 tracking-wide">
+            <span className="text-accent">Make Space for </span>
+            <span className="text-primary">Meaning.</span>
           </h2>
-          <p className="text-xl md:text-2xl text-muted font-light mb-10 leading-relaxed max-w-xl">
-            Reiki‑healing crystals, gems, and simple life‑changing rituals.
+          <p className="text-lg md:text-xl text-muted font-light mb-10 leading-relaxed max-w-xl mx-auto">
+            Reiki‑healing crystals, gems, and simple life‑changing remedies.
           </p>
-          <div className="flex gap-4">
+          <div className="flex gap-4 justify-center">
             <Button to="/shop-crystals" variant="primary">Shop Collection</Button>
             <Button to="/book-a-call" variant="ghost">Book Consultation</Button>
           </div>
@@ -73,15 +77,15 @@ const Home = () => {
       <div className="bg-accent py-4 overflow-hidden flex whitespace-nowrap">
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
-              PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
+            <span key={i} className="text-sm font-light tracking-widest text-black mx-8 uppercase flex-shrink-0">
+              PAN-INDIA DELIVERY <span className="text-white mx-4 text-xs align-middle">●</span> 7 DAY RETURN <span className="text-white mx-4 text-xs align-middle">●</span> ASSURED GUARANTEE
             </span>
           ))}
         </div>
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
-              PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
+            <span key={i} className="text-sm font-light tracking-widest text-black mx-8 uppercase flex-shrink-0">
+              PAN-INDIA DELIVERY <span className="text-white mx-4 text-xs align-middle">●</span> 7 DAY RETURN <span className="text-white mx-4 text-xs align-middle">●</span> ASSURED GUARANTEE
             </span>
           ))}
         </div>
@@ -208,7 +212,7 @@ const Home = () => {
             <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">
               <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Deep Dive</span>
               <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">Which Crystal for Anxiety — The Honest Guide</h4>
-              <p className="text-xs text-muted font-light leading-relaxed">We break down the minerals that actually ground your nervous system, free of pseudo-science.</p>
+              <p className="text-xs text-muted font-light leading-relaxed">Understand the energetic properties of crystals for soothing anxiety and finding your center.</p>
             </Link>
             {/* Sample Blog 2 */}
             <Link to="/blogs?id=3" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">

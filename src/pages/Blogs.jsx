@@ -156,14 +156,12 @@ const Blogs = () => {
               onClick={() => setSearchParams({ id: post.id })}
             >
               {/* Luxury Geometric placeholder for post cover */}
-              <div className="w-full aspect-[16/10] bg-background border-b border-border flex items-center justify-center relative overflow-hidden mb-6">
-                <div className="absolute inset-0 bg-gradient-to-tr from-[#FAF9F6] to-[#EAE5D9] transition-transform duration-700 group-hover:scale-105" />
-                <div className="w-10 h-10 rounded-full border border-accent/20 flex items-center justify-center relative">
-                  <span className="font-display text-accent text-xs font-light tracking-widest uppercase">
-                    R
-                  </span>
+                <div className="w-full aspect-[16/10] bg-background border-b border-border flex items-center justify-center overflow-hidden mb-6">
+                  {post.id === 1 && <img src="/assets/images/Blogs/Which Crystal for Anxiety — The Honest Guide.png" alt={post.title} className="w-full h-full object-cover" />}
+                  {post.id === 2 && <img src="/assets/images/Blogs/What is an Electromagnetic Field (Aura) and Care for It.png" alt={post.title} className="w-full h-full object-cover" />}
+                  {post.id === 3 && <img src="/assets/images/Blogs/The 7-Day Root Reset A Practical Grounding Guide.png" alt={post.title} className="w-full h-full object-cover" />}
+                  {post.id === 4 && <img src="/assets/images/Blogs/Creating Your Sacred Space.png" alt={post.title} className="w-full h-full object-cover" />}
                 </div>
-              </div>
               
               <div className="flex justify-between items-center mb-3">
                 <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold font-body">

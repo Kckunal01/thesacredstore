@@ -11,10 +11,10 @@ const TermsConditions = () => {
         <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-12">Last Updated: June 2026</p>
 
         <div className="space-y-8 text-muted font-light leading-relaxed">
-          <p>By using the Ritualist website, purchasing products, or booking consultations, you agree to these Terms & Conditions.</p>
+          <p>By using the The Sacred Store website, purchasing products, or booking consultations, you agree to these Terms & Conditions.</p>
 
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Products & Services</h2>
-          <p>Ritualist offers wellness products, ritual tools, crystals, educational content, and consultation services.</p>
+          <p>The Sacred Store offers wellness products, ritual tools, crystals, educational content, and consultation services.</p>
           <p className="mt-4">All products and services are subject to availability.</p>
 
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Consultation & Product Disclaimer</h2>

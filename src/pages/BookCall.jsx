@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
+import { useNavigate } from 'react-router-dom';
+import {
+  createCustomer,
+  createConsultation,
+  getCustomerByEmail
+} from '../lib/supabase';
+
+
+// Temporary flag to disable real Razorpay integration
+const TEST_MODE = true; // Set to false to enable actual payment flow
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -18,9 +28,16 @@ const loadRazorpayScript = () => {
 };
 
 const BookCall = () => {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+
+  const [focusArea, setFocusArea] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const sessionPrice = 699;
+  const navigate = useNavigate();
 
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -28,9 +45,9 @@ const BookCall = () => {
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
-  
+
   const allTimeSlots = [
-    '14:00', '14:30', '15:00', '15:30', 
+    '14:00', '14:30', '15:00', '15:30',
     '16:00', '16:30', '17:00', '17:30', '18:00'
   ];
 
@@ -48,7 +65,79 @@ const BookCall = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isProcessing) return; // Prevent duplicate submissions
     setIsProcessing(true);
+    // Verify timeslot availability
+    const bookedSlotsCheck = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
+    if (selectedDate && bookedSlotsCheck[selectedDate] && bookedSlotsCheck[selectedDate].includes(selectedTime)) {
+      // Timeslot already booked – show message instead of alert
+      setErrorMessage('Selected time slot is already booked. Please choose another.');
+      setIsProcessing(false);
+      return;
+    }
+    if (TEST_MODE) {
+      try {
+        let customer = await getCustomerByEmail(email);
+
+        if (!customer) {
+          customer = await createCustomer({
+            name,
+            email,
+            phone
+          });
+        }
+
+        console.log('Using customer:', customer);
+
+        const consultationData = {
+          customer_id: customer.id,
+          consultation_type: 'private',
+          preferred_datetime: `${selectedDate}T${selectedTime}:00`,
+          focus_area: focusArea,
+          notes: '',
+          amount: sessionPrice,
+          payment_status: 'test_paid',
+          consultation_status: 'pending'
+        };
+
+        console.log(
+          'Consultation payload:',
+          consultationData
+        );
+
+        const consultation =
+          await createConsultation(
+            consultationData
+          );
+
+        console.log(
+          'Consultation response:',
+          consultation
+        );
+
+        // Store booked slot to prevent future selection
+        const booked = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
+        if (!booked[selectedDate]) booked[selectedDate] = [];
+        booked[selectedDate].push(selectedTime);
+        localStorage.setItem('bookedSlots', JSON.stringify(booked));
+
+        // Show success message
+        setIsSubmitted(true);
+
+      } catch (err) {
+        console.error(
+          'Error in test mode flow:',
+          err
+        );
+
+        alert(
+          'An error occurred while creating consultation.'
+        );
+      }
+
+      setIsProcessing(false);
+      return;
+    }
 
     const res = await loadRazorpayScript();
 
@@ -89,7 +178,7 @@ const BookCall = () => {
           if (!booked[selectedDate]) booked[selectedDate] = [];
           booked[selectedDate].push(selectedTime);
           localStorage.setItem('bookedSlots', JSON.stringify(booked));
-          
+
           setIsSubmitted(true);
           setIsProcessing(false);
         },
@@ -121,7 +210,7 @@ const BookCall = () => {
       <Section className="border-b border-border">
         <Container>
           <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-            
+
             {/* Left: Info & Metrics */}
             <div className="w-full lg:w-5/12 flex flex-col justify-center">
               <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold block mb-6">Private Consultation</span>
@@ -131,7 +220,7 @@ const BookCall = () => {
               <p className="text-muted font-light leading-relaxed mb-12">
                 A 30-minute private session to analyze your current energetic needs and curate a tailored selection of minerals and practices. No pseudo-spirituality, just clear guidance.
               </p>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-border">
                 <div className="bg-surface border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
                   <h4 className="text-4xl font-display text-primary mb-2">10+</h4>
@@ -139,7 +228,7 @@ const BookCall = () => {
                 </div>
                 <div className="bg-surface border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
                   <h4 className="text-4xl font-display text-primary mb-2">500+</h4>
-                  <p className="text-[9px] uppercase tracking-widest font-bold text-accent">Rituals</p>
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-accent">Consultations</p>
                 </div>
                 <div className="bg-surface border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
                   <h4 className="text-4xl font-display text-primary mb-2">4.8★</h4>
@@ -152,7 +241,7 @@ const BookCall = () => {
             <div className="w-full lg:w-7/12">
               <div className="bg-surface border border-border p-8 md:p-12 relative overflow-hidden group">
                 <div className="absolute inset-0 bg-gradient-to-br from-[#F8F5EF] to-[#EAE5D9] transition-transform duration-1000 group-hover:scale-105 pointer-events-none" />
-                
+
                 <div className="relative z-10">
                   {isSubmitted ? (
                     <div className="text-center py-20">
@@ -163,24 +252,46 @@ const BookCall = () => {
                       </div>
                       <h3 className="text-3xl font-display text-primary mb-4">Request Received</h3>
                       <p className="text-muted mb-8">Your payment was successful. We will contact you shortly to confirm your consultation time.</p>
-                      <Button onClick={() => setIsSubmitted(false)} variant="ghost">Book Another</Button>
+                      <Button onClick={() => { navigate('/shop-jewellery'); window.location.reload(); }} variant="ghost">Explore more</Button>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
+                    {errorMessage && (<p className="text-red-600 text-sm mb-4">{errorMessage}</p>)}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary block">First Name</label>
-                          <input required type="text" className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted" placeholder="Enter your name" />
+                          <input
+                            required
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted"
+                            placeholder="Enter your name"
+                          />
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary block">Email Address</label>
-                          <input required type="email" className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted" placeholder="you@example.com" />
+                          <input
+                            required
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted"
+                            placeholder="you@example.com"
+                          />
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary block">Phone Number</label>
-                        <input required type="tel" className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted" placeholder="Enter your phone number" />
+                        <input
+                          required
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted"
+                          placeholder="Enter your phone number"
+                        />
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -190,7 +301,7 @@ const BookCall = () => {
                         </div>
                         <div className="space-y-2">
                           <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary block">Preferred Time</label>
-                          <select required value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary appearance-none">
+                          <select required value={selectedTime} onChange={(e) => setSelectedTime(e.target.value)} disabled={!selectedDate} className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary appearance-none">
                             <option value="">Select a time</option>
                             {availableSlots.map(slot => (
                               <option key={slot} value={slot}>{slot}</option>
@@ -201,7 +312,7 @@ const BookCall = () => {
 
                       <div className="space-y-2">
                         <label className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary block">What are you looking to focus on?</label>
-                        <textarea required rows="4" className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted resize-none" placeholder="E.g., grounding, focus, sleep quality..."></textarea>
+                        <textarea required rows="4" className="w-full bg-background border border-border p-4 text-sm focus:outline-none focus:border-accent transition-colors text-primary placeholder-muted resize-none" placeholder="E.g., grounding, focus, sleep quality..." value={focusArea} onChange={(e) => setFocusArea(e.target.value)} />
                       </div>
 
                       <div className="pt-4 flex items-center justify-between">

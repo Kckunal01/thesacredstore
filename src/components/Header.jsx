@@ -50,12 +50,11 @@ const Header = () => {
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-12">
           {/* Left: Logo */}
-          <Link to="/" className="flex items-center space-x-2 font-display text-2xl tracking-[0.15em] uppercase font-medium text-accent hover:text-accent transition-colors">
-            <img src="/assets/images/Logo-Nav.png" alt="Ritualist Logo" className="w-8 h-8 object-contain" />
-            <span>RITUALIST</span>
+          <Link to="/" className="flex items-center font-display tracking-[0.15em] uppercase font-medium text-accent hover:text-accent transition-colors">
+            <img src="/assets/images/Logo-Nav.png" alt="Logo-Nav" className="w-16 h-16 object-contain" />
           </Link>
           
-          {/* Center: Navigation - Sequence: Home, Shop, Book Now, Blogs, About Us */}
+          {/* Center: Navigation - Sequence: Home, Shop, Book Now, Blogs */}
           <nav className="hidden md:flex items-center space-x-10 font-medium text-[11px] tracking-[0.15em] uppercase">
             <NavLink to="/">Home</NavLink>
             <div className="relative group py-2 cursor-pointer flex flex-col items-center">
@@ -112,7 +111,7 @@ const Header = () => {
         <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility & Decor</Link>
         <Link to="/book-a-call" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Book Now</Link>
         <Link to="/blogs" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Blogs</Link>
-        <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
+            <Link to="/about" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
       </div>
     </header>
   );

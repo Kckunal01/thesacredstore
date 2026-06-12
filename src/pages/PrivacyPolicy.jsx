@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
         <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-12">Last Updated: June 2026</p>
 
         <div className="space-y-8 text-muted font-light leading-relaxed">
-          <p>At Ritualist, we respect your privacy and are committed to protecting your personal information.</p>
+          <p>At The Sacred Store, we respect your privacy and are committed to protecting your personal information.</p>
 
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Information We Collect</h2>
           <p>We may collect:</p>
