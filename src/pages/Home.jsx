@@ -31,7 +31,7 @@ const Home = () => {
     { quote: "They didn't just tell me my root chakra was blocked. They explained why I felt so ungrounded at work, and the black tourmaline actually shifted things.", author: "Priya K." },
     { quote: "Zero pseudo-spirituality. Just a calm, clear reading of where my energy was stuck. The simplest 30 minutes that brought so much clarity.", author: "Rahul S." },
     { quote: "I was skeptical, but the practitioner picked up on my solar plexus exhaustion immediately. I ordered the citrine and followed their simple practice.", author: "Ananya T." },
-    { quote: "The packaging, the quality of the stones, the philosophy. Everything about The Sacred Store screams intentionality.", author: "Kunal M." },
+    { quote: "The packaging, the quality of the stones, the philosophy. Everything about Ritualist screams intentionality.", author: "Kunal M." },
     { quote: "My space feels completely different after placing the amethyst clusters as recommended. A brilliant service.", author: "Neha V." }
   ];
 
@@ -45,59 +45,57 @@ const Home = () => {
       {/* Top Hero: Rolling Images Carousel */}
 
 
-      <section className="flex flex-col md:flex-row border-b border-border bg-background">
-        <div className="w-full md:w-7/12 p-8 md:p-16 lg:p-24 flex flex-col justify-center items-center text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-[1.1] font-display font-medium text-accent uppercase mb-4 whitespace-nowrap">
-            The <span className="font-cursive normal-case text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-normal mx-1 select-none text-black">Sacred</span> Store
-          </h1>
-          <h2 className="text-2xl md:text-3xl font-display font-light mb-10 tracking-wide">
-            <span className="text-accent">Make Space for </span>
-            <span className="text-primary">Meaning.</span>
-          </h2>
-          <p className="text-lg md:text-xl text-muted font-light mb-10 leading-relaxed max-w-xl mx-auto">
-            Reiki‑healing crystals, gems, and simple life‑changing remedies.
+
+<section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
+  <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
+    <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4 flex-wrap">
+  <span className="text-primary">THE</span>
+  <span className="font-allura text-accent text-6xl md:text-8xl lg:text-9xl font-normal mr-4 md:mr-6">Sacred</span>
+  <span className="text-primary">STORE</span>
+</h1>
+<h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-8 mb-2">
+  <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
+</h2>
+    <p className="text-base md:text-lg text-muted font-light mb-4 max-w-xl">
+      Reiki‑healing crystals, gems, and simple life‑changing rituals.
           </p>
-          <div className="flex gap-4 justify-center">
-            <Button to="/shop-crystals" variant="primary">Shop Collection</Button>
-            <Button to="/book-a-call" variant="ghost">Book Consultation</Button>
-          </div>
-        </div>
-        <div className="w-full md:w-5/12 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden">
-          <img
-            src="/assets/images/HeroImage.png"
-            alt="The Sacred Store Healing Crystals"
-            className="w-full h-auto object-cover transition-transform duration-1000 group-hover:scale-105"
-          />
-        </div>
-      </section>
+          <div className="flex gap-3 mt-4">
+      <Button to="/shop-crystals" variant="gold" className="text-sm px-5 py-2">Shop Collection</Button>
+      <Button to="/book-a-call" variant="ghost" className="text-sm px-5 py-2">Book Consultation</Button>
+    </div>
+  </div>
+  <div className="w-full md:w-5/12 min-h-[40vh] md:min-h-0 flex items-stretch bg-surface p-0 group overflow-hidden">
+        <img src="/assets/images/HeroImage.png" alt="The Sacred Store Healing Crystals" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+  </div>
+</section>
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
       <div className="bg-accent py-4 overflow-hidden flex whitespace-nowrap">
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-light tracking-widest text-black mx-8 uppercase flex-shrink-0">
-              PAN-INDIA DELIVERY <span className="text-white mx-4 text-xs align-middle">●</span> 7 DAY RETURN <span className="text-white mx-4 text-xs align-middle">●</span> ASSURED GUARANTEE
+            <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
+              PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
             </span>
           ))}
         </div>
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-light tracking-widest text-black mx-8 uppercase flex-shrink-0">
-              PAN-INDIA DELIVERY <span className="text-white mx-4 text-xs align-middle">●</span> 7 DAY RETURN <span className="text-white mx-4 text-xs align-middle">●</span> ASSURED GUARANTEE
+            <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
+              PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
             </span>
           ))}
         </div>
       </div>
 
       {/* 3. Best Sellers: Featured Collection */}
-      <Section className="border-b border-border">
+       <Section className="border-b border-border py-12">
         <Container>
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Featured</span> <span className="half-gold">Collection</span>
             </h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
             {bestSellers.map(product => (
               <ProductCard key={product.id} {...product} />
             ))}
@@ -108,48 +106,21 @@ const Home = () => {
         </Container>
       </Section>
 
-      {/* Temporarily hidden until future launch phase */}
-      {/*
-      <section className="bg-surface border-b border-border overflow-hidden py-12 md:py-16">
-        <Container>
-          <div className="text-center mb-12">
-            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
-              <span className="text-primary">Watch Us</span> <span className="half-gold">More</span>
-            </h3>
-            <p className="text-muted mt-2 text-sm font-light">Integrating ethically sourced tools into daily routines.</p>
-          </div>
-          <div className="flex overflow-x-auto pb-6 gap-6 snap-x justify-start md:justify-center">
-            {[1, 2, 3, 4, 5].map((item) => (
-              <div key={item} className="flex-none w-64 aspect-[9/16] bg-background border border-border relative group flex items-center justify-center cursor-pointer overflow-hidden snap-center">
-                <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="w-10 h-10 rounded-full border border-accent bg-background/80 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-accent text-sm">▶</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
-      */}
-
       {/* 5. Consultation Section */}
-      <section className="flex flex-col md:flex-row border-b border-border bg-background">
-        <div className="w-full md:w-1/2 p-8 md:p-16 lg:p-24 flex flex-col justify-center">
+              <section className="flex flex-col md:flex-row border-b border-border bg-background py-2">
+                <div className="w-full md:w-1/2 p-4 md:p-8 lg:p-10 flex flex-col justify-center">
           <h3 className="text-4xl md:text-5xl font-display font-medium text-primary mb-6">
             <span className="text-primary">Book your</span> <span className="half-gold">call</span>
           </h3>
-          <p className="text-base text-muted font-light mb-8 leading-relaxed max-w-md">
+           <p className="text-base text-muted font-light mb-4 leading-relaxed max-w-md">
             Unsure which mineral aligns with your current focus? Book a private 1-on-1 reading to map your space and energy accurately.
           </p>
           <div>
             <Button to="/book-a-call" variant="primary" className="text-[10px] px-6 py-3">Book Your Session</Button>
           </div>
         </div>
-        <div className="w-full md:w-1/2 flex items-center justify-center bg-surface border-l border-border p-0 group overflow-hidden">
-          <img
-            src="/assets/images/Bookyourcall.JPG.jpeg"
-            alt="Book Private Consultation"
-            className="w-full h-full object-contain transition-transform duration-1000 group-hover:scale-105"
+                <div className="w-full md:w-1/2 flex-1 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden">
+          <img src="/assets/images/Bookyourcall.JPG.jpeg" alt="Book Private Consultation" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
           />
         </div>
       </section>
@@ -197,7 +168,7 @@ const Home = () => {
       </Section>
 
       {/* 7. Blog Section: Learn More */}
-      <Section className="border-b border-border py-16 bg-background">
+       <Section className="border-b border-border py-12 bg-background">
         <Container>
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
@@ -210,7 +181,7 @@ const Home = () => {
             <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">
               <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Deep Dive</span>
               <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">Which Crystal for Anxiety — The Honest Guide</h4>
-              <p className="text-xs text-muted font-light leading-relaxed">Understand the energetic properties of crystals for soothing anxiety and finding your center.</p>
+              <p className="text-xs text-muted font-light leading-relaxed">We break down the minerals that actually ground your nervous system, free of pseudo-science.</p>
             </Link>
             {/* Sample Blog 2 */}
             <Link to="/blogs?id=3" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">

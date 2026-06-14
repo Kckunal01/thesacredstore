@@ -12,17 +12,18 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('ritualist_cart', JSON.stringify(cart));
   }, [cart]);
 
+  // Add product to cart, respecting stock limits and max 9 per product
   const addToCart = (product, quantity = 1) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
+        const newQty = Math.min(9, existing.quantity + quantity);
         return prev.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+          item.id === product.id ? { ...item, quantity: newQty } : item
         );
       }
-      return [...prev, { ...product, quantity }];
+      const allowedQty = Math.min(9, quantity, product.stock ?? 9);
+      return [...prev, { ...product, quantity: allowedQty }];
     });
   };
 
@@ -32,16 +33,38 @@ export const CartProvider = ({ children }) => {
 
   const updateQuantity = (id, quantity) => {
     if (quantity < 1) return;
-    setCart(prev => prev.map(item => item.id === id ? { ...item, quantity } : item));
+    setCart(prev => {
+      return prev.map(item => {
+        if (item.id === id) {
+          const maxQty = Math.min(item.stock ?? 9, 9);
+          const boundedQty = Math.min(maxQty, quantity);
+          return { ...item, quantity: boundedQty };
+        }
+        return item;
+      });
+    });
   };
 
   const clearCart = () => setCart([]);
 
-  const getCartTotal = () => cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const getCartCount = () => cart.reduce((count, item) => count + item.quantity, 0);
+  const getCartTotal = () =>
+    cart.reduce((total, item) => total + item.price * item.quantity, 0);
+
+  const getCartCount = () =>
+    cart.reduce((count, item) => count + item.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        getCartTotal,
+        getCartCount,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

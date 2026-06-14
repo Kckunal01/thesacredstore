@@ -1,30 +1,70 @@
-import React, { useContext, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { CartContext } from '../../context/CartContext';
+import { getProductStock } from '../../lib/supabase';
+
+// Helper to generate slug from product name (matches server-side slug logic)
+const slugify = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-)$/g, '');
+};
 
 const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }) => {
-  const { addToCart } = useContext(CartContext);
+  const { cart, addToCart } = useContext(CartContext);
   const [quantity, setQuantity] = useState(1);
+  const [stock, setStock] = useState(null);
+  const navigate = useNavigate();
   const mainImage = images && images.length > 0 ? images[0] : null;
   const discountPercentage = originalPrice && stamp !== 'Fresh' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
+  useEffect(() => {
+    const slug = slugify(name);
+    getProductStock(slug).then(liveStock => {
+      if (liveStock !== null) {
+        setStock(liveStock);
+      } else {
+        setStock(10); // fallback stock
+      }
+    });
+  }, [id]);
+
+  // Find if item is already in cart and compute stock‑aware limit
+  const cartItem = cart.find(item => item.id === id);
+  const cartQty = cartItem ? cartItem.quantity : 0;
+  const maxAllowed = stock !== null && stock !== undefined ? Math.min(stock, 9) : 9;
+  const isCartFull = cartQty >= maxAllowed;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isCartFull) return;
     addToCart({ id, name, price, originalPrice, images, category }, quantity);
   };
 
   const handleIncrement = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (quantity < 9) setQuantity(prev => prev + 1);
+    // Allow increment only if we stay within the stock‑aware max
+    if (quantity < maxAllowed && (quantity + cartQty) < maxAllowed) {
+      setQuantity(prev => prev + 1);
+    }
   };
 
   const handleDecrement = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (quantity > 1) setQuantity(prev => prev - 1);
+  };
+
+  const handleNotifyMeClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Redirect to the product detail page where waitlist modal is fully integrated
+    navigate(`/product/${id}`);
   };
 
   return (
@@ -69,19 +109,48 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
         </div>
       </Link>
 
-      {/* Add to Cart UI */}
+      {/* Add to Cart / Out of Stock UI */}
       <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4">
-        <div className="flex items-center justify-between border border-border bg-surface mb-2">
-          <button onClick={handleDecrement} className="p-2 text-primary hover:text-accent transition-colors"><Minus className="w-3 h-3" /></button>
-          <span className="text-xs font-semibold">{quantity}</span>
-          <button onClick={handleIncrement} className="p-2 text-primary hover:text-accent transition-colors"><Plus className="w-3 h-3" /></button>
-        </div>
-        <button
-          onClick={handleQuickAdd}
-          className="w-full bg-primary hover:bg-accent text-background text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300"
-        >
-          <ShoppingBag className="w-3 h-3" /> Add to Cart
-        </button>
+        {stock !== null && stock > 0 ? (
+          <>
+            <div className="flex items-center justify-between border border-border bg-surface mb-2">
+              <button
+                onClick={handleDecrement}
+                className="p-2 text-primary hover:text-accent transition-colors"
+                disabled={isCartFull}
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <span className="text-xs font-semibold">{isCartFull ? 'Max' : quantity}</span>
+              <button
+                onClick={handleIncrement}
+                className="p-2 text-primary hover:text-accent transition-colors"
+                disabled={isCartFull}
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
+            <button
+              onClick={handleQuickAdd}
+              disabled={isCartFull}
+              className={`w-full bg-primary hover:bg-accent text-background text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300 ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ShoppingBag className="w-3 h-3" /> {isCartFull ? 'Stock Out' : 'Add to Cart'}
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="text-center text-xs font-bold text-red-500 uppercase py-2 mb-2">
+              Out of Stock
+            </div>
+            <button
+              onClick={handleNotifyMeClick}
+              className="w-full bg-primary hover:bg-accent text-background text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300"
+            >
+              Notify Me
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

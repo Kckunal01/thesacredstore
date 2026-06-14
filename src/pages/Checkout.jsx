@@ -6,14 +6,14 @@ import Section from '../components/ui/Section';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
+import { createCustomer, getCustomerByPhone, createOrder } from '../lib/supabase.js';
 import {
-  createCustomer,
-  getCustomerByPhone,
-  createOrder,
-} from '../lib/supabase';
+  getProductStockMap,
+  deductProductStockBySlug,
+} from '../lib/supabaseProducts';
 
 // Temporary flag to disable real Razorpay integration
-const TEST_MODE = true; // Set to false to enable actual payment flow
+const TEST_MODE = true; // Keep Razorpay in test mode
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -31,6 +31,14 @@ function getPlaceholderStyle(name) {
   return {
     background: `hsl(${hue}, 25%, 95%)`,
   };
+}
+
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-)$/g, '');
 }
 
 const Checkout = () => {
@@ -78,6 +86,35 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
+    // Validate stock before proceeding
+    const stockMap = await getProductStockMap();
+    const issues = [];
+    for (const item of cart) {
+      const slug = item.slug || slugify(item.name);
+      const info = stockMap[slug];
+      if (!info || !info.active) {
+        issues.push(`${item.name} is currently out of stock.`);
+      } else if (info.stock < item.quantity) {
+        if (info.stock === 0) {
+          issues.push(`${item.name} is currently out of stock.`);
+        } else {
+          issues.push(`${item.name} – requested ${item.quantity}, available ${info.stock}`);
+        }
+      }
+    }
+    if (issues.length > 0) {
+      let message = '';
+      if (issues.length === 1) {
+        // Single item message
+        message = `Unfortunately, ${issues[0]} Please update your cart to continue.`;
+      } else {
+        message = 'Some items in your cart are no longer available:\n\n' + issues.map(i => `• ${i}`).join('\n') + '\n\nPlease update your cart and try again.';
+      }
+      alert(message);
+      setIsProcessing(false);
+      return;
+    }
+
     // --------------------------- TEST MODE ---------------------------
     if (TEST_MODE) {
       try {
@@ -105,6 +142,12 @@ const Checkout = () => {
         };
 
         const order = await createOrder(orderPayload);
+
+        // Deduct stock for each cart item using slug
+        for (const item of cart) {
+          const slug = item.slug || slugify(item.name);
+          await deductProductStockBySlug(slug, item.quantity);
+        }
 
         // 3️⃣ Show success UI
         setOrderId(order.order_id); // Supabase‑generated TSS‑xxxx
@@ -180,6 +223,11 @@ const Checkout = () => {
             };
 
             const order = await createOrder(orderPayload);
+
+            // Deduct stock for each cart item
+            for (const item of cart) {
+              await deductProductStockBySlug(slugify(item.name), item.quantity);
+            }
 
             setOrderId(order.order_id);
             setStep(3);
@@ -363,238 +411,238 @@ const Checkout = () => {
                             </div>
                           </div>
                         </div>
-                  ))}
+                      ))}
 
-                  <div className="flex justify-between items-center pt-8 border-t border-border">
-                    <Link
-                      to="/shop-crystals"
-                      className="text-xs uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors font-semibold font-body"
+                      <div className="flex justify-between items-center pt-8 border-t border-border">
+                        <Link
+                          to="/shop-crystals"
+                          className="text-xs uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors font-semibold font-body"
+                        >
+                          ← Continue Shopping
+                        </Link>
+                        <Button
+                          onClick={() => setStep(2)}
+                          variant="primary"
+                        >
+                          Proceed to Shipping
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <form
+                      id="checkout-form"
+                      onSubmit={handleCheckout}
+                      className="bg-surface border border-border p-8 md:p-10 space-y-8"
                     >
-                      ← Continue Shopping
-                    </Link>
-                    <Button
-                      onClick={() => setStep(2)}
-                      variant="primary"
-                    >
-                      Proceed to Shipping
-                    </Button>
-                  </div>
-                </div>
-                ) : (
-                <form
-                  id="checkout-form"
-                  onSubmit={handleCheckout}
-                  className="bg-surface border border-border p-8 md:p-10 space-y-8"
-                >
-                  <div className="flex justify-between items-center border-b border-border pb-4">
-                    <h3 className="font-display text-2xl text-primary font-medium">
-                      Shipping &amp; Delivery
-                    </h3>
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="text-[10px] uppercase tracking-widest text-accent hover:text-primary font-bold font-body"
-                    >
-                      ← Edit Cart
-                    </button>
-                  </div>
+                      <div className="flex justify-between items-center border-b border-border pb-4">
+                        <h3 className="font-display text-2xl text-primary font-medium">
+                          Shipping &amp; Delivery
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setStep(1)}
+                          className="text-[10px] uppercase tracking-widest text-accent hover:text-primary font-bold font-body"
+                        >
+                          ← Edit Cart
+                        </button>
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            First Name
+                          </label>
+                          <input
+                            type="text"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            Last Name
+                          </label>
+                          <input
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
 
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            Phone Number
+                          </label>
+                          <input
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
 
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        Delivery Address
-                      </label>
-                      <input
-                        type="text"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            Delivery Address
+                          </label>
+                          <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
 
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        City / Town
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            City / Town
+                          </label>
+                          <input
+                            type="text"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
 
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            State
+                          </label>
+                          <input
+                            type="text"
+                            name="state"
+                            value={formData.state}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
 
-                    <div className="col-span-2 md:col-span-1">
-                      <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                        Postal PIN Code
-                      </label>
-                      <input
-                        type="text"
-                        name="pinCode"
-                        value={formData.pinCode}
-                        onChange={handleInputChange}
-                        className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                        required
-                      />
-                    </div>
-                  </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
+                            Postal PIN Code
+                          </label>
+                          <input
+                            type="text"
+                            name="pinCode"
+                            value={formData.pinCode}
+                            onChange={handleInputChange}
+                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
+                            required
+                          />
+                        </div>
+                      </div>
 
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing
-                      ? 'Processing...'
-                      : `Pay with ${TEST_MODE ? 'Test' : 'Razorpay'}`}
-                  </Button>
-                </form>
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
+                        disabled={isProcessing}
+                      >
+                        {isProcessing
+                          ? 'Processing...'
+                          : 'Pay with Razorpay'}
+                      </Button>
+                    </form>
                   )}
-              </div>
+                </div>
 
                 {/* Right Column: Order Summary */}
-            <div className="w-full lg:w-1/3">
-              <div className="bg-surface border border-border p-8 sticky top-24 space-y-6">
-                <h3 className="font-display text-2xl text-primary font-medium border-b border-border pb-4">
-                  Order Summary
-                </h3>
-                <div className="space-y-4 max-h-48 overflow-y-auto pr-2">
-                  {cart.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center text-xs font-body text-muted"
-                    >
-                      <span className="truncate max-w-[150px]">
-                        {item.name}{' '}
-                        <strong className="text-accent">x{item.quantity}</strong>
-                      </span>
-                      <span>
-                        ₹
-                        {(item.price * item.quantity).toLocaleString(
-                          'en-IN'
-                        )}
+                <div className="w-full lg:w-1/3">
+                  <div className="bg-surface border border-border p-8 sticky top-24 space-y-6">
+                    <h3 className="font-display text-2xl text-primary font-medium border-b border-border pb-4">
+                      Order Summary
+                    </h3>
+                    <div className="space-y-4 max-h-48 overflow-y-auto pr-2">
+                      {cart.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex justify-between items-center text-xs font-body text-muted"
+                        >
+                          <span className="truncate max-w-[150px]">
+                            {item.name}{' '}
+                            <strong className="text-accent">x{item.quantity}</strong>
+                          </span>
+                          <span>
+                            ₹
+                            {(item.price * item.quantity).toLocaleString(
+                              'en-IN'
+                            )}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-3 pt-4 border-t border-border">
+                      <div className="flex justify-between text-xs font-body text-muted">
+                        <span>Subtotal</span>
+                        <span>₹{totalOriginal.toLocaleString('en-IN')}</span>
+                      </div>
+                      {totalDiscount > 0 && (
+                        <div className="flex justify-between text-xs font-body text-[#2ECC71]">
+                          <span>Discount</span>
+                          <span>
+                            -₹{totalDiscount.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-xs font-body text-muted">
+                        <span>Shipping</span>
+                        <span className="text-accent uppercase tracking-wider font-bold">
+                          Free
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between text-xl font-display text-primary border-t border-border pt-4">
+                      <span>Total</span>
+                      <span className="font-semibold text-accent">
+                        ₹{getCartTotal().toLocaleString('en-IN')}
                       </span>
                     </div>
-                  ))}
-                </div>
 
-                <div className="space-y-3 pt-4 border-t border-border">
-                  <div className="flex justify-between text-xs font-body text-muted">
-                    <span>Subtotal</span>
-                    <span>₹{totalOriginal.toLocaleString('en-IN')}</span>
-                  </div>
-                  {totalDiscount > 0 && (
-                    <div className="flex justify-between text-xs font-body text-[#2ECC71]">
-                      <span>Discount</span>
-                      <span>
-                        -₹{totalDiscount.toLocaleString('en-IN')}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between text-xs font-body text-muted">
-                    <span>Shipping</span>
-                    <span className="text-accent uppercase tracking-wider font-bold">
-                      Free
-                    </span>
+                    {step === 2 && (
+                      <Button
+                        type="submit"
+                        form="checkout-form"
+                        variant="primary"
+                        className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
+                        disabled={isProcessing}
+                      >
+                        {isProcessing ? 'Processing...' : 'Pay'}
+                      </Button>
+                    )}
                   </div>
                 </div>
-
-                <div className="flex justify-between text-xl font-display text-primary border-t border-border pt-4">
-                  <span>Total</span>
-                  <span className="font-semibold text-accent">
-                    ₹{getCartTotal().toLocaleString('en-IN')}
-                  </span>
-                </div>
-
-                {step === 2 && (
-                  <Button
-                    type="submit"
-                    form="checkout-form"
-                    variant="primary"
-                    className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
-                    disabled={isProcessing}
-                  >
-                    {isProcessing ? 'Processing...' : 'Pay'}
-                  </Button>
-                )}
               </div>
-            </div>
-          </div>
             )}
-        </Container>
+          </Container>
         </Section >
       )}
     </>
@@ -602,3 +650,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+

@@ -1,30 +1,90 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
 import { products } from '../data/products';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, X } from 'lucide-react';
+// Import necessary Supabase helpers
+import { getProductStock, checkStockRequestExists, createStockRequest } from '../lib/supabase';
+
+// Helper to generate slug from product name
+// Helper to generate slug from product name
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^[-]+|[-]+$/g, '');
+}
+
+// Stock state will be defined inside the component
+
+
+import { getProductStockMap } from '../lib/supabaseProducts';
 
 const Product = () => {
   const { id } = useParams();
-  const { addToCart } = useContext(CartContext);
+  const { cart, addToCart } = useContext(CartContext);
   const [activeTab, setActiveTab] = useState('philosophy');
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const categoryRoutes = {
-    'Crystals': '/shop-crystals',
-    'Gemstones': '/shop-gems',
-    'Bracelets': '/shop-jewellery',
-    'Pendants': '/shop-jewellery',
-    'Utility & Decor': '/shop-utility',
+  // Find product by id (string comparison)
+  const product = products.find(p => p.id?.toString() === id);
+  // Stock State
+  const [stock, setStock] = useState(null);
+  // Add active flag state
+  const [active, setActive] = useState(true);
+  // Database UUID State
+  const [dbId, setDbId] = useState(null);
+
+  const fetchStockAndActive = async () => {
+    try {
+      const stockMap = await getProductStockMap();
+      const productSlug = product.slug || slugify(product.name);
+      const info = stockMap[productSlug];
+      if (info) {
+        setStock(info.stock);
+        setActive(info.active);
+        setDbId(info.id);
+      } else {
+        setStock(product.stock !== undefined ? product.stock : 10);
+        setActive(true);
+      }
+    } catch (err) {
+      console.error('Error fetching stock map:', err);
+    }
   };
-  // Find the product from our products data
-  const product = products.find(p => p.id === id);
+
+  useEffect(() => {
+    if (product) {
+      fetchStockAndActive();
+      const handleFocus = () => fetchStockAndActive();
+      const handleVisibility = () => {
+        if (document.visibilityState === 'visible') fetchStockAndActive();
+      };
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', handleVisibility);
+      return () => {
+        window.removeEventListener('focus', handleFocus);
+        document.removeEventListener('visibilitychange', handleVisibility);
+      };
+    }
+  }, [product]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [email, setEmail] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalSuccess, setModalSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+
   const discountPercentage = product?.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+
+  // Removed redundant stock fetch; fetchStockAndActive handles stock and active state.
 
   if (!product) {
     return (
@@ -38,18 +98,52 @@ const Product = () => {
     );
   }
 
+  const cartItem = cart.find(item => item.id === product.id);
+  const cartQty = cartItem ? cartItem.quantity : 0;
+  // Determine the maximum quantity allowed: cannot exceed available stock or hard cap of 9
+  const maxAllowed = stock !== null && stock !== undefined ? Math.min(stock, 9) : 9;
+  const isCartFull = cartQty >= maxAllowed;
+
   const handleAddToCart = () => {
+    if (isCartFull) return;
     addToCart(product, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
 
   const handleIncrement = () => {
-    if (quantity < 9) setQuantity(prev => prev + 1);
+    const maxAllowed = stock !== null && stock !== undefined ? Math.min(stock, 9) : 9;
+    if (quantity < maxAllowed && (quantity + cartQty) < maxAllowed) {
+      setQuantity(prev => prev + 1);
+    }
   };
 
   const handleDecrement = () => {
     if (quantity > 1) setQuantity(prev => prev - 1);
+  };
+
+  const handleNotifySubmit = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const targetId = dbId || product.id;
+      const exists = await checkStockRequestExists(targetId, email);
+      if (exists) {
+        setModalMessage("You've already requested a notification.");
+        setModalSuccess(false);
+      } else {
+        await createStockRequest(targetId, email);
+        setModalMessage("We'll notify you when this crystal is back in stock.");
+        setModalSuccess(true);
+        setEmail('');
+      }
+    } catch (err) {
+      setModalMessage("Failed to submit request. Please try again.");
+      setModalSuccess(false);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Generate unique background gradient styling based on name to make it look premium
@@ -68,28 +162,20 @@ const Product = () => {
   return (
     <Section className="min-h-[85vh] bg-background pt-32">
       <Container>
-        {/* Breadcrumb navigation */}
-        <div className="flex items-center space-x-2 text-[10px] uppercase tracking-widest text-muted mb-12 font-bold font-body">
-          <Link to="/" className="hover:text-primary transition-colors">Ritualist</Link>
-          <span>/</span>
-          <Link to={categoryRoutes[product.category] || '/shop-crystals'} className="hover:text-primary transition-colors">{product.category}</Link>
-          <span>/</span>
-          <span className="text-primary">{product.name}</span>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
           {/* Left: Interactive Media Column */}
           <div className="lg:col-span-7 flex flex-col items-center">
             {/* Main Image */}
             <div className="w-full max-w-md">
-              <div 
+              <div
                 style={!mainImage ? getPlaceholderStyle(product.name) : {}}
                 className="w-full aspect-[3/4] border border-border bg-[#F8F5EF] flex flex-col items-center justify-center relative group overflow-hidden mb-4"
               >
                 {mainImage ? (
-                  <img 
-                    src={mainImage} 
-                    alt={product.name} 
+                  <img
+                    src={mainImage}
+                    alt={product.name}
                     className="w-full h-full object-contain p-2 transition-all duration-500"
                   />
                 ) : (
@@ -118,11 +204,10 @@ const Product = () => {
                     <button
                       key={idx}
                       onClick={() => setSelectedImageIndex(idx)}
-                      className={`aspect-square bg-[#F8F5EF] border overflow-hidden transition-all duration-300 ${
-                        selectedImageIndex === idx
+                      className={`aspect-square bg-[#F8F5EF] border overflow-hidden transition-all duration-300 ${selectedImageIndex === idx
                           ? 'border-accent ring-1 ring-accent'
                           : 'border-border hover:border-accent/60'
-                      }`}
+                        }`}
                     >
                       <img
                         src={imgSrc}
@@ -140,7 +225,7 @@ const Product = () => {
           <div className="lg:col-span-5 flex flex-col justify-center">
             <span className="text-[10px] uppercase tracking-[0.3em] text-accent mb-4 font-bold font-body">{product.category}</span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-primary mb-4 leading-[1.1] font-medium">{product.name}</h1>
-            
+
             <div className="flex items-center space-x-4 mb-8">
               {product.originalPrice && (
                 <span className="text-xl text-muted font-light font-body line-through">₹{product.originalPrice.toLocaleString('en-IN')}</span>
@@ -150,31 +235,54 @@ const Product = () => {
                 <span className="text-sm font-bold tracking-widest text-background bg-primary px-2 py-1 rounded-sm ml-2">-{discountPercentage}% OFF</span>
               )}
             </div>
-            
+
             <p className="text-muted leading-relaxed font-light font-body text-base mb-8">
               {product.description}
             </p>
 
-            <div className="flex items-center gap-6 mb-8">
-              {/* Quantity Selector */}
-              <div className="flex items-center border border-border bg-surface px-4 py-3">
-                <button onClick={handleDecrement} className="text-primary hover:text-accent transition-colors"><Minus className="w-4 h-4" /></button>
-                <span className="w-12 text-center text-sm font-semibold">{quantity}</span>
-                <button onClick={handleIncrement} className="text-primary hover:text-accent transition-colors"><Plus className="w-4 h-4" /></button>
-              </div>
+            {stock !== null && stock > 0 && active ? (
+              <div className="flex items-center gap-6 mb-8">
+                {/* Quantity Selector */}
+                <div className="flex items-center border border-border bg-surface px-4 py-3">
+                  <button onClick={handleDecrement} className="text-primary hover:text-accent transition-colors" disabled={isCartFull}>
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-12 text-center text-sm font-semibold">{isCartFull ? 'Max' : quantity}</span>
+                  <button onClick={handleIncrement} className="text-primary hover:text-accent transition-colors" disabled={isCartFull}>
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
 
-              <Button 
-                onClick={handleAddToCart} 
-                variant="primary" 
-                className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#d4b584]' : ''}`}
-              >
-                {added ? 'Added to Cart' : 'Add to Collection'}
-              </Button>
-            </div>
+                <Button
+                  onClick={handleAddToCart}
+                  variant="primary"
+                  disabled={isCartFull}
+                  className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#d4b584]' : ''} ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {added ? 'Added to Cart' : isCartFull ? 'Stock Out' : 'Add to Cart'}
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4 mb-8">
+                <div className="text-sm font-bold tracking-widest text-red-500 uppercase py-2">
+                  Out of Stock
+                </div>
+                <Button
+                  onClick={() => {
+                    setIsModalOpen(true);
+                    setModalMessage('');
+                  }}
+                  variant="primary"
+                  className="w-full py-4 uppercase tracking-[0.2em] font-semibold text-xs"
+                >
+                  Notify Me When Available
+                </Button>
+              </div>
+            )}
 
             {/* Interactive Tabs */}
             <div className="mt-8 border-b border-border flex space-x-8 mb-6">
-              <button 
+              <button
                 onClick={() => setActiveTab('philosophy')}
                 className={`pb-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative ${activeTab === 'philosophy' ? 'text-primary' : 'text-muted hover:text-primary'}`}
               >
@@ -183,7 +291,7 @@ const Product = () => {
                   <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent"></div>
                 )}
               </button>
-              <button 
+              <button
                 onClick={() => setActiveTab('specifications')}
                 className={`pb-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative ${activeTab === 'specifications' ? 'text-primary' : 'text-muted hover:text-primary'}`}
               >
@@ -204,8 +312,8 @@ const Product = () => {
                   </div>
                   {product.chakraColor && (
                     <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
-                      <div 
-                        className="w-4 h-4 rounded-full mt-0.5 shrink-0" 
+                      <div
+                        className="w-4 h-4 rounded-full mt-0.5 shrink-0"
                         style={{ backgroundColor: product.chakraColor }}
                       ></div>
                       <div>
@@ -237,6 +345,58 @@ const Product = () => {
           </div>
         </div>
       </Container>
+
+      {/* Notify Waitlist Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-background border border-border max-w-md w-full p-8 relative">
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="font-display text-2xl text-primary mb-2 uppercase tracking-wide">Waitlist Request</h3>
+            <p className="text-xs text-muted mb-6 leading-relaxed">
+              Register your email below. We'll send a notification once this {product.name} is back in stock.
+            </p>
+            {modalMessage ? (
+              <div className="space-y-6 text-center py-4">
+                <p className={`text-sm ${modalSuccess ? 'text-accent font-semibold' : 'text-primary'}`}>
+                  {modalMessage}
+                </p>
+                <Button onClick={() => setIsModalOpen(false)} variant="primary" className="px-6 py-2 text-[10px]">
+                  Close
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleNotifySubmit} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    required
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="w-full bg-surface border border-border p-4 text-sm focus:outline-none focus:border-accent text-primary transition-colors font-body"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Notify Me'}
+                </Button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </Section>
   );
 };
