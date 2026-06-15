@@ -46,28 +46,24 @@ const Home = () => {
 
 
 
-<section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
-  <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
-    <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4 flex-wrap">
-  <span className="text-primary">THE</span>
-  <span className="font-allura text-accent text-6xl md:text-8xl lg:text-9xl font-normal mr-4 md:mr-6">Sacred</span>
-  <span className="text-primary">STORE</span>
-</h1>
-<h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-8 mb-2">
-  <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
-</h2>
-    <p className="text-base md:text-lg text-muted font-light mb-4 max-w-xl">
-      Reiki‑healing crystals, gems, and simple life‑changing rituals.
+      <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
+        <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4">THE <span className="font-allura" style={{ color: '#D4AF37' }}>SACRED</span> STORE</h1>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-8 mb-2">
+            <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
+          </h2>
+          <p className="text-base md:text-lg text-muted font-light mb-4 max-w-xl">
+            Reiki‑healing crystals, gems, and simple life‑changing rituals.
           </p>
           <div className="flex gap-3 mt-4">
-      <Button to="/shop-crystals" variant="gold" className="text-sm px-5 py-2">Shop Collection</Button>
-      <Button to="/book-a-call" variant="ghost" className="text-sm px-5 py-2">Book Consultation</Button>
-    </div>
-  </div>
-  <div className="w-full md:w-5/12 min-h-[40vh] md:min-h-0 flex items-stretch bg-surface p-0 group overflow-hidden">
-        <img src="/assets/images/HeroImage.png" alt="The Sacred Store Healing Crystals" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-  </div>
-</section>
+            <Button to="/shop-crystals" variant="gold" className="text-sm px-5 py-2">Shop Collection</Button>
+            <Button to="/book-a-call" variant="ghost" className="text-sm px-5 py-2">Book Consultation</Button>
+          </div>
+        </div>
+        <div className="w-full md:w-5/12 min-h-[40vh] md:min-h-0 flex items-stretch bg-surface p-0 group overflow-hidden">
+          <img src="/assets/images/HeroImage.png" alt="The Sacred Store Healing Crystals" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+        </div>
+      </section>
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
       <div className="bg-accent py-4 overflow-hidden flex whitespace-nowrap">
@@ -88,14 +84,14 @@ const Home = () => {
       </div>
 
       {/* 3. Best Sellers: Featured Collection */}
-       <Section className="border-b border-border py-12">
+      <Section className="border-b border-border py-12">
         <Container>
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Featured</span> <span className="half-gold">Collection</span>
             </h3>
           </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
             {bestSellers.map(product => (
               <ProductCard key={product.id} {...product} />
             ))}
@@ -107,21 +103,20 @@ const Home = () => {
       </Section>
 
       {/* 5. Consultation Section */}
-              <section className="flex flex-col md:flex-row border-b border-border bg-background py-2">
-                <div className="w-full md:w-1/2 p-4 md:p-8 lg:p-10 flex flex-col justify-center">
+      <section className="flex flex-col md:flex-row border-b border-border bg-background py-2">
+        <div className="w-full md:w-1/2 p-4 md:p-8 lg:p-10 flex flex-col justify-center">
           <h3 className="text-4xl md:text-5xl font-display font-medium text-primary mb-6">
             <span className="text-primary">Book your</span> <span className="half-gold">call</span>
           </h3>
-           <p className="text-base text-muted font-light mb-4 leading-relaxed max-w-md">
+          <p className="text-base text-muted font-light mb-4 leading-relaxed max-w-md">
             Unsure which mineral aligns with your current focus? Book a private 1-on-1 reading to map your space and energy accurately.
           </p>
           <div>
             <Button to="/book-a-call" variant="primary" className="text-[10px] px-6 py-3">Book Your Session</Button>
           </div>
         </div>
-                <div className="w-full md:w-1/2 flex-1 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden">
+        <div className="w-full md:w-1/2 flex-1 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden">
           <img src="/assets/images/Bookyourcall.JPG.jpeg" alt="Book Private Consultation" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-          />
         </div>
       </section>
 
@@ -129,7 +124,7 @@ const Home = () => {
       <Section className="bg-surface border-b border-border py-16">
         <Container>
           <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
+            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary tracking-wider">
               <span className="text-primary">Loved By the</span> <span className="half-gold">Community</span>
             </h3>
           </div>
@@ -144,7 +139,7 @@ const Home = () => {
               >
                 {testimonials.map((test, idx) => (
                   <div key={idx} className="w-full md:w-1/3 flex-shrink-0 px-4">
-                    <div className="bg-background border border-border p-6 h-full flex flex-col justify-between">
+                    <div className="bg-background border border-border p-6 h-full flex flex-col justify-between rounded-lg shadow-lg hover:shadow-xl transition-shadow">
                       <div>
                         <div className="flex text-accent mb-4 text-xs">
                           ★★★★★
@@ -168,7 +163,7 @@ const Home = () => {
       </Section>
 
       {/* 7. Blog Section: Learn More */}
-       <Section className="border-b border-border py-12 bg-background">
+      <Section className="border-b border-border py-12 bg-background">
         <Container>
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
@@ -178,19 +173,19 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-10">
             {/* Sample Blog 1 */}
-            <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">
+            <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
               <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Deep Dive</span>
               <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">Which Crystal for Anxiety — The Honest Guide</h4>
               <p className="text-xs text-muted font-light leading-relaxed">We break down the minerals that actually ground your nervous system, free of pseudo-science.</p>
             </Link>
             {/* Sample Blog 2 */}
-            <Link to="/blogs?id=3" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">
+            <Link to="/blogs?id=3" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
               <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Practices</span>
               <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">The 7-Day Root Reset: Grounding Guide</h4>
               <p className="text-xs text-muted font-light leading-relaxed">A simple, actionable guide to building stability from the ground up using Red Jasper.</p>
             </Link>
             {/* Sample Blog 3 */}
-            <Link to="/blogs?id=4" className="group cursor-pointer block border border-border bg-surface p-6 hover:-translate-y-1 transition-all duration-300">
+            <Link to="/blogs?id=4" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
               <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Lifestyle</span>
               <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">Creating Your Sacred Space</h4>
               <p className="text-xs text-muted font-light leading-relaxed">How to arrange your crystals for maximum energetic flow and aesthetic balance in any room.</p>

@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   createCustomer,
   createBooking,
-  getCustomerByPhone
+  getCustomerByPhone,
+  supabase
 } from '../lib/supabase';
 
 
@@ -112,6 +113,26 @@ const BookCall = () => {
           'Booking response:',
           booking
         );
+
+        // Insert email log entries (booking_customer, booking_admin)
+        try {
+          await supabase.from('email_logs').insert([
+            {
+              customer_id: customer.id,
+              entity_type: 'booking',
+              entity_id: booking.id,
+              email_type: 'booking_customer',
+            },
+            {
+              customer_id: customer.id,
+              entity_type: 'booking',
+              entity_id: booking.id,
+              email_type: 'booking_admin',
+            },
+          ]);
+        } catch (e) {
+          console.error('Failed to insert booking email logs:', e);
+        }
 
         // Store booked slot to prevent future selection
         const booked = JSON.parse(localStorage.getItem('bookedSlots') || '{}');

@@ -6,7 +6,7 @@ import Section from '../components/ui/Section';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
-import { createCustomer, getCustomerByPhone, createOrder } from '../lib/supabase.js';
+import { createCustomer, getCustomerByPhone, createOrder, supabase } from '../lib/supabase.js';
 import {
   getProductStockMap,
   deductProductStockBySlug,
@@ -151,6 +151,25 @@ const Checkout = () => {
 
         // 3️⃣ Show success UI
         setOrderId(order.order_id); // Supabase‑generated TSS‑xxxx
+          // Insert email log entries (order_customer, order_admin)
+          try {
+            await supabase.from('email_logs').insert([
+              {
+                customer_id: customer.id,
+                entity_type: 'order',
+                entity_id: order.id,
+                email_type: 'order_customer',
+              },
+              {
+                customer_id: customer.id,
+                entity_type: 'order',
+                entity_id: order.id,
+                email_type: 'order_admin',
+              },
+            ]);
+          } catch (e) {
+            console.error('Failed to insert order email logs:', e);
+          }
         setStep(3);
         clearCart();
       } catch (err) {
@@ -230,6 +249,25 @@ const Checkout = () => {
             }
 
             setOrderId(order.order_id);
+            // Insert email log entries (order_customer, order_admin)
+            try {
+              await supabase.from('email_logs').insert([
+                {
+                  customer_id: customer.id,
+                  entity_type: 'order',
+                  entity_id: order.id,
+                  email_type: 'order_customer',
+                },
+                {
+                  customer_id: customer.id,
+                  entity_type: 'order',
+                  entity_id: order.id,
+                  email_type: 'order_admin',
+                },
+              ]);
+            } catch (e) {
+              console.error('Failed to insert order email logs:', e);
+            }
             setStep(3);
             clearCart();
           } catch (err) {
