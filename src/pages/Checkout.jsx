@@ -152,24 +152,31 @@ const Checkout = () => {
         // 3️⃣ Show success UI
         setOrderId(order.order_id); // Supabase‑generated TSS‑xxxx
           // Insert email log entries (order_customer, order_admin)
-          try {
-            await supabase.from('email_logs').insert([
-              {
-                customer_id: customer.id,
-                entity_type: 'order',
-                entity_id: order.id,
-                email_type: 'order_customer',
-              },
-              {
-                customer_id: customer.id,
-                entity_type: 'order',
-                entity_id: order.id,
-                email_type: 'order_admin',
-              },
-            ]);
-          } catch (e) {
-            console.error('Failed to insert order email logs:', e);
-          }
+          const { data: emailLogData, error: emailLogError } = await supabase
+  .from('email_logs')
+  .insert([
+    {
+      customer_id: customer.id,
+      entity_type: 'order',
+      entity_id: order.id,
+      email_type: 'order_customer',
+    },
+    {
+      customer_id: customer.id,
+      entity_type: 'order',
+      entity_id: order.id,
+      email_type: 'order_admin',
+    },
+  ])
+  .select();
+
+console.log('ORDER EMAIL LOG DATA:', emailLogData);
+
+if (emailLogError) {
+  console.error('ORDER EMAIL LOG INSERT FAILED:', emailLogError);
+} else {
+  console.log('ORDER EMAIL LOGS INSERTED');
+}
         setStep(3);
         clearCart();
       } catch (err) {

@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "notify-restock": "node scripts/sendBackInStockEmails.js",
     "notify-low-stock": "node scripts/notifyLowStockEmails.js",
-    "notify-transactional": "node scripts/processTransactionalEmails.js"
+        "notify-transactional": "node scripts/processTransactionalEmails.js",
+    "processBookingReminders": "node scripts/processBookingReminders.js"
+  
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.1",

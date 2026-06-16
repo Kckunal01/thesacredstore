@@ -1,12 +1,13 @@
 // src/lib/supabase.js
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client using Vite env variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Use Vite env variables when available, otherwise fallback to process.env (for Node scripts)
+const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
 /**
  * Fetch stock for a single product slug (optional helper).
  */

@@ -6,10 +6,10 @@ const Footer = () => {
     <footer className="bg-surface border-t border-border pt-20 pb-12">
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
-          
+
           {/* Column 1: Brand */}
           <div className="flex flex-col">
-                        <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE <span className="text-[#D4AF37]">SACRED</span> STORE</Link>
+            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE <span className="text-[#D4AF37]">SACRED</span> STORE</Link>
             <p className="text-muted text-base tracking-widest uppercase font-semibold mb-8">
               Make Space for Meaning.
             </p>
@@ -52,11 +52,11 @@ const Footer = () => {
             <div className="flex flex-col space-y-4">
               <div>
                 <p className="text-base uppercase tracking-[0.15em] text-muted font-bold mb-1">Email</p>
-                                <p className="text-sm text-muted font-light">support@thesacredstore.co.in</p>
+                <p className="text-sm text-muted font-light">support@thesacredstore.co.in</p>
               </div>
               <div>
                 <p className="text-base uppercase tracking-[0.15em] text-muted font-bold mb-1">Phone</p>
-                                <p className="text-sm text-muted font-light">+91 95549 30456</p>
+                <p className="text-sm text-muted font-light">+91 95549 30456</p>
               </div>
             </div>
           </div>

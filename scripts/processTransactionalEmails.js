@@ -8,6 +8,7 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
+console.log("SUPABASE URL:", process.env.VITE_SUPABASE_URL);
 console.log('SUPABASE URL:', !!supabaseUrl);
 console.log('SERVICE ROLE:', !!supabaseKey);
 console.log('RESEND:', !!RESEND_API_KEY);
@@ -16,6 +17,11 @@ if (!supabaseUrl || !supabaseKey || !RESEND_API_KEY) {
   console.error('Required environment variables missing.');
   process.exit(1);
 }
+
+console.log(
+  'RESEND KEY PREFIX:',
+  RESEND_API_KEY?.slice(0, 8)
+);
 
 // Initialize Supabase client
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -26,7 +32,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
     const { data: logs, error: logsErr } = await supabase
       .from('email_logs')
       .select('*')
-      .in('email_type', ['order_customer','order_admin','booking_customer','booking_admin'])
+      .in('email_type', ['order_customer', 'order_admin', 'booking_customer', 'booking_admin'])
       .is('sent_at', null);
 
     if (logsErr) {
@@ -44,7 +50,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
     for (const log of logs) {
       try {
         console.log('Processing log:', log.id, log.email_type);
-        const allowedTypes = ['order_customer','order_admin','booking_customer','booking_admin'];
+        const allowedTypes = ['order_customer', 'order_admin', 'booking_customer', 'booking_admin'];
         if (!allowedTypes.includes(log.email_type)) {
           console.log('Skipping unsupported email type:', log.email_type);
           continue;
@@ -240,6 +246,9 @@ const supabase = createClient(supabaseUrl, supabaseKey);
         }
 
         if (to && subject && html) {
+  console.log("EMAIL TYPE:", log.email_type);
+  console.log("SENDING TO:", to);
+  console.log("RESEND KEY PREFIX:", RESEND_API_KEY?.slice(0, 8));
           console.log('Sending to:', to);
           const resp = await fetch('https://api.resend.com/emails', {
             method: 'POST',
@@ -256,6 +265,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
           });
 
           console.log('Resend status:', resp.status);
+  const respClone = resp.clone();
+  console.log('RESEND BODY:', await respClone.text());
 
           if (!resp.ok) {
             const txt = await resp.text();
@@ -273,6 +284,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
             console.error(`Failed to update email log ${log.id} as sent:`, updErr);
           } else {
             console.log('Marked sent:', log.id);
+  console.log('MARKED SENT:', log.id);
           }
         }
       } catch (logErr) {

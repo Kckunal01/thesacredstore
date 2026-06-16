@@ -115,24 +115,31 @@ const BookCall = () => {
         );
 
         // Insert email log entries (booking_customer, booking_admin)
-        try {
-          await supabase.from('email_logs').insert([
-            {
-              customer_id: customer.id,
-              entity_type: 'booking',
-              entity_id: booking.id,
-              email_type: 'booking_customer',
-            },
-            {
-              customer_id: customer.id,
-              entity_type: 'booking',
-              entity_id: booking.id,
-              email_type: 'booking_admin',
-            },
-          ]);
-        } catch (e) {
-          console.error('Failed to insert booking email logs:', e);
-        }
+        const { data: emailLogData, error: emailLogError } = await supabase
+  .from('email_logs')
+  .insert([
+    {
+      customer_id: customer.id,
+      entity_type: 'booking',
+      entity_id: booking.id,
+      email_type: 'booking_customer',
+    },
+    {
+      customer_id: customer.id,
+      entity_type: 'booking',
+      entity_id: booking.id,
+      email_type: 'booking_admin',
+    },
+  ])
+  .select();
+
+console.log('BOOKING EMAIL LOG DATA:', emailLogData);
+
+if (emailLogError) {
+  console.error('BOOKING EMAIL LOG INSERT FAILED:', emailLogError);
+} else {
+  console.log('BOOKING EMAIL LOGS INSERTED');
+}
 
         // Store booked slot to prevent future selection
         const booked = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
