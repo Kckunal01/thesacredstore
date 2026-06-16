@@ -91,7 +91,7 @@ const Home = () => {
               <span className="text-primary">Featured</span> <span className="half-gold">Collection</span>
             </h3>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 p-2 md:grid md:grid-cols-4 gap-x-6 gap-y-8 mb-8">
             {bestSellers.map(product => (
               <ProductCard key={product.id} {...product} />
             ))}
@@ -171,7 +171,7 @@ const Home = () => {
             </h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-10">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 p-2 md:grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-10">
             {/* Sample Blog 1 */}
             <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
               <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Deep Dive</span>
