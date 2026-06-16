@@ -28,6 +28,27 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 (async () => {
   try {
+    let sentCount = 0;
+    let runId = null;
+    const {
+      data: run,
+      error: runErr,
+    } = await supabase
+      .from("automation_runs")
+      .insert({
+        automation_name: "transactional_emails",
+        status: "running",
+      })
+      .select()
+      .single();
+
+    if (runErr) {
+      console.error("AUTOMATION RUN INSERT FAILED:", runErr);
+    } else {
+      runId = run.id;
+      console.log("AUTOMATION RUN CREATED:", runId);
+    }
+
     // Fetch pending email logs with allowed types only
     const { data: logs, error: logsErr } = await supabase
       .from('email_logs')
@@ -294,7 +315,18 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('Transactional email processing completed.');
   } catch (err) {
-    console.error('Fatal transactional email process error:', err);
+    if (runId) {
+      await supabase
+        .from("automation_runs")
+        .update({
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          error_message: err.message,
+        })
+        .eq("id", runId);
+      console.error("AUTOMATION RUN FAILURE:", runId, err);
+    }
+    console.error('Unexpected fatal error:', err);
     process.exit(1);
   }
 })();

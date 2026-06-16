@@ -1,5 +1,4 @@
-import 'dotenv/config'; // Load env variables
-// This script processes booking reminder email logs and sends reminder emails via Resend.
+import 'dotenv/config'; // Load environment variables
 
 import { supabase } from "../src/lib/supabase.js";
 
@@ -8,11 +7,11 @@ if (!RESEND_API_KEY) {
   console.error('RESEND_API_KEY is not set. Please add it to your .env file.');
   process.exit(1);
 }
-const FROM_EMAIL = "no-reply@ritualist.com";
+const FROM_EMAIL = "support@thesacredstore.co.in";
 
 /**
  * Combine date and time strings (local server time) into a Date object.
- * Stored booking times are IST local, so we omit the trailing "Z".
+ * Booking times are stored in IST without a trailing "Z".
  */
 function combineDateTime(dateStr, timeStr) {
   return new Date(`${dateStr}T${timeStr}`);
@@ -21,18 +20,20 @@ function combineDateTime(dateStr, timeStr) {
 /**
  * Generate reminder logs for upcoming bookings.
  * Creates logs only when they do not already exist.
+ * Returns the number of logs generated.
  */
 async function generateReminderLogs() {
   const now = new Date();
+  console.log("NOW:", now.toISOString());
 
   // 24‑hour window: now+23h to now+25h
   const win24Start = new Date(now.getTime() + 23 * 60 * 60 * 1000);
   const win24End   = new Date(now.getTime() + 25 * 60 * 60 * 1000);
-  // 2‑hour window: now+1h to now+3h
+  // 2‑hour: now+1h to now+3h
   const win2Start  = new Date(now.getTime() + 1 * 60 * 60 * 1000);
   const win2End    = new Date(now.getTime() + 3 * 60 * 60 * 1000);
 
-  // fetch pending bookings (status = 'pending')
+  // Fetch pending bookings (status = 'pending')
   const { data: bookings, error: bErr } = await supabase
     .from("bookings")
     .select("id, booking_date, booking_time, customer_id, status")
@@ -113,26 +114,43 @@ async function fetchPendingReminders() {
 }
 
 /**
- * Fetch a single booking (including its customer)
+ * Fetch a single booking together with its customer details.
  */
 async function fetchBooking(id) {
-  const { data, error } = await supabase
+  const { data: booking, error: bookingErr } = await supabase
     .from("bookings")
-    .select("*, customer!inner(*)")
+    .select("*")
     .eq("id", id)
     .single();
-  if (error) {
-    console.error(`Failed to fetch booking ${id}:`, error);
+
+  if (bookingErr) {
+    console.error(`Failed to fetch booking ${id}:`, bookingErr);
     return null;
   }
-  return data;
+
+  const { data: customer, error: customerErr } = await supabase
+    .from("customers")
+    .select("*")
+    .eq("id", booking.customer_id)
+    .single();
+
+  if (customerErr) {
+    console.error(`Failed to fetch customer ${booking.customer_id}:`, customerErr);
+    return null;
+  }
+
+  return {
+    ...booking,
+    customer,
+  };
 }
+// stray block removed
 
 /**
  * Send an email via Resend.
  */
 async function sendEmail(to, subject, html) {
-  const response = await fetch("https://api.resend.com/email", {
+  const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -169,35 +187,108 @@ async function markLogSent(logId) {
  * Main driver – generate logs, then process any pending logs.
  */
 async function runReminders() {
-  let generatedCount = 0;
-  let sentCount = 0;
+  const {
+  data: run,
+  error: runErr,
+} = await supabase
+  .from("automation_runs")
+  .insert({
+    automation_name: "booking_reminders",
+    status: "running",
+  })
+  .select()
+  .single();
 
-  generatedCount = await generateReminderLogs();
+if (runErr) {
+  console.error("AUTOMATION RUN INSERT FAILED:", runErr);
+} else {
+  console.log("AUTOMATION RUN CREATED:", run.id);
+}
 
-  const logs = await fetchPendingReminders();
-  for (const log of logs) {
-    try {
-      const booking = await fetchBooking(log.entity_id);
-      if (!booking) continue;
+let runId = run?.id;
+  try {
+    // Insert automation run record
+    const { data: run } = await supabase
+      .from("automation_runs")
+      .insert({
+        automation_name: "booking_reminders",
+        status: "running",
+      })
+      .select()
+      .single();
+    runId = run?.id;
 
-      const isCustomer = log.email_type.endsWith("_customer");
-      const to = isCustomer ? booking.customer.email : "support@thesacredstore.co.in";
+    let generatedCount = await generateReminderLogs();
+    console.log("Reminder logs generated:", generatedCount);
 
-      console.log("Sending:", log.email_type, to);
+    const logs = await fetchPendingReminders();
+    let sentCount = 0;
 
-      const subject = "Reminder: Your Consultation is Coming Up";
-      const html = `
-        <p>Hi ${booking.customer.full_name},</p>
-        <p>This is a friendly reminder for your upcoming private consultation scheduled on ${booking.booking_date} at ${booking.booking_time}.</p>
-        <p>We look forward to our session.</p>
-        <p>— Ritualist Team</p>
-      `;
-      await sendEmail(to, subject, html);
-      await markLogSent(log.id);
-    } catch (e) {
-      console.error(`Error processing reminder log ${log.id}:`, e);
+    for (const log of logs) {
+      try {
+        const booking = await fetchBooking(log.entity_id);
+        if (!booking) continue;
+
+        const isCustomer = log.email_type.endsWith("_customer");
+        const to = isCustomer ? booking.customer.email : "support@thesacredstore.co.in";
+
+        const subject = "Reminder: Your Consultation is Coming Up";
+        const html = `
+  <div style="background:#F8F5EF;padding:20px;font-family:'Georgia',serif;color:#333;">
+    <div style="background:#fff;border-radius:12px;padding:20px;max-width:600px;margin:auto;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+      <h2 style="color:#D4AF37;font-family:'Georgia',serif;">The Sacred Store</h2>
+      <p>Hi ${booking.customer.full_name},</p>
+      <p>This is a friendly reminder for your upcoming private consultation scheduled on <strong>${booking.booking_date}</strong> at <strong>${booking.booking_time}</strong>.</p>
+      <div style="background:#F8F5EF;border-radius:8px;padding:15px;margin:20px 0;">
+        <h3 style="margin:0;color:#333;">Consultation Details</h3>
+        <p><strong>Date:</strong> ${booking.booking_date}<br><strong>Time:</strong> ${booking.booking_time}</p>
+      </div>
+      <a href="https://thesacredstore.co.in" style="display:inline-block;background:#D4AF37;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;">View Your Booking</a>
+      <p style="margin-top:30px;">— The Sacred Store Team</p>
+      <hr style="margin:30px 0;border:none;border-top:1px solid #ccc;">
+      <p style="font-size:12px;color:#777;">The Sacred Store<br>Make Space for Meaning</p>
+    </div>
+  </div>
+`;
+
+        await sendEmail(to, subject, html);
+        await markLogSent(log.id);
+        sentCount++;
+        console.log("Sent:", log.email_type, "to", to);
+      } catch (e) {
+        console.error(`Error processing reminder log ${log.id}:`, e);
+      }
     }
+
+    console.log("Emails sent:", sentCount);
+    if (runId) {
+      await supabase
+        .from("automation_runs")
+        .update({
+          status: "success",
+          completed_at: new Date().toISOString(),
+          processed_count: sentCount,
+        })
+        .eq("id", runId);
+      console.log("AUTOMATION RUN SUCCESS:", runId);
+    }
+    console.log('Transactional email processing completed.');
+
+  } catch (err) {
+    if (runId) {
+      await supabase
+        .from("automation_runs")
+        .update({
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          error_message: err.message,
+        })
+        .eq("id", runId);
+      console.error("AUTOMATION RUN FAILURE:", err);
+    }
+    console.error('Fatal transactional email process error:', err);
+    process.exit(1);
   }
 }
 
-runReminders().then(() => console.log("Booking reminder processing completed."));
+runReminders();

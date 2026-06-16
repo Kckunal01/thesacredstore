@@ -23,6 +23,24 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 (async () => {
   try {
+    // Automation run tracking
+    let runId = null;
+    let sentCount = 0;
+    // Insert automation run record
+    const { data: run, error: runErr } = await supabase
+      .from("automation_runs")
+      .insert({
+        automation_name: "restock_notifications",
+        status: "running",
+      })
+      .select()
+      .single();
+    if (runErr) {
+      console.error("AUTOMATION RUN INSERT FAILED:", runErr);
+    } else {
+      runId = run.id;
+      console.log("AUTOMATION RUN CREATED:", runId);
+    }
     // Fetch all pending back‑in‑stock notifications
     const { data: requests, error } = await supabase
       .from('stock_requests')
@@ -105,6 +123,8 @@ const supabase = createClient(supabaseUrl, supabaseKey);
           console.error(`Failed to mark request ${req.id} as notified:`, updErr);
         } else {
           console.log(`Successfully notified ${req.email} (request ${req.id})`);
+          // Increment sent count for successful notification
+          sentCount++;
         }
       } catch (e) {
         console.error(`Unexpected error processing request ${req.id}:`, e);
@@ -113,7 +133,32 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('Back-in-stock email processing completed.');
   } catch (err) {
+    // Failure handling for automation run
+    if (runId) {
+      await supabase
+        .from("automation_runs")
+        .update({
+          status: "failed",
+          completed_at: new Date().toISOString(),
+          error_message: err.message,
+        })
+        .eq("id", runId);
+      console.error("AUTOMATION RUN FAILURE:", runId, err);
+    }
     console.error('Unexpected fatal error:', err);
     process.exit(1);
+  }
+
+  // Success handling after processing all requests
+  if (runId) {
+    await supabase
+      .from("automation_runs")
+      .update({
+        status: "success",
+        completed_at: new Date().toISOString(),
+        processed_count: sentCount,
+      })
+      .eq("id", runId);
+    console.log("AUTOMATION RUN SUCCESS:", runId);
   }
 })();
