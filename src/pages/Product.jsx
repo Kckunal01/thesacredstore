@@ -100,9 +100,7 @@ const Product = () => {
 
   const cartItem = cart.find(item => item.id === product.id);
   const cartQty = cartItem ? cartItem.quantity : 0;
-  // Determine the maximum quantity allowed: cannot exceed available stock or hard cap of 9
-  const maxAllowed = stock !== null && stock !== undefined ? Math.min(stock, 9) : 9;
-  const isCartFull = cartQty >= maxAllowed;
+  const isCartFull = cartQty >= 9;
 
   const handleAddToCart = () => {
     if (isCartFull) return;
@@ -112,10 +110,7 @@ const Product = () => {
   };
 
   const handleIncrement = () => {
-    const maxAllowed = stock !== null && stock !== undefined ? Math.min(stock, 9) : 9;
-    if (quantity < maxAllowed && (quantity + cartQty) < maxAllowed) {
-      setQuantity(prev => prev + 1);
-    }
+    if (quantity < 9 && (quantity + cartQty < 9)) setQuantity(prev => prev + 1);
   };
 
   const handleDecrement = () => {
@@ -205,8 +200,8 @@ const Product = () => {
                       key={idx}
                       onClick={() => setSelectedImageIndex(idx)}
                       className={`aspect-square bg-[#F8F5EF] border overflow-hidden transition-all duration-300 ${selectedImageIndex === idx
-                          ? 'border-accent ring-1 ring-accent'
-                          : 'border-border hover:border-accent/60'
+                        ? 'border-accent ring-1 ring-accent'
+                        : 'border-border hover:border-accent/60'
                         }`}
                     >
                       <img
@@ -259,7 +254,7 @@ const Product = () => {
                   disabled={isCartFull}
                   className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#d4b584]' : ''} ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {added ? 'Added to Cart' : isCartFull ? 'Stock Out' : 'Add to Cart'}
+                  {added ? 'Added to Cart' : isCartFull ? 'Limit Reached' : 'Add to Collection'}
                 </Button>
               </div>
             ) : (

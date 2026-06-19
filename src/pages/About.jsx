@@ -13,7 +13,7 @@ const About = () => {
           {/* Image & Text Split */}
           <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center mb-32">
             <div className="w-full lg:w-1/2 overflow-hidden rounded-lg border border-border flex items-center justify-center">
-                  <img src="/assets/images/AboutUs.webp" alt="About Us" className="w-full h-full object-cover" />
+              <img src="/assets/images/AboutUs.webp" alt="About Us" className="w-full h-24 md:h-32 lg:h-full object-cover" />
             </div>
             <div className="w-full lg:w-1/2 flex flex-col justify-center">
               <span className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold block mb-4">Our Founder</span>

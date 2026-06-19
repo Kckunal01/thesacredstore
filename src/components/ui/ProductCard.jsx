@@ -32,11 +32,10 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
     });
   }, [id]);
 
-  // Find if item is already in cart and compute stock‑aware limit
+  // Find if item is already in cart to check the 9-limit
   const cartItem = cart.find(item => item.id === id);
   const cartQty = cartItem ? cartItem.quantity : 0;
-  const maxAllowed = stock !== null && stock !== undefined ? Math.min(stock, 9) : 9;
-  const isCartFull = cartQty >= maxAllowed;
+  const isCartFull = cartQty >= 9;
 
   const handleQuickAdd = (e) => {
     e.preventDefault();
@@ -48,8 +47,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
   const handleIncrement = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // Allow increment only if we stay within the stock‑aware max
-    if (quantity < maxAllowed && (quantity + cartQty) < maxAllowed) {
+    if (quantity < 9 && (quantity + cartQty < 9)) {
       setQuantity(prev => prev + 1);
     }
   };
@@ -135,7 +133,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
               disabled={isCartFull}
               className={`w-full bg-primary hover:bg-accent text-background text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300 ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <ShoppingBag className="w-3 h-3" /> {isCartFull ? 'Stock Out' : 'Add to Cart'}
+              <ShoppingBag className="w-3 h-3" /> {isCartFull ? 'Limit Reached' : 'Add to Cart'}
             </button>
           </>
         ) : (

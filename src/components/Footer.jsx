@@ -9,7 +9,7 @@ const Footer = () => {
 
           {/* Column 1: Brand */}
           <div className="flex flex-col">
-            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE <span className="text-[#D4AF37]">SACRED</span> STORE</Link>
+            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE SACRED STORE</Link>
             <p className="text-muted text-base tracking-widest uppercase font-semibold mb-8">
               Make Space for Meaning.
             </p>

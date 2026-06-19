@@ -1,12 +1,17 @@
 /* Design Tokens – Centralized CSS Variables for Ritualist */
 :root {
-  /* Primary brand colors */
-  --color-primary: #3a0ca3; /* Deep violet */
-  --color-accent: #ff9f1c; /* Warm gold */
-  --color-surface: #f8f5ef; /* Light background */
-  --color-background: #ffffff;
+  /* Brand Colors */
+  --color-gold: #FFBD59; /* Primary Gold */
+  --color-offwhite: #FEFBF1; /* Off White background */
+  --color-black: #000000; /* Ink Black */
+  
+  /* Existing palette (fallback / for other uses) */
+  --color-primary: var(--color-black); /* Ink Black */
+  --color-accent: var(--color-gold);
+  --color-surface: var(--color-offwhite);
+  --color-background: var(--color-offwhite);
   --color-muted: #6b7280; /* gray-500 */
-  --color-border: #e5e7eb; /* gray-200 */
+  --color-border: var(--color-black);
 
   /* Glass‑morphism */
   --glass-bg: rgba(255, 255, 255, 0.25);
@@ -15,6 +20,15 @@
   /* Typography */
   --font-display: 'Cormorant Garamond', serif;
   --font-body: 'Outfit', sans-serif;
+  --font-heading: 'Prata', serif;
+}
+
+/* Load the new font */
+@font-face {
+  font-family: 'Prata';
+  src: url('/fonts/Prata-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
 }
 
 /* Dark mode overrides */
@@ -35,6 +49,11 @@ html {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+}
+
+/* Use new heading font for hero slogan */
+.hero-slogan {
+  font-family: var(--font-heading);
 }
 
 .glass-card {
