@@ -8,7 +8,7 @@ const RefundPolicy = () => {
         <h1 className="text-4xl md:text-5xl font-display text-primary mb-6">
           <span className="half-gold">Refund & Cancellation Policy</span>
         </h1>
-        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-12">Last Updated: June 2026</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#000000] mb-12">Last Updated: June 2026</p>
 
         <div className="space-y-8 text-muted font-light leading-relaxed">
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Physical Products</h2>

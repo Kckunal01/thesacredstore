@@ -8,7 +8,7 @@ const PrivacyPolicy = () => {
         <h1 className="text-4xl md:text-5xl font-display text-primary mb-6">
           <span className="half-gold">Privacy Policy</span>
         </h1>
-        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-accent mb-12">Last Updated: June 2026</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] font-bold text-[#000000] mb-12">Last Updated: June 2026</p>
 
         <div className="space-y-8 text-muted font-light leading-relaxed">
           <p>At The Sacred Store, we respect your privacy and are committed to protecting your personal information.</p>

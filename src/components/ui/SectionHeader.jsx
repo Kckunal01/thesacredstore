@@ -17,7 +17,7 @@ const SectionHeader = ({
   return (
     <div className={`max-w-3xl mb-16 ${alignmentClass} ${className}`}>
       {eyebrow && (
-        <span className="block text-xs uppercase tracking-[0.2em] text-accent mb-4 font-semibold">
+        <span className="block text-xs uppercase tracking-[0.2em] text-[#000000] mb-4 font-semibold">
           {eyebrow}
         </span>
       )}

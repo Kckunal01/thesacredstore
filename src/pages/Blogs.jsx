@@ -61,7 +61,7 @@ const Blogs = () => {
         <Container className="max-w-3xl mx-auto">
           <button
             onClick={() => setSearchParams({})}
-            className="text-[10px] uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors mb-8 font-bold font-body"
+            className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors mb-8 font-bold font-body"
           >
             ← Back to All Blogs
           </button>
@@ -87,7 +87,7 @@ const Blogs = () => {
                   </picture>
                 )}
 
-            <span className="inline-block text-[10px] uppercase tracking-[0.2em] text-accent font-bold font-body">
+            <span className="inline-block text-[10px] uppercase tracking-[0.2em] text-[#000000] font-bold font-body">
               {activePost.tag}
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-primary leading-tight font-medium">
@@ -141,7 +141,7 @@ const Blogs = () => {
       <Container>
         <div className="text-center mb-16 max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-display font-medium text-primary mb-6">
-            <span className="text-primary">Insights</span> <span className="half-gold">&amp; Practices</span>
+            <span className="text-black">Insights</span> <span className="text-black">&amp; Practices</span>
           </h1>
           <p className="text-muted font-light leading-relaxed">
             Honest guidance on grounding, energy hygiene, and mindful objects. Free of excessive jargon.
@@ -176,7 +176,7 @@ const Blogs = () => {
                 )}
               </div>
               <div className="flex justify-between items-center mb-3">
-                <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold font-body">
+                <span className="text-[9px] uppercase tracking-[0.2em] text-[#000000] font-bold font-body">
                   {post.tag}
                 </span>
                 <span className="text-[9px] uppercase tracking-[0.1em] text-muted font-body">

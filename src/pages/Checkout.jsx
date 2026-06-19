@@ -13,7 +13,7 @@ import {
 } from '../lib/supabaseProducts';
 
 // Temporary flag to disable real Razorpay integration
-const TEST_MODE = true; // Keep Razorpay in test mode
+const TEST_MODE = false; // Disable test mode to use real Razorpay flow
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -201,21 +201,29 @@ if (emailLogError) {
       // Attempt to create a server‑side order (fallback to mock)
       let razorpayOrderId = `order_mock_${Math.floor(Math.random() * 1_000_000)}`;
       try {
-        const res = await fetch('/api/razorpay', {
+        const res = await fetch('/api/create-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ amount: getCartTotal() }),
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.id) razorpayOrderId = data.id;
+          if (data.order_id) razorpayOrderId = data.order_id;
+        } else {
+          const errorData = await res.json();
+          alert('Failed to initialize payment: ' + (errorData.message || 'Unknown error'));
+          setIsProcessing(false);
+          return;
         }
-      } catch {
-        console.log('Using mock Razorpay order ID (local environment).');
+      } catch (err) {
+        console.error('Create order error:', err);
+        alert('Failed to connect to payment gateway.');
+        setIsProcessing(false);
+        return;
       }
 
       const options = {
-        key: 'rzp_test_mock_key',
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || '', // VITE injected environment variable
         amount: getCartTotal() * 100,
         currency: 'INR',
         name: 'RITUALIST',
@@ -224,7 +232,31 @@ if (emailLogError) {
           'https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop',
         order_id: razorpayOrderId,
         handler: async function (response) {
-          // After successful payment, run the same Supabase flow as in TEST_MODE
+          // Verify payment on the backend first
+          try {
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature
+              }),
+            });
+
+            if (!verifyRes.ok) {
+              alert('Payment verification failed.');
+              setIsProcessing(false);
+              return;
+            }
+          } catch (err) {
+            console.error('Verification error:', err);
+            alert('Payment verification error.');
+            setIsProcessing(false);
+            return;
+          }
+
+          // After successful payment and verification, run the same Supabase flow
           try {
             // Ensure customer exists (duplicate‑phone safe)
             let customer = await getCustomerByPhone(formData.phone);
@@ -292,9 +324,16 @@ if (emailLogError) {
         theme: { color: '#111111' },
       };
 
+      options.modal = {
+        ondismiss: function () {
+          alert('Payment was cancelled.');
+          setIsProcessing(false);
+        }
+      };
+
       const paymentObject = new window.Razorpay(options);
-      paymentObject.on('payment.failed', function () {
-        alert('Payment failed. Please try again.');
+      paymentObject.on('payment.failed', function (response) {
+        alert('Payment failed. ' + response.error.description);
         setIsProcessing(false);
       });
       paymentObject.open();
@@ -318,7 +357,7 @@ if (emailLogError) {
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#B89968"
+                stroke="#FFBD59"
                 strokeWidth="2"
               >
                 <path d="M5 12l5 5l10 -10" />
@@ -335,7 +374,7 @@ if (emailLogError) {
               has been created.
             </p>
             <div className="bg-surface border border-border p-6 mb-8 text-left space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-accent font-bold">
+              <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold">
                 Important logistics information
               </span>
               <p className="text-xs text-muted leading-relaxed font-body">
@@ -348,7 +387,7 @@ if (emailLogError) {
               <Button to={`/track-order?id=${orderId}`} variant="primary">
                 Track Package
               </Button>
-              <Button to="/" variant="ghost">
+              <Button to="/" variant="secondary">
                 Return Home
               </Button>
             </div>
@@ -393,7 +432,7 @@ if (emailLogError) {
                           <div className="flex items-center space-x-6">
                             <div
                               style={getPlaceholderStyle(item.name)}
-                              className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-accent font-semibold font-display"
+                              className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display"
                             >
                               {item.images && item.images.length > 0 ? (
                                 <img
@@ -406,7 +445,7 @@ if (emailLogError) {
                               )}
                             </div>
                             <div>
-                              <span className="text-[10px] uppercase tracking-widest text-accent mb-1 block font-bold font-body">
+                              <span className="text-[10px] uppercase tracking-widest text-[#000000] mb-1 block font-bold font-body">
                                 {item.category}
                               </span>
                               <h4 className="font-display text-xl text-primary font-medium">
@@ -449,7 +488,7 @@ if (emailLogError) {
                             <div className="text-right">
                               <button
                                 onClick={() => removeFromCart(item.id)}
-                                className="text-[10px] uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors font-bold font-body"
+                                className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-bold font-body"
                               >
                                 Remove
                               </button>
@@ -461,7 +500,7 @@ if (emailLogError) {
                       <div className="flex justify-between items-center pt-8 border-t border-border">
                         <Link
                           to="/shop-crystals"
-                          className="text-xs uppercase tracking-[0.2em] text-accent hover:text-primary transition-colors font-semibold font-body"
+                          className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body"
                         >
                           ← Continue Shopping
                         </Link>
@@ -486,7 +525,7 @@ if (emailLogError) {
                         <button
                           type="button"
                           onClick={() => setStep(1)}
-                          className="text-[10px] uppercase tracking-widest text-accent hover:text-primary font-bold font-body"
+                          className="text-[10px] uppercase tracking-widest text-[#000000] hover:text-primary font-bold font-body"
                         >
                           ← Edit Cart
                         </button>

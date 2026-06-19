@@ -5,9 +5,10 @@ const Button = ({ children, variant = 'primary', to, onClick, className = '', ty
   const baseStyle = "inline-flex items-center justify-center px-8 py-4 text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 font-body";
 
   const variants = {
-    primary: "bg-accent text-primary hover:bg-[#d4b584]",
-    ghost: "bg-transparent border border-accent text-primary hover:bg-accent hover:text-primary",
-    gold: "bg-[#d4b584] text-primary hover:bg-accent font-bold"
+    primary: "bg-[#FFBD59] text-[#000000] border-none hover:brightness-95",
+    secondary: "bg-transparent text-[#000000] border border-[#000000] hover:bg-[#FEFBF1] hover:border-[#FFBD59]",
+    ghost: "bg-transparent text-[#000000] border border-[#000000] hover:bg-[#FEFBF1] hover:border-[#FFBD59]",
+    gold: "bg-[#FFBD59] text-[#000000] border-none hover:brightness-95"
   };
 
   const combinedClass = `${baseStyle} ${variants[variant]} ${className}`;

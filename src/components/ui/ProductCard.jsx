@@ -69,7 +69,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
     <div className="group flex flex-col cursor-pointer block relative">
       <Link to={`/product/${id}`} className="block">
         {/* Image Container */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#F8F5EF] mb-6 border border-border">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-6 border border-border">
           {mainImage ? (
             <img
               src={mainImage}
@@ -131,7 +131,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
             <button
               onClick={handleQuickAdd}
               disabled={isCartFull}
-              className={`w-full bg-primary hover:bg-accent text-background text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300 ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full bg-[#000000] hover:bg-[#FFBD59] text-[#FEFBF1] hover:text-[#000000] text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300 ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <ShoppingBag className="w-3 h-3" /> {isCartFull ? 'Limit Reached' : 'Add to Cart'}
             </button>
@@ -143,7 +143,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
             </div>
             <button
               onClick={handleNotifyMeClick}
-              className="w-full bg-primary hover:bg-accent text-background text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300"
+              className="w-full bg-[#000000] hover:bg-[#FFBD59] text-[#FEFBF1] hover:text-[#000000] text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300"
             >
               Notify Me
             </button>

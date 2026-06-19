@@ -112,7 +112,7 @@ const TrackOrder = () => {
               {/* Header: Order Reference & Date */}
               <div className="flex justify-between items-center border-b border-border pb-6">
                 <div>
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold font-body">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#000000] font-bold font-body">
                     Order Reference
                   </span>
                   <h3 className="text-2xl font-display font-medium text-primary mt-1">
@@ -120,7 +120,7 @@ const TrackOrder = () => {
                   </h3>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold font-body">
+                  <span className="text-[10px] uppercase tracking-[0.2em] text-[#000000] font-bold font-body">
                     Order Date
                   </span>
                   <p className="text-sm text-primary font-medium mt-1">

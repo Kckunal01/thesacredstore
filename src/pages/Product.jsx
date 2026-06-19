@@ -147,7 +147,7 @@ const Product = () => {
     const hues = [24, 36, 45, 180, 280, 340];
     const baseHue = hues[hash % hues.length];
     return {
-      background: `linear-gradient(135deg, #FAF9F6 0%, #F4F1EA 50%, #EAE5D9 100%)`,
+      background: `linear-gradient(135deg, #FEFBF1 0%, #FEFBF1 50%, #FEFBF1 100%)`,
     };
   };
 
@@ -165,7 +165,7 @@ const Product = () => {
             <div className="w-full max-w-md">
               <div
                 style={!mainImage ? getPlaceholderStyle(product.name) : {}}
-                className="w-full aspect-[3/4] border border-border bg-[#F8F5EF] flex flex-col items-center justify-center relative group overflow-hidden mb-4"
+                className="w-full aspect-[3/4] border border-border bg-[#FEFBF1] flex flex-col items-center justify-center relative group overflow-hidden mb-4"
               >
                 {mainImage ? (
                   <img
@@ -199,7 +199,7 @@ const Product = () => {
                     <button
                       key={idx}
                       onClick={() => setSelectedImageIndex(idx)}
-                      className={`aspect-square bg-[#F8F5EF] border overflow-hidden transition-all duration-300 ${selectedImageIndex === idx
+                      className={`aspect-square bg-[#FEFBF1] border overflow-hidden transition-all duration-300 ${selectedImageIndex === idx
                         ? 'border-accent ring-1 ring-accent'
                         : 'border-border hover:border-accent/60'
                         }`}
@@ -218,7 +218,7 @@ const Product = () => {
 
           {/* Right: Details & Operations Column */}
           <div className="lg:col-span-5 flex flex-col justify-center">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-accent mb-4 font-bold font-body">{product.category}</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-[#000000] mb-4 font-bold font-body">{product.category}</span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-display text-primary mb-4 leading-[1.1] font-medium">{product.name}</h1>
 
             <div className="flex items-center space-x-4 mb-8">
@@ -252,7 +252,7 @@ const Product = () => {
                   onClick={handleAddToCart}
                   variant="primary"
                   disabled={isCartFull}
-                  className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#d4b584]' : ''} ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#FFBD59]' : ''} ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {added ? 'Added to Cart' : isCartFull ? 'Limit Reached' : 'Add to Collection'}
                 </Button>

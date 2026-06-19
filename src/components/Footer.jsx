@@ -9,7 +9,7 @@ const Footer = () => {
 
           {/* Column 1: Brand */}
           <div className="flex flex-col">
-            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE SACRED STORE</Link>
+            <Link to="/" className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-black mb-4">THE <span className="text-[#ffbd59]">SACRED</span> STORE</Link>
             <p className="text-muted text-base tracking-widest uppercase font-semibold mb-8">
               Make Space for Meaning.
             </p>
@@ -25,30 +25,30 @@ const Footer = () => {
 
           {/* Column 2: Main Menu */}
           <div className="flex flex-col">
-            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Main Menu</h4>
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Main Menu</h4>
             <nav className="flex flex-col space-y-4 text-sm font-semibold tracking-widest uppercase text-muted">
-              <Link to="/" className="hover:text-primary transition-colors">Home</Link>
-              <Link to="/shop-crystals" className="hover:text-primary transition-colors">Shop</Link>
-              <Link to="/book-a-call" className="hover:text-primary transition-colors">Book Now</Link>
-              <Link to="/blogs" className="hover:text-primary transition-colors">Blogs</Link>
-              <Link to="/aboutus" className="hover:text-primary transition-colors">About Us</Link>
+               <Link to="/" className="text-primary hover:text-primary transition-colors cursor-pointer">Home</Link>
+               <Link to="/shop-crystals" className="text-primary hover:text-primary transition-colors cursor-pointer">Shop</Link>
+               <Link to="/book-a-call" className="text-primary hover:text-primary transition-colors cursor-pointer">Book Now</Link>
+               <Link to="/blogs" className="text-primary hover:text-primary transition-colors cursor-pointer">Blogs</Link>
+               <Link to="/aboutus" className="text-primary hover:text-primary transition-colors cursor-pointer">About Us</Link>
             </nav>
           </div>
 
           {/* Column 3: Quick Links */}
           <div className="flex flex-col">
-            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Quick Links</h4>
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Quick Links</h4>
             <nav className="flex flex-col space-y-4 text-base font-semibold tracking-widest uppercase text-muted">
-              <Link to="/track-order" className="hover:text-primary transition-colors">Track Order</Link>
-              <Link to="/privacy-policy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-              <Link to="/refund-policy" className="hover:text-primary transition-colors">Refund Policy</Link>
-              <Link to="/terms-conditions" className="hover:text-primary transition-colors">Terms & Conditions</Link>
+               <Link to="/track-order" className="text-primary hover:text-primary transition-colors cursor-pointer">Track Order</Link>
+               <Link to="/privacy-policy" className="text-primary hover:text-primary transition-colors cursor-pointer">Privacy Policy</Link>
+               <Link to="/refund-policy" className="text-primary hover:text-primary transition-colors cursor-pointer">Refund Policy</Link>
+               <Link to="/terms-conditions" className="text-primary hover:text-primary transition-colors cursor-pointer">Terms & Conditions</Link>
             </nav>
           </div>
 
           {/* Column 4: Contact Us */}
           <div className="flex flex-col">
-            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-accent mb-6 font-body">Contact Us</h4>
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Contact Us</h4>
             <div className="flex flex-col space-y-4">
               <div>
                 <p className="text-base uppercase tracking-[0.15em] text-muted font-bold mb-1">Email</p>
@@ -64,11 +64,11 @@ const Footer = () => {
         </div>
 
         <div className="mt-20 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center text-base uppercase tracking-widest text-muted font-semibold">
-          <p>&copy; {new Date().getFullYear()} THE SACRED STORE. All rights reserved.</p>
+           <p className="text-sm text-muted">&copy; {new Date().getFullYear()} THE SACRED STORE. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 sm:mt-0">
-            <span>Ethically Sourced</span>
-            <span>·</span>
-            <span>Intentionally Crafted</span>
+             <span className="text-primary">Ethically Sourced</span>
+             <span className="text-primary mx-2">·</span>
+             <span className="text-primary">Intentionally Crafted</span>
           </div>
         </div>
       </div>

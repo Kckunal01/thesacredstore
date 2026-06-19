@@ -19,7 +19,7 @@ const ShopCrystals = () => {
     <Section className="bg-background pt-32 min-h-screen">
       <Container>
         <div className="text-center mb-12">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold block mb-4">Ethically Sourced</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-[#000000] font-bold block mb-4">Ethically Sourced</span>
           <h1 className="text-5xl md:text-6xl font-display font-medium text-primary mb-8">Crystals</h1>
           
           <div className="max-w-md mx-auto relative">
@@ -28,7 +28,7 @@ const ShopCrystals = () => {
               placeholder="Search all crystals, gems, and jewellery..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#d4b584]/10 border border-accent px-4 py-3 pl-12 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-colors text-primary placeholder-accent/70"
+              className="w-full bg-[#FFBD59]/10 border border-accent px-4 py-3 pl-12 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-colors text-primary placeholder-accent/70"
             />
             <Search className="w-4 h-4 absolute left-4 top-1/2 transform -translate-y-1/2 text-accent" />
           </div>

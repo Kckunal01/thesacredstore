@@ -239,7 +239,7 @@ if (emailLogError) {
 
             {/* Left: Info & Metrics */}
             <div className="w-full lg:w-5/12 flex flex-col justify-center">
-              <span className="text-[10px] uppercase tracking-[0.2em] text-accent font-bold block mb-6">Private Consultation</span>
+              <span className="text-[10px] uppercase tracking-[0.2em] text-[#ffbd59] font-bold block mb-6">Private Consultation</span>
               <h1 className="text-4xl md:text-6xl font-display font-medium text-primary mb-8 leading-tight">
                 Align Your Space & Energy.
               </h1>
@@ -248,17 +248,17 @@ if (emailLogError) {
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-border">
-                <div className="bg-surface border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
+                <div className="bg-[#ffbd59] border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
                   <h4 className="text-4xl font-display text-primary mb-2">10+</h4>
-                  <p className="text-[9px] uppercase tracking-widest font-bold text-accent">Years Exp.</p>
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-[#000000]">Years Exp.</p>
                 </div>
-                <div className="bg-surface border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
+                <div className="bg-[#ffbd59] border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
                   <h4 className="text-4xl font-display text-primary mb-2">500+</h4>
-                  <p className="text-[9px] uppercase tracking-widest font-bold text-accent">Consultations</p>
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-[#000000]">Consultations</p>
                 </div>
-                <div className="bg-surface border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
+                <div className="bg-[#ffbd59] border border-border p-6 flex flex-col items-center text-center group hover:-translate-y-1 hover:border-accent transition-all duration-300">
                   <h4 className="text-4xl font-display text-primary mb-2">4.8★</h4>
-                  <p className="text-[9px] uppercase tracking-widest font-bold text-accent">Rating</p>
+                  <p className="text-[9px] uppercase tracking-widest font-bold text-[#000000]">Rating</p>
                 </div>
               </div>
             </div>
@@ -266,7 +266,7 @@ if (emailLogError) {
             {/* Right: Form */}
             <div className="w-full lg:w-7/12">
               <div className="bg-surface border border-border p-8 md:p-12 relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#F8F5EF] to-[#EAE5D9] transition-transform duration-1000 group-hover:scale-105 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FEFBF1] to-[#FEFBF1] transition-transform duration-1000 group-hover:scale-105 pointer-events-none" />
 
                 <div className="relative z-10">
                   {isSubmitted ? (
@@ -278,7 +278,7 @@ if (emailLogError) {
                       </div>
                       <h3 className="text-3xl font-display text-primary mb-4">Request Received</h3>
                       <p className="text-muted mb-8">Your payment was successful. We will contact you shortly to confirm your consultation time.</p>
-                      <Button onClick={() => { navigate('/shop-jewellery'); window.location.reload(); }} variant="ghost">Explore more</Button>
+                      <Button onClick={() => { navigate('/shop-jewellery'); window.location.reload(); }} variant="secondary">Explore more</Button>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">

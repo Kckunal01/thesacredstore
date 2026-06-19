@@ -93,7 +93,7 @@ const Header = () => {
             <Link to="/checkout" className="relative text-primary hover:text-accent transition-colors group">
               <ShoppingBag className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
               {getCartCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-accent text-background text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute -top-2 -right-2 bg-[#000000] text-[#FFBD59] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                   {getCartCount()}
                 </span>
               )}

@@ -121,7 +121,7 @@ const CustomCursor = () => {
         transition={{ type: 'spring', ...springConfig }}
       >
         {cursorType === 'view' && (
-          <span className="text-[8px] font-bold tracking-[0.2em] text-[#F8F5EF] font-body">
+          <span className="text-[8px] font-bold tracking-[0.2em] text-[#FEFBF1] font-body">
             {cursorText}
           </span>
         )}
