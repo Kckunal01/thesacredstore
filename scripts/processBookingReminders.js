@@ -1,6 +1,11 @@
 import 'dotenv/config'; // Load environment variables
 
-import { supabase } from "../src/lib/supabase.js";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 if (!RESEND_API_KEY) {
@@ -28,10 +33,10 @@ async function generateReminderLogs() {
 
   // 24‑hour window: now+23h to now+25h
   const win24Start = new Date(now.getTime() + 23 * 60 * 60 * 1000);
-  const win24End   = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+  const win24End = new Date(now.getTime() + 25 * 60 * 60 * 1000);
   // 2‑hour: now+1h to now+3h
-  const win2Start  = new Date(now.getTime() + 1 * 60 * 60 * 1000);
-  const win2End    = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  const win2Start = new Date(now.getTime() + 1 * 60 * 60 * 1000);
+  const win2End = new Date(now.getTime() + 3 * 60 * 60 * 1000);
 
   // Fetch pending bookings (status = 'pending')
   const { data: bookings, error: bErr } = await supabase
@@ -188,24 +193,24 @@ async function markLogSent(logId) {
  */
 async function runReminders() {
   const {
-  data: run,
-  error: runErr,
-} = await supabase
-  .from("automation_runs")
-  .insert({
-    automation_name: "booking_reminders",
-    status: "running",
-  })
-  .select()
-  .single();
+    data: run,
+    error: runErr,
+  } = await supabase
+    .from("automation_runs")
+    .insert({
+      automation_name: "booking_reminders",
+      status: "running",
+    })
+    .select()
+    .single();
 
-if (runErr) {
-  console.error("AUTOMATION RUN INSERT FAILED:", runErr);
-} else {
-  console.log("AUTOMATION RUN CREATED:", run.id);
-}
+  if (runErr) {
+    console.error("AUTOMATION RUN INSERT FAILED:", runErr);
+  } else {
+    console.log("AUTOMATION RUN CREATED:", run.id);
+  }
 
-let runId = run?.id;
+  let runId = run?.id;
   try {
     // Insert automation run record
     const { data: run } = await supabase
