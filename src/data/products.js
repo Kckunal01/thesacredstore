@@ -6,7 +6,7 @@ export const products = [
     name: 'Clear Quartz Point',
     category: 'Crystals',
     price: 1,
-    originalPrice: 2500,
+    originalPrice: 800,
     stamp: null,
     description: 'A semi-polished clear quartz point from Arkansas, USA. Often referred to as the master healer, clear quartz amplifies any intention it is programmed with and clears energetic congestion.',
     philosophy: 'Intention requires amplification. Quartz acts as the transmitter for your silent internal directives.',

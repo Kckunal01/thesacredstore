@@ -1,13 +1,14 @@
 // src/pages/Checkout.jsx
-import React, { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import Container from '../components/ui/Container';
+import React, { useContext, useState } from 'react';
 import Section from '../components/ui/Section';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
+import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-import { createCustomer, getCustomerByPhone, createOrder, supabase } from '../lib/supabase.js';
-import { getProductStockMap, deductProductStockBySlug } from '../lib/supabaseProducts';
+// Keep only stock map fetch for pre‑checkout validation
+import { getProductStockMap } from '../lib/supabaseProducts';
+
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -18,12 +19,14 @@ const loadRazorpayScript = () =>
     document.body.appendChild(script);
   });
 
+// Helper to generate placeholder style (unchanged)
 function getPlaceholderStyle(name) {
   const hash = Array.from(name || '').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const hue = hash % 360;
   return { background: `hsl(${hue}, 25%, 95%)` };
 }
 
+// Simple slugify (kept for client‑side validation only)
 function slugify(text) {
   return text
     .toString()
@@ -50,107 +53,31 @@ const Checkout = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const processOrderSuccess = async (response) => {
+  // ----------- POST‑PAYMENT HANDLER (backend) ------------
+  const completeOrderOnServer = async (razorpayResponse) => {
     try {
-      // IDEMPOTENCY CHECK
-      const { data: existingPayment } = await supabase
-        .from("payments")
-        .select("order_id")
-        .eq("razorpay_payment_id", response.razorpay_payment_id)
-        .maybeSingle();
-
-      if (existingPayment) {
-        const { data: existingOrder } = await supabase
-          .from("orders")
-          .select("order_id")
-          .eq("id", existingPayment.order_id)
-          .single();
-
-        if (existingOrder) {
-          setOrderId(existingOrder.order_id);
-          setStep(3);
-          clearCart();
-          return;
-        }
-      }
-
-      let customer = await getCustomerByPhone(formData.phone);
-      if (!customer) {
-        customer = await createCustomer({
-          full_name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          phone: formData.phone,
-        });
-      }
-
-      const orderPayload = {
-        customer_id: customer.id,
-        products: cart.map(item => ({
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price
-        })),
-        amount: getCartTotal(),
-        payment_status: 'paid',
-        payment_method: 'razorpay',
-      };
-
-      const order = await createOrder(orderPayload);
-
-      const { error: paymentError } = await supabase
-        .from("payments")
-        .insert({
-            order_id: order.id,
-            customer_id: customer.id,
-            gateway: "razorpay",
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_payment_id: response.razorpay_payment_id,
-            amount: getCartTotal(),
-            currency: "INR",
-            status: "captured",
-            method: null,
-            signature_verified: true,
-            raw_response: response
-        });
-
-      if (paymentError) {
-        console.error("PAYMENT FAILURE", {
-          orderId: order?.id,
-          paymentId: response?.razorpay_payment_id,
-          error: paymentError
-        });
-
-        const { error: rollbackError } = await supabase.from("orders").delete().eq("id", order.id);
-        if (rollbackError) {
-          console.error("CRITICAL: Payment insert failed and rollback failed", rollbackError);
-        }
-        throw paymentError;
-      }
-
-      console.log("PAYMENT SUCCESS", {
-        orderId: order.id,
-        paymentId: response.razorpay_payment_id
+      const res = await fetch('/api/complete-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpayResponse,
+          formData,
+          cart,
+        }),
       });
 
-      const { error: emailError } = await supabase.from('email_logs').insert([
-        { customer_id: customer.id, entity_type: 'order', entity_id: order.id, email_type: 'order_customer' },
-        { customer_id: customer.id, entity_type: 'order', entity_id: order.id, email_type: 'order_admin' },
-      ]);
-
-      if (emailError) {
-        console.error(emailError);
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Order completion failed');
       }
 
-      for (const item of cart) {
-        await deductProductStockBySlug(slugify(item.name), item.quantity);
-      }
-
-      setOrderId(order.order_id);
+      const { orderId: returnedOrderId } = await res.json();
+      setOrderId(returnedOrderId);
       setStep(3);
       clearCart();
     } catch (err) {
-      console.error('Post-payment order creation failed:', err);
-      alert('Your payment succeeded but order processing failed. Please contact support.');
+      console.error('Backend order completion error:', err);
+      alert('Your payment succeeded but we could not finalize the order. Please contact support.');
     } finally {
       setIsProcessing(false);
     }
@@ -160,6 +87,7 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
+    // ---- Stock validation (client side) ----
     const stockMap = await getProductStockMap();
     const issues = [];
     for (const item of cart) {
@@ -192,8 +120,8 @@ const Checkout = () => {
         body: JSON.stringify({ amount: getCartTotal() }),
       });
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to initialize payment');
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to initialise payment');
       }
       orderData = await res.json();
     } catch (err) {
@@ -204,7 +132,11 @@ const Checkout = () => {
     }
 
     const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
+      // Ensure Razorpay key is present
+      // If missing, alert the user and abort
+      // (Added guard for robustness)
+
       amount: orderData.amount,
       currency: orderData.currency,
       name: 'The Sacred Store',
@@ -219,12 +151,11 @@ const Checkout = () => {
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature
+              razorpay_signature: response.razorpay_signature,
             }),
           });
           if (!verifyRes.ok) throw new Error('Payment verification failed.');
-          
-          await processOrderSuccess(response);
+          await completeOrderOnServer(response);
         } catch (err) {
           console.error('Verification error:', err);
           alert('Payment verification error.');
@@ -241,10 +172,16 @@ const Checkout = () => {
         ondismiss: function () {
           alert('Payment was cancelled.');
           setIsProcessing(false);
-        }
-      }
+        },
+      },
     };
 
+    // Guard: ensure Razorpay key is set
+    if (!options.key) {
+      alert('Razorpay key is missing. Please configure VITE_RAZORPAY_KEY_ID.');
+      setIsProcessing(false);
+      return;
+    }
     const paymentObject = new window.Razorpay(options);
     paymentObject.on('payment.failed', function (response) {
       alert('Payment failed. ' + response.error.description);
@@ -253,6 +190,7 @@ const Checkout = () => {
     paymentObject.open();
   };
 
+  // ----- UI RENDERING -----
   return (
     <>
       {step === 3 ? (
@@ -334,7 +272,6 @@ const Checkout = () => {
                           </div>
                         </div>
                       ))}
-
                       <div className="flex justify-between items-center pt-8 border-t border-border">
                         <Link to="/shop-crystals" className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body">← Continue Shopping</Link>
                         <Button onClick={() => setStep(2)} variant="primary">Proceed to Shipping</Button>

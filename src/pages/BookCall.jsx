@@ -3,16 +3,7 @@ import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import {
-  createCustomer,
-  createBooking,
-  getCustomerByPhone,
-  supabase
-} from '../lib/supabase';
 
-
-// Temporary flag to disable real Razorpay integration
-const TEST_MODE = true; // Set to false to enable actual payment flow
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
@@ -76,159 +67,90 @@ const BookCall = () => {
       setIsProcessing(false);
       return;
     }
-    if (TEST_MODE) {
-      try {
-        let customer = await getCustomerByPhone(phone);
-
-        if (!customer) {
-          customer = await createCustomer({
-            full_name: name,
-            email,
-            phone
+    // Real booking flow
+        let order_id, amount, currency;
+        try {
+          // 1. Create Razorpay order on the server
+          const orderRes = await fetch('/api/create-booking-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: sessionPrice })
           });
-        }
-
-        console.log('Using customer:', customer);
-
-        const bookingData = {
-          customer_id: customer.id,
-          service_name: 'Private Consultation',
-          booking_date: selectedDate,
-          booking_time: selectedTime,
-          phone: phone,
-          status: 'pending'
-        };
-
-        console.log(
-          'Booking payload:',
-          bookingData
-        );
-
-        const booking =
-          await createBooking(
-            bookingData
-          );
-
-        console.log(
-          'Booking response:',
-          booking
-        );
-
-        // Insert email log entries (booking_customer, booking_admin)
-        const { data: emailLogData, error: emailLogError } = await supabase
-  .from('email_logs')
-  .insert([
-    {
-      customer_id: customer.id,
-      entity_type: 'booking',
-      entity_id: booking.id,
-      email_type: 'booking_customer',
-    },
-    {
-      customer_id: customer.id,
-      entity_type: 'booking',
-      entity_id: booking.id,
-      email_type: 'booking_admin',
-    },
-  ])
-  .select();
-
-console.log('BOOKING EMAIL LOG DATA:', emailLogData);
-
-if (emailLogError) {
-  console.error('BOOKING EMAIL LOG INSERT FAILED:', emailLogError);
-} else {
-  console.log('BOOKING EMAIL LOGS INSERTED');
-}
-
-        // Store booked slot to prevent future selection
-        const booked = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
-        if (!booked[selectedDate]) booked[selectedDate] = [];
-        booked[selectedDate].push(selectedTime);
-        localStorage.setItem('bookedSlots', JSON.stringify(booked));
-
-        // Show success message
-        setIsSubmitted(true);
-
-      } catch (err) {
-        console.error(
-          'Error in test mode flow:',
-          err
-        );
-
-        alert(
-          'An error occurred while creating consultation.'
-        );
-      }
-
-      setIsProcessing(false);
-      return;
-    }
-
-    const res = await loadRazorpayScript();
-
-    if (!res) {
-      alert("Razorpay SDK failed to load. Are you online?");
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      // Attempt to call the Serverless function
-      let orderId = `order_mock_${Math.floor(Math.random() * 1000000)}`;
-      try {
-        const result = await fetch('/api/razorpay', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: sessionPrice })
-        });
-        if (result.ok) {
-          const data = await result.json();
-          if (data.id) orderId = data.id;
-        }
-      } catch (err) {
-        console.log("Using mock order ID due to local environment.");
-      }
-
-      const options = {
-        key: "rzp_test_mock_key", // Enter the Key ID generated from the Dashboard
-        amount: sessionPrice * 100,
-        currency: "INR",
-        name: "RITUALIST",
-        description: "Private Consultation Session",
-        image: "https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop",
-        order_id: orderId,
-        handler: function (response) {
-          // Payment successful
-          const booked = JSON.parse(localStorage.getItem('bookedSlots') || '{}');
-          if (!booked[selectedDate]) booked[selectedDate] = [];
-          booked[selectedDate].push(selectedTime);
-          localStorage.setItem('bookedSlots', JSON.stringify(booked));
-
-          setIsSubmitted(true);
+          if (!orderRes.ok) {
+            const text = await orderRes.text();
+            throw new Error(`Booking order creation failed (${orderRes.status}): ${text}`);
+          }
+          ({ order_id, amount, currency } = await orderRes.json());
+        } catch (e) {
+          console.error('Booking order creation error:', e);
+          alert('Booking failed: ' + e.message);
           setIsProcessing(false);
-        },
-        prefill: {
-          name: "User Name",
-          email: "user@example.com",
-          contact: "9999999999"
-        },
-        theme: {
-          color: "#111111"
+          return;
         }
-      };
 
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.on('payment.failed', function (response) {
-        alert("Payment failed. Please try again.");
-        setIsProcessing(false);
-      });
-      paymentObject.open();
-
-    } catch (error) {
-      console.error(error);
+    // 2. Load Razorpay SDK
+    const scriptOk = await loadRazorpayScript();
+    if (!scriptOk) {
+      alert('Razorpay SDK failed to load. Are you online?');
       setIsProcessing(false);
+      return;
     }
+
+    // 3. Open Razorpay checkout modal
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: amount,
+      currency: currency,
+      name: 'RITUALIST',
+      description: 'Private Consultation Session',
+      image: 'https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop',
+      order_id: order_id,
+      handler: async function (response) {
+        try {
+          // Send payment verification & booking creation to backend
+          const completeRes = await fetch('/api/complete-booking', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpayResponse: response,
+              formData: { firstName: name, lastName: '', email, phone },
+              consultation_type: focusArea,
+              consultation_date: selectedDate,
+              consultation_time: selectedTime,
+              consultation_fee: sessionPrice,
+              notes: focusArea,
+            })
+          });
+          if (!completeRes.ok) {
+            const err = await completeRes.json();
+            throw new Error(err.message || 'Booking failed');
+          }
+          const data = await completeRes.json();
+          setIsSubmitted(true);
+          // Store booking reference for UI (optional)
+          console.log('Booking reference:', data.bookingId);
+        } catch (e) {
+          console.error('Booking completion error:', e);
+          alert('Booking failed: ' + e.message);
+        } finally {
+          setIsProcessing(false);
+        }
+      },
+      prefill: {
+        name,
+        email,
+        contact: phone
+      },
+      theme: { color: '#111111' },
+      modal: { ondismiss: () => setIsProcessing(false) },
+    };
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.on('payment.failed', function (response) {
+      alert('Payment failed. Please try again.');
+      setIsProcessing(false);
+    });
+    paymentObject.open();
+
   };
 
   return (

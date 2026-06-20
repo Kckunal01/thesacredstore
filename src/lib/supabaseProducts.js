@@ -57,14 +57,13 @@ export async function deductProductStockBySlug(slug, quantity) {
     // Low stock alert handling (<=2)
     if (newStock <= 2) {
       try {
-        // Check if alert already exists
         const { data: existing, error: existingErr } = await supabase
           .from('email_logs')
-          .select('id')
-          .eq('entity_type', 'product')
+          .select('*')
           .eq('entity_id', product.id)
           .eq('email_type', 'low_stock')
           .limit(1);
+
         if (!existingErr && (!existing || existing.length === 0)) {
           // Insert alert log
           const alertPayload = {
