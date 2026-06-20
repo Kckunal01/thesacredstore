@@ -1,4 +1,4 @@
-const Razorpay = require('razorpay');
+import Razorpay from 'razorpay';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,27 +6,26 @@ export default async function handler(req, res) {
   }
 
   const { amount } = req.body;
-  if (!amount || amount < 100) {
-    return res.status(400).json({ message: 'Invalid amount. Minimum is 100 paise.' });
+  if (!amount || amount < 1) {
+    return res.status(400).json({ message: 'Invalid amount. Minimum is 1 Rupee.' });
   }
 
-  if (!process.env.RAZORPAY_KEY_SECRET) {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!key_id || !key_secret) {
     return res.status(500).json({ message: 'Server configuration error' });
   }
 
-  const razorpay = new Razorpay({
-    key_id: process.env.VITE_RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-  });
-
-  const options = {
-    amount: Math.round(amount * 100), // amount in smallest currency unit
-    currency: "INR",
-  };
+  const razorpay = new Razorpay({ key_id, key_secret });
 
   try {
-    const order = await razorpay.orders.create(options);
-    res.status(200).json({
+    const order = await razorpay.orders.create({
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+    });
+
+    return res.status(200).json({
       order_id: order.id,
       amount: order.amount,
       currency: order.currency
@@ -34,8 +33,8 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Razorpay Error:', err);
     if (err.statusCode === 401) {
-      return res.status(401).json({ message: "Authentication failure", error: err });
+      return res.status(401).json({ message: 'Authentication failure', error: err });
     }
-    res.status(500).json({ message: "Something went wrong", error: err });
+    return res.status(500).json({ message: 'Failed to create order', error: err });
   }
 }

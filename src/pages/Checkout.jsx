@@ -7,13 +7,7 @@ import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
 import { createCustomer, getCustomerByPhone, createOrder, supabase } from '../lib/supabase.js';
-import {
-  getProductStockMap,
-  deductProductStockBySlug,
-} from '../lib/supabaseProducts';
-
-// Temporary flag to disable real Razorpay integration
-const TEST_MODE = false; // Disable test mode to use real Razorpay flow
+import { getProductStockMap, deductProductStockBySlug } from '../lib/supabaseProducts';
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -25,12 +19,9 @@ const loadRazorpayScript = () =>
   });
 
 function getPlaceholderStyle(name) {
-  // Simple placeholder background based on string characters
   const hash = Array.from(name || '').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const hue = hash % 360;
-  return {
-    background: `hsl(${hue}, 25%, 95%)`,
-  };
+  return { background: `hsl(${hue}, 25%, 95%)` };
 }
 
 function slugify(text) {
@@ -42,51 +33,133 @@ function slugify(text) {
 }
 
 const Checkout = () => {
-  const {
-    cart,
-    getCartTotal,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-  } = useContext(CartContext);
-  const [step, setStep] = useState(1); // 1: Cart, 2: Checkout Form, 3: Success
+  const { cart, getCartTotal, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
+  const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState('');
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    address: '',
-    city: '',
-    state: '',
-    pinCode: '',
-    phone: '',
+    firstName: '', lastName: '', email: '', address: '',
+    city: '', state: '', pinCode: '', phone: '',
   });
 
-  const totalOriginal = cart.reduce(
-    (acc, item) => acc + (item.originalPrice || item.price) * item.quantity,
-    0
-  );
+  const totalOriginal = cart.reduce((acc, item) => acc + (item.originalPrice || item.price) * item.quantity, 0);
   const totalDiscount = totalOriginal - getCartTotal();
-
-  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  /** -----------------------------------------------------------------
-   *  Checkout handler – works in two distinct modes:
-   *   • TEST_MODE  – creates customer & order directly in Supabase,
-   *                   then shows the success page.
-   *   • Real mode  – loads Razorpay and follows the original flow.
-   * ----------------------------------------------------------------- */
+  const processOrderSuccess = async (response) => {
+    try {
+      // IDEMPOTENCY CHECK
+      const { data: existingPayment } = await supabase
+        .from("payments")
+        .select("order_id")
+        .eq("razorpay_payment_id", response.razorpay_payment_id)
+        .maybeSingle();
+
+      if (existingPayment) {
+        const { data: existingOrder } = await supabase
+          .from("orders")
+          .select("order_id")
+          .eq("id", existingPayment.order_id)
+          .single();
+
+        if (existingOrder) {
+          setOrderId(existingOrder.order_id);
+          setStep(3);
+          clearCart();
+          return;
+        }
+      }
+
+      let customer = await getCustomerByPhone(formData.phone);
+      if (!customer) {
+        customer = await createCustomer({
+          full_name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+        });
+      }
+
+      const orderPayload = {
+        customer_id: customer.id,
+        products: cart.map(item => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        amount: getCartTotal(),
+        payment_status: 'paid',
+        payment_method: 'razorpay',
+      };
+
+      const order = await createOrder(orderPayload);
+
+      const { error: paymentError } = await supabase
+        .from("payments")
+        .insert({
+            order_id: order.id,
+            customer_id: customer.id,
+            gateway: "razorpay",
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            amount: getCartTotal(),
+            currency: "INR",
+            status: "captured",
+            method: null,
+            signature_verified: true,
+            raw_response: response
+        });
+
+      if (paymentError) {
+        console.error("PAYMENT FAILURE", {
+          orderId: order?.id,
+          paymentId: response?.razorpay_payment_id,
+          error: paymentError
+        });
+
+        const { error: rollbackError } = await supabase.from("orders").delete().eq("id", order.id);
+        if (rollbackError) {
+          console.error("CRITICAL: Payment insert failed and rollback failed", rollbackError);
+        }
+        throw paymentError;
+      }
+
+      console.log("PAYMENT SUCCESS", {
+        orderId: order.id,
+        paymentId: response.razorpay_payment_id
+      });
+
+      const { error: emailError } = await supabase.from('email_logs').insert([
+        { customer_id: customer.id, entity_type: 'order', entity_id: order.id, email_type: 'order_customer' },
+        { customer_id: customer.id, entity_type: 'order', entity_id: order.id, email_type: 'order_admin' },
+      ]);
+
+      if (emailError) {
+        console.error(emailError);
+      }
+
+      for (const item of cart) {
+        await deductProductStockBySlug(slugify(item.name), item.quantity);
+      }
+
+      setOrderId(order.order_id);
+      setStep(3);
+      clearCart();
+    } catch (err) {
+      console.error('Post-payment order creation failed:', err);
+      alert('Your payment succeeded but order processing failed. Please contact support.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const handleCheckout = async (e) => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // Validate stock before proceeding
     const stockMap = await getProductStockMap();
     const issues = [];
     for (const item of cart) {
@@ -95,301 +168,114 @@ const Checkout = () => {
       if (!info || !info.active) {
         issues.push(`${item.name} is currently out of stock.`);
       } else if (info.stock < item.quantity) {
-        if (info.stock === 0) {
-          issues.push(`${item.name} is currently out of stock.`);
-        } else {
-          issues.push(`${item.name} – requested ${item.quantity}, available ${info.stock}`);
-        }
+        issues.push(`${item.name} – requested ${item.quantity}, available ${info.stock}`);
       }
     }
     if (issues.length > 0) {
-      let message = '';
-      if (issues.length === 1) {
-        // Single item message
-        message = `Unfortunately, ${issues[0]} Please update your cart to continue.`;
-      } else {
-        message = 'Some items in your cart are no longer available:\n\n' + issues.map(i => `• ${i}`).join('\n') + '\n\nPlease update your cart and try again.';
-      }
-      alert(message);
+      alert('Some items in your cart are no longer available:\n\n' + issues.map(i => `• ${i}`).join('\n') + '\n\nPlease update your cart and try again.');
       setIsProcessing(false);
       return;
     }
 
-    // --------------------------- TEST MODE ---------------------------
-    if (TEST_MODE) {
-      try {
-        // 1️⃣ Ensure a customer record exists (avoid duplicate phone)
-        let customer = await getCustomerByPhone(formData.phone);
-        if (!customer) {
-          customer = await createCustomer({
-            full_name: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            phone: formData.phone,
-          });
-        }
-
-        // 2️⃣ Create the order – Supabase generates order_id (TSS‑xxxx)
-        const orderPayload = {
-          customer_id: customer.id,
-          products: cart.map(item => ({
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price
-          })),
-          amount: getCartTotal(),
-          payment_status: 'test_paid',
-          payment_method: 'test',
-        };
-
-        const order = await createOrder(orderPayload);
-
-        // Deduct stock for each cart item using slug
-        for (const item of cart) {
-          const slug = item.slug || slugify(item.name);
-          await deductProductStockBySlug(slug, item.quantity);
-        }
-
-        // 3️⃣ Show success UI
-        setOrderId(order.order_id); // Supabase‑generated TSS‑xxxx
-          // Insert email log entries (order_customer, order_admin)
-          const { data: emailLogData, error: emailLogError } = await supabase
-  .from('email_logs')
-  .insert([
-    {
-      customer_id: customer.id,
-      entity_type: 'order',
-      entity_id: order.id,
-      email_type: 'order_customer',
-    },
-    {
-      customer_id: customer.id,
-      entity_type: 'order',
-      entity_id: order.id,
-      email_type: 'order_admin',
-    },
-  ])
-  .select();
-
-console.log('ORDER EMAIL LOG DATA:', emailLogData);
-
-if (emailLogError) {
-  console.error('ORDER EMAIL LOG INSERT FAILED:', emailLogError);
-} else {
-  console.log('ORDER EMAIL LOGS INSERTED');
-}
-        setStep(3);
-        clearCart();
-      } catch (err) {
-        console.error('CHECKOUT EXCEPTION (TEST_MODE):', err);
-        alert('An error occurred while processing your order.');
-      } finally {
-        setIsProcessing(false);
-      }
-      return; // Skip real‑payment flow
-    }
-
-    // --------------------------- REAL PAYMENT FLOW ---------------------------
     const razorpayReady = await loadRazorpayScript();
-
     if (!razorpayReady) {
       alert('Razorpay SDK failed to load. Are you online?');
       setIsProcessing(false);
       return;
     }
 
+    let orderData;
     try {
-      // Attempt to create a server‑side order (fallback to mock)
-      let razorpayOrderId = `order_mock_${Math.floor(Math.random() * 1_000_000)}`;
-      try {
-        const res = await fetch('/api/create-order', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: getCartTotal() }),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.order_id) razorpayOrderId = data.order_id;
-        } else {
-          const errorData = await res.json();
-          alert('Failed to initialize payment: ' + (errorData.message || 'Unknown error'));
-          setIsProcessing(false);
-          return;
-        }
-      } catch (err) {
-        console.error('Create order error:', err);
-        alert('Failed to connect to payment gateway.');
-        setIsProcessing(false);
-        return;
+      const res = await fetch('/api/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: getCartTotal() }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to initialize payment');
       }
+      orderData = await res.json();
+    } catch (err) {
+      console.error('Create order error:', err);
+      alert('Failed to connect to payment gateway: ' + err.message);
+      setIsProcessing(false);
+      return;
+    }
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || '', // VITE injected environment variable
-        amount: getCartTotal() * 100,
-        currency: 'INR',
-        name: 'RITUALIST',
-        description: 'Purchase Order',
-        image:
-          'https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop',
-        order_id: razorpayOrderId,
-        handler: async function (response) {
-          // Verify payment on the backend first
-          try {
-            const verifyRes = await fetch('/api/verify-payment', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature
-              }),
-            });
-
-            if (!verifyRes.ok) {
-              alert('Payment verification failed.');
-              setIsProcessing(false);
-              return;
-            }
-          } catch (err) {
-            console.error('Verification error:', err);
-            alert('Payment verification error.');
-            setIsProcessing(false);
-            return;
-          }
-
-          // After successful payment and verification, run the same Supabase flow
-          try {
-            // Ensure customer exists (duplicate‑phone safe)
-            let customer = await getCustomerByPhone(formData.phone);
-            if (!customer) {
-              customer = await createCustomer({
-                full_name: `${formData.firstName} ${formData.lastName}`,
-                email: formData.email,
-                phone: formData.phone,
-              });
-            }
-
-            const orderPayload = {
-              customer_id: customer.id,
-              products: cart.map(item => ({
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price
-              })),
-              amount: getCartTotal(),
-              payment_status: 'paid',
-              payment_method: 'razorpay',
-            };
-
-            const order = await createOrder(orderPayload);
-
-            // Deduct stock for each cart item
-            for (const item of cart) {
-              await deductProductStockBySlug(slugify(item.name), item.quantity);
-            }
-
-            setOrderId(order.order_id);
-            // Insert email log entries (order_customer, order_admin)
-            try {
-              await supabase.from('email_logs').insert([
-                {
-                  customer_id: customer.id,
-                  entity_type: 'order',
-                  entity_id: order.id,
-                  email_type: 'order_customer',
-                },
-                {
-                  customer_id: customer.id,
-                  entity_type: 'order',
-                  entity_id: order.id,
-                  email_type: 'order_admin',
-                },
-              ]);
-            } catch (e) {
-              console.error('Failed to insert order email logs:', e);
-            }
-            setStep(3);
-            clearCart();
-          } catch (err) {
-            console.error('Post‑payment order creation failed:', err);
-            alert('Your payment succeeded but order processing failed.');
-          } finally {
-            setIsProcessing(false);
-          }
-        },
-        prefill: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          contact: formData.phone,
-        },
-        theme: { color: '#111111' },
-      };
-
-      options.modal = {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: 'The Sacred Store',
+      description: 'Order Payment',
+      image: 'https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop',
+      order_id: orderData.order_id,
+      handler: async function (response) {
+        try {
+          const verifyRes = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            }),
+          });
+          if (!verifyRes.ok) throw new Error('Payment verification failed.');
+          
+          await processOrderSuccess(response);
+        } catch (err) {
+          console.error('Verification error:', err);
+          alert('Payment verification error.');
+          setIsProcessing(false);
+        }
+      },
+      prefill: {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        contact: formData.phone,
+      },
+      theme: { color: '#FFBD59' },
+      modal: {
         ondismiss: function () {
           alert('Payment was cancelled.');
           setIsProcessing(false);
         }
-      };
+      }
+    };
 
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.on('payment.failed', function (response) {
-        alert('Payment failed. ' + response.error.description);
-        setIsProcessing(false);
-      });
-      paymentObject.open();
-    } catch (err) {
-      console.error('Razorpay flow error:', err);
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.on('payment.failed', function (response) {
+      alert('Payment failed. ' + response.error.description);
       setIsProcessing(false);
-    }
+    });
+    paymentObject.open();
   };
 
-  // -----------------------------------------------------------------
-  // UI rendering (unchanged apart from the new logic above)
-  // -----------------------------------------------------------------
   return (
     <>
       {step === 3 ? (
         <Section className="min-h-[80vh] flex items-center justify-center bg-background pt-32">
           <Container className="text-center max-w-lg">
             <div className="w-16 h-16 rounded-full border border-accent flex items-center justify-center mx-auto mb-8">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#FFBD59"
-                strokeWidth="2"
-              >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFBD59" strokeWidth="2">
                 <path d="M5 12l5 5l10 -10" />
               </svg>
             </div>
-            <h2 className="text-4xl font-display text-primary mb-4">
-              Order Placed.
-            </h2>
+            <h2 className="text-4xl font-display text-primary mb-4">Order Placed.</h2>
             <p className="text-muted leading-relaxed mb-6 font-light font-body">
-              Thank you for making space for meaning. Order{' '}
-              <strong className="text-primary font-semibold font-display">
-                {orderId}
-              </strong>{' '}
-              has been created.
+              Thank you for making space for meaning. Order <strong className="text-primary font-semibold font-display">{orderId}</strong> has been created.
             </p>
             <div className="bg-surface border border-border p-6 mb-8 text-left space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold">
-                Important logistics information
-              </span>
+              <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold">Important logistics information</span>
               <p className="text-xs text-muted leading-relaxed font-body">
-                Your energy tool is being packaged carefully and cleansed with
-                incense before shipping. You can track its shipment status
-                directly.
+                Your energy tool is being packaged carefully and cleansed with incense before shipping. You can track its shipment status directly.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
-              <Button to={`/track-order?id=${orderId}`} variant="primary">
-                Track Package
-              </Button>
-              <Button to="/" variant="secondary">
-                Return Home
-              </Button>
+              <Button to={`/track-order?id=${orderId}`} variant="primary">Track Package</Button>
+              <Button to="/" variant="secondary">Return Home</Button>
             </div>
           </Container>
         </Section>
@@ -411,274 +297,113 @@ if (emailLogError) {
                 <div className="w-12 h-12 rounded-full border border-accent/20 flex items-center justify-center mb-6">
                   <span className="text-accent text-xs">∅</span>
                 </div>
-                <p className="text-muted mb-8 font-light font-body">
-                  Your ritual cart is currently empty.
-                </p>
-                <Button to="/shop-crystals" variant="primary">
-                  Explore Collection
-                </Button>
+                <p className="text-muted mb-8 font-light font-body">Your ritual cart is currently empty.</p>
+                <Button to="/shop-crystals" variant="primary">Explore Collection</Button>
               </div>
             ) : (
               <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 mt-12">
-                {/* Left Column: Cart Items or Form */}
                 <div className="w-full lg:w-2/3">
                   {step === 1 ? (
                     <div className="space-y-6">
                       {cart.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-surface border border-border gap-6"
-                        >
+                        <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-surface border border-border gap-6">
                           <div className="flex items-center space-x-6">
-                            <div
-                              style={getPlaceholderStyle(item.name)}
-                              className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display"
-                            >
+                            <div style={getPlaceholderStyle(item.name)} className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display">
                               {item.images && item.images.length > 0 ? (
-                                <img
-                                  src={item.images[0]}
-                                  alt={item.name}
-                                  className="w-full h-full object-contain"
-                                />
+                                <img src={item.images[0]} alt={item.name} className="w-full h-full object-contain" />
                               ) : (
                                 item.name.charAt(0)
                               )}
                             </div>
                             <div>
-                              <span className="text-[10px] uppercase tracking-widest text-[#000000] mb-1 block font-bold font-body">
-                                {item.category}
-                              </span>
-                              <h4 className="font-display text-xl text-primary font-medium">
-                                {item.name}
-                              </h4>
-                              <span className="text-sm text-muted font-light font-body">
-                                ₹{item.price.toLocaleString('en-IN')}
-                              </span>
+                              <span className="text-[10px] uppercase tracking-widest text-[#000000] mb-1 block font-bold font-body">{item.category}</span>
+                              <h4 className="font-display text-xl text-primary font-medium">{item.name}</h4>
+                              <span className="text-sm text-muted font-light font-body">₹{item.price.toLocaleString('en-IN')}</span>
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between w-full sm:w-auto space-x-6 sm:space-x-12 border-t sm:border-t-0 pt-4 sm:pt-0 border-border">
                             <div className="flex items-center border border-border bg-background">
-                              <button
-                                className="px-3 py-2 hover:bg-surface text-primary"
-                                onClick={() =>
-                                  updateQuantity(
-                                    item.id,
-                                    item.quantity - 1
-                                  )
-                                }
-                              >
-                                -
-                              </button>
-                              <span className="px-4 py-2 text-xs font-semibold text-primary">
-                                {item.quantity}
-                              </span>
-                              <button
-                                className="px-3 py-2 hover:bg-surface text-primary"
-                                onClick={() =>
-                                  updateQuantity(
-                                    item.id,
-                                    item.quantity + 1
-                                  )
-                                }
-                              >
-                                +
-                              </button>
+                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                              <span className="px-4 py-2 text-xs font-semibold text-primary">{item.quantity}</span>
+                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
                             </div>
                             <div className="text-right">
-                              <button
-                                onClick={() => removeFromCart(item.id)}
-                                className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-bold font-body"
-                              >
-                                Remove
-                              </button>
+                              <button onClick={() => removeFromCart(item.id)} className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-bold font-body">Remove</button>
                             </div>
                           </div>
                         </div>
                       ))}
 
                       <div className="flex justify-between items-center pt-8 border-t border-border">
-                        <Link
-                          to="/shop-crystals"
-                          className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body"
-                        >
-                          ← Continue Shopping
-                        </Link>
-                        <Button
-                          onClick={() => setStep(2)}
-                          variant="primary"
-                        >
-                          Proceed to Shipping
-                        </Button>
+                        <Link to="/shop-crystals" className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body">← Continue Shopping</Link>
+                        <Button onClick={() => setStep(2)} variant="primary">Proceed to Shipping</Button>
                       </div>
                     </div>
                   ) : (
-                    <form
-                      id="checkout-form"
-                      onSubmit={handleCheckout}
-                      className="bg-surface border border-border p-8 md:p-10 space-y-8"
-                    >
+                    <form id="checkout-form" onSubmit={handleCheckout} className="bg-surface border border-border p-8 md:p-10 space-y-8">
                       <div className="flex justify-between items-center border-b border-border pb-4">
-                        <h3 className="font-display text-2xl text-primary font-medium">
-                          Shipping &amp; Delivery
-                        </h3>
-                        <button
-                          type="button"
-                          onClick={() => setStep(1)}
-                          className="text-[10px] uppercase tracking-widest text-[#000000] hover:text-primary font-bold font-body"
-                        >
-                          ← Edit Cart
-                        </button>
+                        <h3 className="font-display text-2xl text-primary font-medium">Shipping &amp; Delivery</h3>
+                        <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-[#000000] hover:text-primary font-bold font-body">← Edit Cart</button>
                       </div>
 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            First Name
-                          </label>
-                          <input
-                            type="text"
-                            name="firstName"
-                            value={formData.firstName}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">First Name</label>
+                          <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            Last Name
-                          </label>
-                          <input
-                            type="text"
-                            name="lastName"
-                            value={formData.lastName}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Last Name</label>
+                          <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
 
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            Email Address
-                          </label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Email Address</label>
+                          <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            Phone Number
-                          </label>
-                          <input
-                            type="tel"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Phone Number</label>
+                          <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
 
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            Delivery Address
-                          </label>
-                          <input
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Delivery Address</label>
+                          <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
 
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            City / Town
-                          </label>
-                          <input
-                            type="text"
-                            name="city"
-                            value={formData.city}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">City / Town</label>
+                          <input type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
 
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            State
-                          </label>
-                          <input
-                            type="text"
-                            name="state"
-                            value={formData.state}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">State</label>
+                          <input type="text" name="state" value={formData.state} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
 
                         <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">
-                            Postal PIN Code
-                          </label>
-                          <input
-                            type="text"
-                            name="pinCode"
-                            value={formData.pinCode}
-                            onChange={handleInputChange}
-                            className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm"
-                            required
-                          />
+                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Postal PIN Code</label>
+                          <input type="text" name="pinCode" value={formData.pinCode} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                         </div>
                       </div>
 
-                      <Button
-                        type="submit"
-                        variant="primary"
-                        className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
-                        disabled={isProcessing}
-                      >
-                        {isProcessing
-                          ? 'Processing...'
-                          : 'Pay with Razorpay'}
+                      <Button type="submit" variant="primary" className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]" disabled={isProcessing}>
+                        {isProcessing ? 'Processing...' : 'Pay with Razorpay'}
                       </Button>
                     </form>
                   )}
                 </div>
 
-                {/* Right Column: Order Summary */}
                 <div className="w-full lg:w-1/3">
                   <div className="bg-surface border border-border p-8 sticky top-24 space-y-6">
-                    <h3 className="font-display text-2xl text-primary font-medium border-b border-border pb-4">
-                      Order Summary
-                    </h3>
+                    <h3 className="font-display text-2xl text-primary font-medium border-b border-border pb-4">Order Summary</h3>
                     <div className="space-y-4 max-h-48 overflow-y-auto pr-2">
                       {cart.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex justify-between items-center text-xs font-body text-muted"
-                        >
+                        <div key={item.id} className="flex justify-between items-center text-xs font-body text-muted">
                           <span className="truncate max-w-[150px]">
-                            {item.name}{' '}
-                            <strong className="text-accent">x{item.quantity}</strong>
+                            {item.name} <strong className="text-accent">x{item.quantity}</strong>
                           </span>
-                          <span>
-                            ₹
-                            {(item.price * item.quantity).toLocaleString(
-                              'en-IN'
-                            )}
-                          </span>
+                          <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                         </div>
                       ))}
                     </div>
@@ -691,34 +416,22 @@ if (emailLogError) {
                       {totalDiscount > 0 && (
                         <div className="flex justify-between text-xs font-body text-[#2ECC71]">
                           <span>Discount</span>
-                          <span>
-                            -₹{totalDiscount.toLocaleString('en-IN')}
-                          </span>
+                          <span>-₹{totalDiscount.toLocaleString('en-IN')}</span>
                         </div>
                       )}
                       <div className="flex justify-between text-xs font-body text-muted">
                         <span>Shipping</span>
-                        <span className="text-accent uppercase tracking-wider font-bold">
-                          Free
-                        </span>
+                        <span className="text-accent uppercase tracking-wider font-bold">Free</span>
                       </div>
                     </div>
 
                     <div className="flex justify-between text-xl font-display text-primary border-t border-border pt-4">
                       <span>Total</span>
-                      <span className="font-semibold text-accent">
-                        ₹{getCartTotal().toLocaleString('en-IN')}
-                      </span>
+                      <span className="font-semibold text-accent">₹{getCartTotal().toLocaleString('en-IN')}</span>
                     </div>
 
                     {step === 2 && (
-                      <Button
-                        type="submit"
-                        form="checkout-form"
-                        variant="primary"
-                        className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]"
-                        disabled={isProcessing}
-                      >
+                      <Button type="submit" form="checkout-form" variant="primary" className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]" disabled={isProcessing}>
                         {isProcessing ? 'Processing...' : 'Pay'}
                       </Button>
                     )}
@@ -727,11 +440,10 @@ if (emailLogError) {
               </div>
             )}
           </Container>
-        </Section >
+        </Section>
       )}
     </>
   );
 };
 
 export default Checkout;
-

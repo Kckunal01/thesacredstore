@@ -5,7 +5,7 @@ export const products = [
     id: 'c1',
     name: 'Clear Quartz Point',
     category: 'Crystals',
-    price: 2100,
+    price: 1,
     originalPrice: 2500,
     stamp: null,
     description: 'A semi-polished clear quartz point from Arkansas, USA. Often referred to as the master healer, clear quartz amplifies any intention it is programmed with and clears energetic congestion.',
@@ -16,7 +16,7 @@ export const products = [
     chakraColor: '#D5D8DC',
     effect: 'Amplifies energy and intention. Enhances clarity of mind.',
     usage: 'Use to amplify the energy of other stones by placing it next to them, or hold while setting morning intentions.',
-            images: [
+    images: [
       "/assets/images/Clear Quartz Point/Clear Quartz Point 1.webp",
       "/assets/images/Clear Quartz Point/Clear Quartz Point 2.webp",
       "/assets/images/Clear Quartz Point/Clear Quartz Point 3.webp",
@@ -37,7 +37,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Opens the heart chakra. Attracts love and self-compassion.',
     usage: 'Hold over your chest during breathing exercises. Cleanse by burying in dry brown rice overnight.',
-            images: [
+    images: [
       "/assets/images/Rose Quartz Cluster/Rose Quartz Cluster 1.webp",
       "/assets/images/Rose Quartz Cluster/Rose Quartz Cluster 2.webp",
       "/assets/images/Rose Quartz Cluster/Rose Quartz Cluster 3.webp",
@@ -58,7 +58,7 @@ export const products = [
     chakraColor: '#8E44AD',
     effect: 'Calms the mind. Enhances intuition and spiritual awareness.',
     usage: 'Place on your bedside table or in your meditation space. Cleanse via moonlight during a full moon.',
-            images: [
+    images: [
       "/assets/images/Amethyst Cluster/Amethyst Cluster 1.webp",
       "/assets/images/Amethyst Cluster/Amethyst Cluster 2.webp",
       "/assets/images/Amethyst Cluster/Amethyst Cluster 3.webp",
@@ -79,7 +79,7 @@ export const products = [
     chakraColor: '#C23B22',
     effect: 'Grounds energy. Provides powerful psychic protection.',
     usage: 'Place near your front entrance or on your desk to filter ambient stress. Cleanse under cold running water once a month.',
-            images: [
+    images: [
       "/assets/images/Black Tourmaline Raw/Black Tourmaline Raw 1.webp",
       "/assets/images/Black Tourmaline Raw/Black Tourmaline Raw 2.webp",
       "/assets/images/Black Tourmaline Raw/Black Tourmaline Raw 3.webp",
@@ -100,7 +100,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Boosts confidence and willpower. Attracts abundance.',
     usage: 'Place in the far-left corner of your room or office (the wealth corner) or carry in your bag.',
-          images: [
+    images: [
       "/assets/images/Citrine Point/Citrine Point 1.webp",
       "/assets/images/Citrine Point/Citrine Point 2.webp",
       "/assets/images/Citrine Point/Citrine Point 3.webp",
@@ -121,7 +121,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Stimulates creativity and flow. Shields from negativity.',
     usage: 'Keep on your desk or workspace to stimulate creativity, flow state, and decisive action.',
-          images: [
+    images: [
       "/assets/images/Pyrite Cluster/Pyrite Cluster 1.webp",
       "/assets/images/Pyrite Cluster/Pyrite Cluster 2.webp",
       "/assets/images/Pyrite Cluster/Pyrite Cluster 3.webp",
@@ -142,7 +142,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Cleanses and charges surrounding stones. Connects to higher guidance.',
     usage: 'Place centrally in your crystal grid or space to keep all other stones cleansed and charged.',
-          images: [
+    images: [
       "/assets/images/Selenite Tower/Selenite Tower 1.webp",
       "/assets/images/Selenite Tower/Selenite Tower 2.webp",
       "/assets/images/Selenite Tower/Selenite Tower 3.webp",
@@ -163,7 +163,7 @@ export const products = [
     chakraColor: '#3498DB',
     effect: 'Expands awareness. Protects the aura during transformation.',
     usage: 'Hold during meditation or keep on your altar to facilitate deep introspective work.',
-          images: [
+    images: [
       "/assets/images/Labradorite Freeform/Labradorite Freeform 1.webp",
       "/assets/images/Labradorite Freeform/Labradorite Freeform 2.webp",
       "/assets/images/Labradorite Freeform/Labradorite Freeform 3.webp",
@@ -186,7 +186,7 @@ export const products = [
     chakraColor: '#D5D8DC',
     effect: 'Amplifies all energy. Enhances focus and clarity.',
     usage: 'Hold while meditating or setting intentions. Place on desk to enhance mental clarity.',
-          images: [
+    images: [
       "/assets/images/Clear Quartz/Clear Quartz 1.webp",
       "/assets/images/Clear Quartz/Clear Quartz 2.webp",
       "/assets/images/Clear Quartz/Clear Quartz 3.webp",
@@ -207,7 +207,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Heals emotional wounds. Invites love and self-acceptance.',
     usage: 'Carry in your left pocket to invite love energy. Place near your heart during meditation.',
-          images: [
+    images: [
       "/assets/images/Rose Quartz/Rose Quartz 1.webp",
       "/assets/images/Rose Quartz/Rose Quartz 2.webp",
       "/assets/images/Rose Quartz/Rose Quartz 3.webp",
@@ -228,7 +228,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Calms mental chatter. Deepens meditation and spiritual insight.',
     usage: 'Place under pillow for vivid, insightful dreams. Use in meditation for heightened awareness.',
-          images: [
+    images: [
       "/assets/images/Amethyst/Amethyst 1.webp",
       "/assets/images/Amethyst/Amethyst 2.webp",
       "/assets/images/Amethyst/Amethyst 3.webp",
@@ -249,7 +249,7 @@ export const products = [
     chakraColor: '#C23B22',
     effect: 'Continuous energetic protection. Grounds scattered energy.',
     usage: 'Set in silver or gold for a wearable protective amulet.',
-          images: [
+    images: [
       "/assets/images/Black Tourmaline/Black Tourmaline 1.webp",
       "/assets/images/Black Tourmaline/Black Tourmaline 2.webp",
       "/assets/images/Black Tourmaline/Black Tourmaline 3.webp",
@@ -270,7 +270,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Activates personal power and abundance frequency.',
     usage: 'Set in gold to create a powerful abundance talisman. Carry during important decisions.',
-          images: [
+    images: [
       "/assets/images/Citrine/Citrine 1.webp",
       "/assets/images/Citrine/Citrine 2.webp",
       "/assets/images/Citrine/Citrine 3.webp",
@@ -291,7 +291,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Builds discipline and shields against creative blocks.',
     usage: 'Place on your workspace altar to anchor motivation and shield against creative exhaustion.',
-          images: [
+    images: [
       "/assets/images/Pyrite/Pyrite 1.webp",
       "/assets/images/Pyrite/Pyrite 2.webp",
       "/assets/images/Pyrite/Pyrite 3.webp",
@@ -312,7 +312,7 @@ export const products = [
     chakraColor: '#3498DB',
     effect: 'Activates psychic gifts. Protects the aura during transformation.',
     usage: 'Hold or wear when entering highly charged environments or during deep inner work.',
-          images: [
+    images: [
       "/assets/images/Labradorite/Labradorite 1.webp",
       "/assets/images/Labradorite/Labradorite 2.webp",
       "/assets/images/Labradorite/Labradorite 3.webp",
@@ -333,7 +333,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Attracts opportunity and good fortune. Calms the heart.',
     usage: 'Carry in your left pocket before important meetings or interviews.',
-          images: [
+    images: [
       "/assets/images/Green Aventurine/Green Aventurine 1.webp",
       "/assets/images/Green Aventurine/Green Aventurine 2.webp",
       "/assets/images/Green Aventurine/Green Aventurine 3.webp",
@@ -354,7 +354,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Builds courage and decisive action. Balances yin-yang energy.',
     usage: 'Hold in your dominant hand before difficult conversations or high-stakes decisions.',
-          images: [
+    images: [
       "/assets/images/Tiger's Eye/Tiger's Eye 1.webp",
       "/assets/images/Tiger's Eye/Tiger's Eye 2.webp",
       "/assets/images/Tiger's Eye/Tiger's Eye 3.webp",
@@ -375,7 +375,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Purifies energy in its environment. Connects to higher realms.',
     usage: 'Keep on a charging plate with your other stones overnight to cleanse the entire collection.',
-          images: [
+    images: [
       "/assets/images/Selenite/Selenite 1.webp",
       "/assets/images/Selenite/Selenite 2.webp",
       "/assets/images/Selenite/Selenite 3.webp",
@@ -398,7 +398,7 @@ export const products = [
     chakraColor: '#C23B22',
     effect: 'Continuous wearable protection from psychic smog and negative influence.',
     usage: 'Wear on your dominant wrist as a daily protective talisman.',
-          images: [
+    images: [
       "/assets/images/Black Tourmaline Bracelet/Black Tourmaline Bracelet 1.webp",
       "/assets/images/Black Tourmaline Bracelet/Black Tourmaline Bracelet 2.webp",
       "/assets/images/Black Tourmaline Bracelet/Black Tourmaline Bracelet 3.webp",
@@ -419,7 +419,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Builds courage, focus and determination throughout the day.',
     usage: 'Wear on dominant wrist before presentations, negotiations, or any high-stakes event.',
-          images: [
+    images: [
       "/assets/images/Tiger's Eye Bracelet/Tiger's Eye Bracelet 1.webp",
       "/assets/images/Tiger's Eye Bracelet/Tiger's Eye Bracelet 2.webp",
       "/assets/images/Tiger's Eye Bracelet/Tiger's Eye Bracelet 3.webp",
@@ -440,7 +440,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Keeps you anchored in love and gentleness throughout the day.',
     usage: 'Wear on your non-dominant wrist (receiving hand) to invite compassionate energy.',
-          images: [
+    images: [
       "/assets/images/Rose Quartz Bracelet/Rose Quartz Bracelet 1.webp",
       "/assets/images/Rose Quartz Bracelet/Rose Quartz Bracelet 2.webp",
       "/assets/images/Rose Quartz Bracelet/Rose Quartz Bracelet 3.webp",
@@ -461,7 +461,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Reduces mental chatter. Keeps you calm and centred all day.',
     usage: 'Wear daily, especially during high-cognitive or emotionally demanding periods.',
-          images: [
+    images: [
       "/assets/images/Amethyst Bracelet/Amethyst Bracelet 1.webp",
       "/assets/images/Amethyst Bracelet/Amethyst Bracelet 2.webp",
       "/assets/images/Amethyst Bracelet/Amethyst Bracelet 3.webp",
@@ -482,7 +482,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Radiates positivity and abundance frequency throughout the day.',
     usage: 'Wear on your dominant wrist to broadcast your abundance intentions.',
-          images: [
+    images: [
       "/assets/images/Citrine Bracelet/Citrine Bracelet 1.webp",
       "/assets/images/Citrine Bracelet/Citrine Bracelet 2.webp",
       "/assets/images/Citrine Bracelet/Citrine Bracelet 3.webp",
@@ -503,7 +503,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Aligns conditions for opportunity. Calms nervous system.',
     usage: 'Wear during periods of growth, change, or when actively pursuing new ventures.',
-          images: [
+    images: [
       "/assets/images/Green Aventurine Bracelet/Green Aventurine Bracelet 1.webp",
       "/assets/images/Green Aventurine Bracelet/Green Aventurine Bracelet 2.webp",
       "/assets/images/Green Aventurine Bracelet/Green Aventurine Bracelet 3.webp",
@@ -524,7 +524,7 @@ export const products = [
     chakraColor: '#D5D8DC',
     effect: 'Harmonizes all 7 chakras simultaneously for whole-system balance.',
     usage: 'Wear daily as a complete energetic maintenance tool. Cleanse under moonlight monthly.',
-          images: [
+    images: [
       "/assets/images/7 Chakra Bracelet/7 Chakra Bracelet 1.webp",
       "/assets/images/7 Chakra Bracelet/7 Chakra Bracelet 2.webp",
       "/assets/images/7 Chakra Bracelet/7 Chakra Bracelet 3.webp",
@@ -547,7 +547,7 @@ export const products = [
     chakraColor: '#C23B22',
     effect: 'Wearable continuous protection. Anchors your energy field.',
     usage: 'Wear daily, especially in crowded or energetically heavy environments.',
-          images: [
+    images: [
       "/assets/images/Black Tourmaline Pendant/Black Tourmaline Pendant 1.webp",
       "/assets/images/Black Tourmaline Pendant/Black Tourmaline Pendant 2.webp",
       "/assets/images/Black Tourmaline Pendant/Black Tourmaline Pendant 3.webp",
@@ -568,7 +568,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Amplifies your personal energy field. Keeps aura clear.',
     usage: 'Wear during important meetings, creative brainstorming, or public speaking.',
-          images: [
+    images: [
       "/assets/images/Clear Quartz Pendant/Clear Quartz Pendant 1.webp",
       "/assets/images/Clear Quartz Pendant/Clear Quartz Pendant 2.webp",
       "/assets/images/Clear Quartz Pendant/Clear Quartz Pendant 3.webp",
@@ -589,7 +589,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Continuously broadcasts love frequency. Heals heart chakra.',
     usage: 'Wear as a daily reminder to approach all interactions with compassion, starting with yourself.',
-          images: [
+    images: [
       "/assets/images/Rose Quartz Pendant/Rose Quartz Pendant 1.webp",
       "/assets/images/Rose Quartz Pendant/Rose Quartz Pendant 2.webp",
       "/assets/images/Rose Quartz Pendant/Rose Quartz Pendant 3.webp",
@@ -610,7 +610,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Enhances intuition and clear communication. Calms mental noise.',
     usage: 'Wear during creative work, writing, or spiritual practice.',
-          images: [
+    images: [
       "/assets/images/Amethyst Pendant/Amethyst Pendant 1.webp",
       "/assets/images/Amethyst Pendant/Amethyst Pendant 2.webp",
       "/assets/images/Amethyst Pendant/Amethyst Pendant 3.webp",
@@ -631,7 +631,7 @@ export const products = [
     chakraColor: '#F1C40F',
     effect: 'Activates confidence and creative flow. Abundance attraction.',
     usage: 'Wear when pursuing creative projects, business ventures, or manifestation work.',
-          images: [
+    images: [
       "/assets/images/Citrine Pendant/Citrine Pendant 1.webp",
       "/assets/images/Citrine Pendant/Citrine Pendant 2.webp",
       "/assets/images/Citrine Pendant/Citrine Pendant 3.webp",
@@ -654,7 +654,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Continuously charges and purifies all crystals placed on it.',
     usage: 'Place all your bracelets, pendants, and loose stones on this plate each night.',
-          images: [
+    images: [
       "/assets/images/Selenite Charging Plate/Selenite Charging Plate 1.webp",
       "/assets/images/Selenite Charging Plate/Selenite Charging Plate 2.webp",
       "/assets/images/Selenite Charging Plate/Selenite Charging Plate 3.webp",
@@ -675,7 +675,7 @@ export const products = [
     chakraColor: '#D5D8DC',
     effect: 'Radiates balanced energy across all 7 chakras into the space.',
     usage: 'Place in your meditation corner, home office, or any space that needs harmonising energy.',
-          images: [
+    images: [
       "/assets/images/7 Chakra Crystal Tree/7 Chakra Crystal Tree 1.webp",
       "/assets/images/7 Chakra Crystal Tree/7 Chakra Crystal Tree 2.webp",
       "/assets/images/7 Chakra Crystal Tree/7 Chakra Crystal Tree 3.webp",
@@ -696,7 +696,7 @@ export const products = [
     chakraColor: '#2ECC71',
     effect: 'Fills the space with love frequency. Invites harmony into relationships.',
     usage: 'Place in bedroom or living room to continuously elevate the emotional atmosphere.',
-          images: [
+    images: [
       "/assets/images/Rose Quartz Crystal Tree/Rose Quartz Crystal Tree 1.webp",
       "/assets/images/Rose Quartz Crystal Tree/Rose Quartz Crystal Tree 2.webp",
       "/assets/images/Rose Quartz Crystal Tree/Rose Quartz Crystal Tree 3.webp",
@@ -717,7 +717,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Calms and spiritually elevates the entire space.',
     usage: 'Place in a meditation room, bedroom, or reading nook for a calming ambient effect.',
-          images: [
+    images: [
       "/assets/images/Amethyst Crystal Tree/Amethyst Crystal Tree 1.webp",
       "/assets/images/Amethyst Crystal Tree/Amethyst Crystal Tree 2.webp",
       "/assets/images/Amethyst Crystal Tree/Amethyst Crystal Tree 3.webp",
@@ -738,7 +738,7 @@ export const products = [
     chakraColor: '#9B59B6',
     effect: 'Charges and purifies items placed inside. Creates a sacred holding space.',
     usage: 'Place your rings, bracelets, and pendants inside each night. Add intentions on paper slips.',
-          images: [
+    images: [
       "/assets/images/Selenite Charging Bowl/Selenite Charging Bowl 1.webp",
       "/assets/images/Selenite Charging Bowl/Selenite Charging Bowl 2.webp",
       "/assets/images/Selenite Charging Bowl/Selenite Charging Bowl 3.webp",
