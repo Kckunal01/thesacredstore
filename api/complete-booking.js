@@ -63,17 +63,9 @@ async function insertEmailLogs(logs) {
   return error;
 }
 
-export async function POST(req) {
+export default async function handler(req, res) {
   try {
-    const {
-      razorpayResponse,
-      formData,
-      consultation_type,
-      consultation_date,
-      consultation_time,
-      consultation_fee,
-      notes
-    } = await req.json();
+    const { razorpayResponse, formData, consultation_type, consultation_date, consultation_time, consultation_fee, notes } = req.body;
 
     // ---------- Idempotency check ----------
     const { data: existingPayment } = await supabase
@@ -83,7 +75,7 @@ export async function POST(req) {
       .maybeSingle();
 
     if (existingPayment) {
-      return new Response(JSON.stringify({ success: true, bookingId: existingPayment.booking_id }), { status: 200 });
+      return res.status(200).json({ success: true, bookingId: existingPayment.booking_id });
     }
 
     // ---------- Customer handling ----------
@@ -131,7 +123,7 @@ export async function POST(req) {
       if (rollbackErr) {
         console.error('Rollback of booking also failed', rollbackErr);
       }
-      return new Response(JSON.stringify({ message: 'Payment processing failed' }), { status: 500 });
+      return res.status(500).json({ message: 'Payment processing failed' });
     }
 
     // ---------- Email logs (non‑critical) ----------
@@ -146,9 +138,9 @@ export async function POST(req) {
 
     console.log('BOOKING_SUCCESS', { booking_id: booking.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });
 
-    return new Response(JSON.stringify({ success: true, bookingId: booking.id }), { status: 200 });
+    return res.status(200).json({ success: true, bookingId: booking.id });
   } catch (err) {
     console.error('complete-booking endpoint error', err);
-    return new Response(JSON.stringify({ message: 'Internal server error' }), { status: 500 });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 }

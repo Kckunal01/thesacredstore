@@ -9,9 +9,9 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-export async function POST({ request }) {
+export default async function handler(req, res) {
   try {
-    const { razorpayResponse, formData, cart } = await request.json();
+    const { razorpayResponse, formData, cart } = req.body;
 
     // ---------- Idempotency check ----------
     const { data: existingPayment } = await supabase
@@ -22,10 +22,7 @@ export async function POST({ request }) {
 
     if (existingPayment) {
       // Order already processed – return existing order ID
-      return new Response(
-        JSON.stringify({ success: true, orderId: existingPayment.order_id }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
-      );
+      return res.status(200).json({ success: true, orderId: existingPayment.order_id });
     }
 
     // ---------- Customer handling ----------
@@ -69,7 +66,7 @@ export async function POST({ request }) {
 
     if (orderError) {
       console.error("Order creation failed", orderError);
-      return new Response(JSON.stringify({ success: false, message: "Order creation failed" }), { status: 500 });
+      return res.status(500).json({ success: false, message: "Order creation failed" });
     }
 
     // ---------- Payment insertion ----------
@@ -94,7 +91,7 @@ export async function POST({ request }) {
         console.error("CRITICAL: payment insert failed and rollback failed", rollbackError);
       }
       console.error("Payment insertion failed", paymentError);
-      return new Response(JSON.stringify({ success: false, message: "Payment insertion failed" }), { status: 500 });
+      return res.status(500).json({ success: false, message: "Payment insertion failed" });
     }
 
     // ---------- Stock deduction ----------
@@ -119,12 +116,9 @@ export async function POST({ request }) {
 
     console.log('ORDER_SUCCESS', { order_id: order.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });
 
-    return new Response(JSON.stringify({ success: true, orderId: order.id }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return res.status(200).json({ success: true, orderId: order.id });
   } catch (err) {
     console.error("Unexpected error in complete-order", err);
-    return new Response(JSON.stringify({ success: false, message: "Server error" }), { status: 500 });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 }
