@@ -94,13 +94,11 @@ export default async function handler(req, res) {
     // ---------- Booking creation ----------
     const bookingPayload = {
       customer_id: customer.id,
-      consultation_type,
-      consultation_date,
-      consultation_time,
-      consultation_fee,
-      notes,
-      payment_status: 'paid',
-      payment_method: 'razorpay'
+      service_name: consultation_type,
+      booking_date: consultation_date,
+      booking_time: consultation_time,
+      phone: formData.phone,
+      status: 'pending'
     };
 
     const booking = await createBooking(bookingPayload);
