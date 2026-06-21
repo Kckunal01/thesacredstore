@@ -48,9 +48,9 @@ const Home = () => {
 
       <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
         <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4">THE <span className="font-prata text-8xl" style={{ color: '#D4AF59' }}>SACRED</span> STORE</h1>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium mt-8 mb-2">
-            <span className="text-black block">Make Space for <span className="text-[#ffbd59]">Meaning</span></span>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4">THE <span className="font-allura" style={{ color: '#D4AF37' }}>SACRED</span> STORE</h1>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-8 mb-2">
+            <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
           </h2>
           <p className="text-base md:text-lg text-muted font-light mb-4 max-w-xl">
             Reiki‑healing crystals, gems, and simple life‑changing rituals.
@@ -66,7 +66,7 @@ const Home = () => {
       </section>
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
-      <div className="py-4 overflow-hidden flex whitespace-nowrap" style={{ backgroundColor: '#ffbd59' }}>
+      <div className="bg-accent py-4 overflow-hidden flex whitespace-nowrap">
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
             <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
@@ -88,7 +88,7 @@ const Home = () => {
         <Container>
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
-              <span className="text-black">Insights &amp; Practices</span>
+              <span className="text-primary">Featured</span> <span className="half-gold">Collection</span>
             </h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
@@ -125,12 +125,12 @@ const Home = () => {
         <Container>
           <div className="text-center mb-10">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary tracking-wider">
-              <span className="text-primary font-display">Loved by</span> <span className="half-gold">Community</span>
+              <span className="text-primary">Loved By the</span> <span className="half-gold">Community</span>
             </h3>
           </div>
 
-          <div className="relative flex items-center max-w-7xl mx-auto group">
-            <button onClick={prevTestimonial} className="absolute left-0 z-10 w-8 h-8 flex items-center justify-center text-white bg-[#ffbd59] rounded-none opacity-0 group-hover:opacity-100 transition-opacity -ml-4 shadow-md cursor-pointer">&#x2190;</button>
+          <div className="relative flex items-center max-w-7xl mx-auto">
+            <button onClick={prevTestimonial} className="absolute left-0 z-10 p-2 text-muted hover:text-accent bg-background rounded-full border border-border -ml-4 shadow-sm">&larr;</button>
 
             <div className="w-full overflow-hidden">
               <motion.div
@@ -157,7 +157,7 @@ const Home = () => {
               </motion.div>
             </div>
 
-            <button onClick={nextTestimonial} className="absolute right-0 z-10 w-8 h-8 flex items-center justify-center text-white bg-[#ffbd59] rounded-none opacity-0 group-hover:opacity-100 transition-opacity -mr-4 shadow-md cursor-pointer">&#x2192;</button>
+            <button onClick={nextTestimonial} className="absolute right-0 z-10 p-2 text-muted hover:text-accent bg-background rounded-full border border-border -mr-4 shadow-sm">&rarr;</button>
           </div>
         </Container>
       </Section>

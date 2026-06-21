@@ -101,7 +101,7 @@ const BookCall = () => {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: amount,
       currency: currency,
-      name: 'RITUALIST',
+      name: 'The Sacred Store',
       description: 'Private Consultation Session',
       image: 'https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=200&auto=format&fit=crop',
       order_id: order_id,
@@ -141,7 +141,7 @@ const BookCall = () => {
         email,
         contact: phone
       },
-      theme: { color: '#111111' },
+      theme: { color: '#FFBD59' },
       modal: { ondismiss: () => setIsProcessing(false) },
     };
     const paymentObject = new window.Razorpay(options);
