@@ -119,7 +119,7 @@ export default async function handler(req, res) {
 
     console.log('ORDER_SUCCESS', { order_id: order.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });
 
-    return res.status(200).json({ success: true, orderId: order.id });
+    return res.status(200).json({ success: true, orderId: order.order_id });
   } catch (error) {
     console.error("FUNCTION ERROR:", error);
     return res.status(500).json({
