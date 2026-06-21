@@ -2,7 +2,7 @@
 // Secure backend endpoint for post‑payment processing using Supabase Service Role Key.
 
 import { createClient } from "@supabase/supabase-js";
-import { json } from "@sveltejs/kit"; // if using SvelteKit, otherwise adapt to your framework
+ // if using SvelteKit, otherwise adapt to your framework
 
 // Initialise Supabase admin client with service role key
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
