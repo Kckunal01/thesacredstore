@@ -6,3 +6,5 @@ dist/
 node_modules
 .env.local
 temp-converter/node_modules
+.vercel
+.env*

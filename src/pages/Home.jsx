@@ -66,17 +66,17 @@ const Home = () => {
       </section>
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
-      <div className="bg-accent py-4 overflow-hidden flex whitespace-nowrap">
+      <div className="py-4 overflow-hidden flex whitespace-nowrap" style={{ backgroundColor: '#ffbd59' }}>
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
+            <span key={i} className="text-sm font-semibold tracking-widest text-primary mx-8 uppercase flex-shrink-0 font-allura">
               PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
             </span>
           ))}
         </div>
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-semibold tracking-widest text-background mx-8 uppercase flex-shrink-0">
+            <span key={i} className="text-sm font-semibold tracking-widest text-primary mx-8 uppercase flex-shrink-0 font-allura">>
               PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
             </span>
           ))}
@@ -129,8 +129,8 @@ const Home = () => {
             </h3>
           </div>
 
-          <div className="relative flex items-center max-w-7xl mx-auto">
-            <button onClick={prevTestimonial} className="absolute left-0 z-10 p-2 text-muted hover:text-accent bg-background rounded-full border border-border -ml-4 shadow-sm">&larr;</button>
+          <div className="relative flex items-center max-w-7xl mx-auto group">
+            <button onClick={prevTestimonial} className="absolute left-0 z-10 w-8 h-8 flex items-center justify-center text-white bg-[#ffbd59] rounded-none opacity-0 group-hover:opacity-100 transition-opacity -ml-4 shadow-md cursor-pointer">&#x2190;</button>
 
             <div className="w-full overflow-hidden">
               <motion.div
@@ -157,7 +157,7 @@ const Home = () => {
               </motion.div>
             </div>
 
-            <button onClick={nextTestimonial} className="absolute right-0 z-10 p-2 text-muted hover:text-accent bg-background rounded-full border border-border -mr-4 shadow-sm">&rarr;</button>
+            <button onClick={nextTestimonial} className="absolute right-0 z-10 w-8 h-8 flex items-center justify-center text-white bg-[#ffbd59] rounded-none opacity-0 group-hover:opacity-100 transition-opacity -mr-4 shadow-md cursor-pointer">&#x2192;</button>
           </div>
         </Container>
       </Section>

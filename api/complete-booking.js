@@ -64,6 +64,9 @@ async function insertEmailLogs(logs) {
 }
 
 export default async function handler(req, res) {
+  console.log("FUNCTION STARTED");
+  console.log("SUPABASE_URL:", !!process.env.SUPABASE_URL);
+  console.log("SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   try {
     const { razorpayResponse, formData, consultation_type, consultation_date, consultation_time, consultation_fee, notes } = req.body;
 
@@ -139,8 +142,12 @@ export default async function handler(req, res) {
     console.log('BOOKING_SUCCESS', { booking_id: booking.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });
 
     return res.status(200).json({ success: true, bookingId: booking.id });
-  } catch (err) {
-    console.error('complete-booking endpoint error', err);
-    return res.status(500).json({ message: 'Internal server error' });
+  } catch (error) {
+    console.error("FUNCTION ERROR:", error);
+    return res.status(500).json({
+      success: false,
+      error: error?.message,
+      stack: error?.stack
+    });
   }
 }
