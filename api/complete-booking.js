@@ -2,6 +2,7 @@
 // Secure backend endpoint for post‑payment processing of a booking using Supabase Service Role Key.
 
 import { createClient } from '@supabase/supabase-js';
+import { sendBookingEmails } from './_emailHelper.js';
 
 // Service role key – must be set in environment variables.
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -59,8 +60,8 @@ async function insertPayment(payment) {
 }
 
 async function insertEmailLogs(logs) {
-  const { error } = await supabase.from('email_logs').insert(logs);
-  return error;
+  const { data, error } = await supabase.from('email_logs').insert(logs).select();
+  return { data, error };
 }
 
 export default async function handler(req, res) {
@@ -132,9 +133,18 @@ export default async function handler(req, res) {
       { customer_id: customer.id, entity_type: 'booking', entity_id: booking.id, email_type: 'booking_customer' },
       { customer_id: customer.id, entity_type: 'booking', entity_id: booking.id, email_type: 'booking_admin' },
     ];
-    const emailError = await insertEmailLogs(emailLogs);
+    const { data: emailLogsData, error: emailError } = await insertEmailLogs(emailLogs);
     if (emailError) {
       console.error('Email log insertion failed', emailError);
+    }
+
+    // Try immediate booking confirmation email delivery (isolated to not break booking success)
+    if (emailLogsData && emailLogsData.length > 0) {
+      try {
+        await sendBookingEmails(supabase, booking, customer, emailLogsData);
+      } catch (emailSendErr) {
+        console.error("Immediate booking email failed:", emailSendErr);
+      }
     }
 
     console.log('BOOKING_SUCCESS', { booking_id: booking.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });

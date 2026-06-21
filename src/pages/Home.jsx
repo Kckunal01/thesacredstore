@@ -76,7 +76,7 @@ const Home = () => {
         </div>
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
-            <span key={i} className="text-sm font-semibold tracking-widest text-primary mx-8 uppercase flex-shrink-0 font-allura">>
+            <span key={i} className="text-sm font-semibold tracking-widest text-primary mx-8 uppercase flex-shrink-0 font-allura">
               PAN-INDIA DELIVERY <span className="text-primary mx-4">·</span> 7 DAY RETURN <span className="text-primary mx-4">·</span> ASSURED GUARANTEE <span className="text-primary mx-4">·</span>
             </span>
           ))}

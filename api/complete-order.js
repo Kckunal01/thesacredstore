@@ -2,6 +2,7 @@
 // Secure backend endpoint for post‑payment processing using Supabase Service Role Key.
 
 import { createClient } from "@supabase/supabase-js";
+import { sendOrderEmails } from "./_emailHelper.js";
  // if using SvelteKit, otherwise adapt to your framework
 
 // Initialise Supabase admin client with service role key
@@ -109,12 +110,21 @@ export default async function handler(req, res) {
     }
 
     // ---------- Email logs (non‑critical) ----------
-    const { error: emailError } = await supabase.from("email_logs").insert([
+    const { data: emailLogsData, error: emailError } = await supabase.from("email_logs").insert([
       { customer_id: customer.id, entity_type: "order", entity_id: order.id, email_type: "order_customer" },
       { customer_id: customer.id, entity_type: "order", entity_id: order.id, email_type: "order_admin" },
-    ]);
+    ]).select();
     if (emailError) {
       console.error("Email log insertion error (non‑critical)", emailError);
+    }
+
+    // Try immediate order confirmation email delivery (isolated to not break order success)
+    if (emailLogsData && emailLogsData.length > 0) {
+      try {
+        await sendOrderEmails(supabase, order, customer, emailLogsData);
+      } catch (emailSendErr) {
+        console.error("Immediate order email failed:", emailSendErr);
+      }
     }
 
     console.log('ORDER_SUCCESS', { order_id: order.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });
