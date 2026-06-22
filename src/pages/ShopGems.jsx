@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
-import ProductCard from '../components/ui/ProductCard';
-import { products } from '../data/products';
 import { Search } from 'lucide-react';
+import { useContext } from 'react';
+import { ProductsContext } from '../context/ProductsContext';
+import ProductCard from '../components/ui/ProductCard';
 
 const ShopGems = () => {
+  const { products } = useContext(ProductsContext);
   const [searchQuery, setSearchQuery] = useState('');
 
 

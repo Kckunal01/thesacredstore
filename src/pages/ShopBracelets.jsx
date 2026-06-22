@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import ProductCard from '../components/ui/ProductCard';
-import { products } from '../data/products';
 import { Search } from 'lucide-react';
+import { useContext } from 'react';
+import { ProductsContext } from '../context/ProductsContext';
 
 const ShopBracelets = () => {
+  const { products } = useContext(ProductsContext);
   const [searchQuery, setSearchQuery] = useState('');
 
   const displayedProducts = searchQuery.trim() !== ''

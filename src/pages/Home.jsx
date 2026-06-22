@@ -5,9 +5,11 @@ import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
 import ProductCard from '../components/ui/ProductCard';
-import { products } from '../data/products';
+import { useContext } from 'react';
+import { ProductsContext } from '../context/ProductsContext';
 
 const Home = () => {
+  const { products } = useContext(ProductsContext);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [currentHeroImage, setCurrentHeroImage] = useState(0);
   // Curated featured: 2 crystals, 1 gemstone, 1 bracelet

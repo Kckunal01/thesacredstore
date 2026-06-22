@@ -2,9 +2,9 @@
 import { createClient } from '@supabase/supabase-js';
 
 
-// Use Vite env variables when available, otherwise fallback to process.env (for Node scripts)
-const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY;
+// Vite automatically injects env variables via import.meta.env
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);

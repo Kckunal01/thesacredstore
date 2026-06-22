@@ -7,7 +7,7 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const baseUrl = process.env.VITE_BASE_URL || 'http://localhost:5173'; // adjust if needed
+const baseUrl = import.meta.env.VITE_BASE_URL || 'http://localhost:5173'; // adjust if needed
 
 async function testBookingFlow() {
   console.log('--- Testing Booking Flow ---');

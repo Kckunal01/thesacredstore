@@ -4,12 +4,11 @@ import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
-import { products } from '../data/products';
 import { Plus, Minus, X } from 'lucide-react';
+import { ProductsContext } from '../context/ProductsContext';
 // Import necessary Supabase helpers
 import { getProductStock, checkStockRequestExists, createStockRequest } from '../lib/supabase';
 
-// Helper to generate slug from product name
 // Helper to generate slug from product name
 function slugify(text) {
   return text
@@ -27,13 +26,14 @@ import { getProductStockMap } from '../lib/supabaseProducts';
 const Product = () => {
   const { id } = useParams();
   const { cart, addToCart } = useContext(CartContext);
+  const { products } = useContext(ProductsContext);
   const [activeTab, setActiveTab] = useState('philosophy');
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   // Find product by id (string comparison)
-  const product = products.find(p => p.id?.toString() === id);
+  const product = products.find(p => p.id?.toString() === id || p.db_id?.toString() === id || p.slug === id);
   // Stock State
   const [stock, setStock] = useState(null);
   // Add active flag state

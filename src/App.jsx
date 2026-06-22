@@ -1,11 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { CartProvider } from './context/CartContext';
+import { ProductsProvider } from './context/ProductsContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 
 // Pages
+// ... (Pages imports)
 import Home from './pages/Home';
 import About from './pages/About';
 import Blogs from './pages/Blogs';
@@ -22,14 +24,17 @@ import TrackOrder from './pages/TrackOrder';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import RefundPolicy from './pages/RefundPolicy';
 import TermsConditions from './pages/TermsConditions';
+import Admin from './pages/Admin';
+
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <ScrollToTop />
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-grow pt-20">
+    <ProductsProvider>
+      <CartProvider>
+        <Router>
+          <ScrollToTop />
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow pt-20">
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/aboutus" element={<About />} />
@@ -48,12 +53,14 @@ function App() {
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/terms-conditions" element={<TermsConditions />} />
+              <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
           <Footer />
         </div>
       </Router>
     </CartProvider>
+  </ProductsProvider>
   );
 }
 
