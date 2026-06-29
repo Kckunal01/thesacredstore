@@ -7,7 +7,8 @@ import { CartContext } from '../context/CartContext';
 import { Plus, Minus, X } from 'lucide-react';
 import { ProductsContext } from '../context/ProductsContext';
 // Import necessary Supabase helpers
-import { getProductStock, checkStockRequestExists, createStockRequest } from '../lib/supabase';
+// Supabase helpers are no longer needed for stock; keep only waitlist helpers
+import { checkStockRequestExists, createStockRequest } from '../lib/supabase';
 
 // Helper to generate slug from product name
 function slugify(text) {
@@ -21,7 +22,7 @@ function slugify(text) {
 // Stock state will be defined inside the component
 
 
-import { getProductStockMap } from '../lib/supabaseProducts';
+// Removed redundant stock map import
 
 const Product = () => {
   const { id } = useParams();
@@ -34,46 +35,10 @@ const Product = () => {
 
   // Find product by id (string comparison)
   const product = products.find(p => p.id?.toString() === id || p.db_id?.toString() === id || p.slug === id);
-  // Stock State
-  const [stock, setStock] = useState(null);
-  // Add active flag state
-  const [active, setActive] = useState(true);
-  // Database UUID State
-  const [dbId, setDbId] = useState(null);
-
-  const fetchStockAndActive = async () => {
-    try {
-      const stockMap = await getProductStockMap();
-      const productSlug = product.slug || slugify(product.name);
-      const info = stockMap[productSlug];
-      if (info) {
-        setStock(info.stock);
-        setActive(info.active);
-        setDbId(info.id);
-      } else {
-        setStock(product.stock !== undefined ? product.stock : 10);
-        setActive(true);
-      }
-    } catch (err) {
-      console.error('Error fetching stock map:', err);
-    }
-  };
-
-  useEffect(() => {
-    if (product) {
-      fetchStockAndActive();
-      const handleFocus = () => fetchStockAndActive();
-      const handleVisibility = () => {
-        if (document.visibilityState === 'visible') fetchStockAndActive();
-      };
-      window.addEventListener('focus', handleFocus);
-      document.addEventListener('visibilitychange', handleVisibility);
-      return () => {
-        window.removeEventListener('focus', handleFocus);
-        document.removeEventListener('visibilitychange', handleVisibility);
-      };
-    }
-  }, [product]);
+  // Derive stock, active status, and dbId from product data (provided by ProductsContext)
+  const stock = product?.stock ?? null;
+  const active = product?.active ?? true;
+  const dbId = product?.db_id ?? null;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [modalMessage, setModalMessage] = useState('');
