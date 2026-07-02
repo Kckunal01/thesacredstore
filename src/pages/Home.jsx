@@ -12,9 +12,8 @@ const Home = () => {
   const { products } = useContext(ProductsContext);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [currentHeroImage, setCurrentHeroImage] = useState(0);
-  // Curated featured: 2 crystals, 1 gemstone, 1 bracelet
-  const featuredIds = ['c3', 'c4', 'g6', 'b7'];
-  const bestSellers = featuredIds.map(id => products.find(p => p.id === id)).filter(Boolean);
+  // Dynamically filter featured products from database (instead of hardcoded static IDs)
+  const bestSellers = products.filter(p => p.featured === true).slice(0, 4);
 
   const heroImages = [
     'https://images.unsplash.com/photo-1596700777174-da97ec0b2b8c?q=80&w=2000&auto=format&fit=crop', // Abstract neutral/mineral feel

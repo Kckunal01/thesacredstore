@@ -260,14 +260,23 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
   console.log('handleInlineActiveToggle completed');
 };
 
+  // Toast notification state
+  const [toast, setToast] = useState({ message: '', type: '' });
+
+  useEffect(() => {
+    if (!toast.message) return;
+    const timer = setTimeout(() => setToast({ message: '', type: '' }), 4000);
+    return () => clearTimeout(timer);
+  }, [toast.message]);
+
   // Bulk operation processing
   const handleBulkAction = async () => {
     if (selectedProductIds.length === 0) {
-      alert('Please select at least one product.');
+      setToast({ message: 'Please select at least one product.', type: 'error' });
       return;
     }
     if (!bulkAction) {
-      alert('Please select an action to apply.');
+      setToast({ message: 'Please select an action to apply.', type: 'error' });
       return;
     }
 
@@ -276,11 +285,13 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       const dbIds = selectedProds.map(p => p.db_id).filter(Boolean);
 
       if (dbIds.length === 0) {
-        alert('Could not find Supabase db_ids for selected products.');
+        setToast({ message: 'Could not find Supabase db_ids for selected products.', type: 'error' });
         return;
       }
 
-      for (const p of selectedProds) {
+      setToast({ message: 'Applying bulk updates...', type: 'info' });
+
+      const updatePromises = selectedProds.map(p => {
         let updates = {};
         if (bulkAction === 'increase_price') {
           const pct = parseFloat(bulkVal) || 0;
@@ -308,19 +319,22 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
           updates.featured = false;
         }
 
-        const { error } = await supabase
+        return supabase
           .from('products')
           .update(updates)
-          .eq('id', p.db_id);
+          .eq('id', p.db_id)
+          .then(({ error }) => {
+            if (error) throw error;
+          });
+      });
 
-        if (error) throw error;
-      }
+      await Promise.all(updatePromises);
 
-      alert('Bulk action executed successfully.');
+      setToast({ message: 'Bulk action executed successfully.', type: 'success' });
       setSelectedProductIds([]);
       refreshProducts();
     } catch (err) {
-      alert('Error executing bulk action: ' + err.message);
+      setToast({ message: 'Error executing bulk action: ' + err.message, type: 'error' });
     }
   };
 
@@ -586,7 +600,17 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
   const lowStockProds = products.filter(p => p.stock <= 2).length;
 
   return (
-    <Section className="bg-[#FEFBF1] min-h-screen pt-24 pb-12">
+    <Section className="bg-[#FEFBF1] min-h-screen pt-24 pb-12 relative">
+      {/* Toast Notification Container */}
+      {toast.message && (
+        <div className={`fixed top-24 right-6 z-50 px-6 py-3 border text-xs font-semibold uppercase tracking-wider shadow-lg transition-all duration-300 ${
+          toast.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' :
+          toast.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' :
+          'bg-amber-50 border-amber-200 text-amber-800'
+        }`}>
+          {toast.message}
+        </div>
+      )}
       <Container>
         {/* Admin Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-border pb-6 mb-8 gap-4">
