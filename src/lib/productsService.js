@@ -104,16 +104,9 @@ export async function fetchProducts(forceRefetch = false) {
       return cachedProducts;
     }
   } catch (err) {
-    console.error('Supabase fetch failed, falling back to products.js', err);
-  }
-    console.error('ENTERING FALLBACK');
+  console.error('Supabase fetch failed:', err);
+  // Return empty array to indicate no products loaded
+  return [];
+}
 
-  // Fallback
-  return localProducts.map(p => ({
-    ...p,
-    db_id: null,
-    slug: p.slug || slugify(p.name),
-    stock: p.stock !== undefined ? p.stock : 10,
-    active: p.active !== undefined ? p.active : true,
-  }));
 }
