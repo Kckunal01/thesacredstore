@@ -37,6 +37,15 @@ export async function fetchProducts(forceRefetch = false) {
       .from('products')
       .select('*')
       .order('name', { ascending: true });
+        // Instrumentation logs for Supabase fetch
+        console.log('SUPABASE RESPONSE');
+        console.log('error:', error);
+        console.log('status:', error?.status);
+        console.log('message:', error?.message);
+        console.log('details:', error?.details);
+        console.log('hint:', error?.hint);
+        console.log('rows:', data?.length);
+        console.log('data:', data);
     
     if (error) throw error;
     
@@ -97,6 +106,7 @@ export async function fetchProducts(forceRefetch = false) {
   } catch (err) {
     console.error('Supabase fetch failed, falling back to products.js', err);
   }
+    console.error('ENTERING FALLBACK');
 
   // Fallback
   return localProducts.map(p => ({

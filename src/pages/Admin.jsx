@@ -161,19 +161,34 @@ const Admin = () => {
   };
 
   // Handle inline active toggles
-  const handleInlineActiveToggle = async (prodId, currentActive) => {
-    try {
-      const { error } = await supabase
-        .from('products')
-        .update({ active: !currentActive })
-        .eq('id', prodId);
-
-      if (error) throw error;
-      refreshProducts();
-    } catch (err) {
-      alert('Failed to update active state: ' + err.message);
-    }
-  };
+// Handle inline active toggles
+const handleInlineActiveToggle = async (prodId, currentActive) => {
+  console.log('handleInlineActiveToggle entered', { prodId, currentActive });
+  const product = products.find(p => p.db_id === prodId);
+  console.log('Current product object', {
+    name: product?.name,
+    slug: product?.slug,
+    db_id: product?.db_id,
+    stock: product?.stock,
+    active: product?.active,
+  });
+  const payload = { active: !currentActive };
+  console.log('Mutation payload', payload);
+  try {
+    const { error } = await supabase
+      .from('products')
+      .update(payload)
+      .eq('id', prodId);
+    console.log('Supabase response', { error });
+    if (error) throw error;
+    refreshProducts();
+    console.log('refreshProducts called');
+  } catch (err) {
+    alert('Failed to update active state: ' + err.message);
+    console.log('Error in handleInlineActiveToggle', err);
+  }
+  console.log('handleInlineActiveToggle completed');
+};
 
   // Bulk operation processing
   const handleBulkAction = async () => {
