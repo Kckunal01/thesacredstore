@@ -50,9 +50,9 @@ const TrackOrder = () => {
       .from('orders')
       .select('*')
       .eq('order_id', id)
-      .single();
+      .maybeSingle();
     setLoading(false);
-    if (error) {
+    if (error || !data) {
       setErrorMsg('No order found with the specified ID. Please verify and try again.');
       setOrder(null);
     } else {

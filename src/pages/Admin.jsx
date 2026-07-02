@@ -49,33 +49,83 @@ const Admin = () => {
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // 1. Auto logout after 30 minutes of inactivity
+  useEffect(() => {
+    if (!session || !isAdmin) return;
+
+    let timeoutId;
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        setAuthLoading(true);
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setIsAdmin(false);
+        setAuthError('Your session has expired. Please sign in again.');
+        setAuthLoading(false);
+      }, INACTIVITY_LIMIT);
+    };
+
+    // Events to monitor for activity
+    const events = ['mousemove', 'keydown', 'mousedown', 'scroll', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    
+    // Start initial timer
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [session, isAdmin]);
+
   // Check user authentication and profiles.is_admin
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
+    const initSession = async () => {
+      const { data: { session: activeSession } } = await supabase.auth.getSession();
+      if (activeSession?.user) {
+        await checkAdminStatus(activeSession.user.id, activeSession);
       } else {
-        setAuthLoading(false);
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
-      } else {
+        setSession(null);
+        setUser(null);
         setIsAdmin(false);
         setAuthLoading(false);
+      }
+    };
+    initSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+      switch (event) {
+        case 'SIGNED_IN':
+        case 'TOKEN_REFRESHED':
+        case 'INITIAL_SESSION':
+          if (newSession?.user) {
+            await checkAdminStatus(newSession.user.id, newSession);
+          } else {
+            setSession(null);
+            setUser(null);
+            setIsAdmin(false);
+            setAuthLoading(false);
+          }
+          break;
+        case 'SIGNED_OUT':
+          setSession(null);
+          setUser(null);
+          setIsAdmin(false);
+          setAuthLoading(false);
+          break;
+        default:
+          break;
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId) => {
+  const checkAdminStatus = async (userId, activeSession) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -85,13 +135,31 @@ const Admin = () => {
       
       if (error) {
         console.error('Error fetching admin status:', error);
-        setIsAdmin(true); // Fallback: Treat as admin if table access fails
+        // Unauthorized
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setIsAdmin(false);
+        setAuthError('Unauthorized.');
+      } else if (data?.is_admin) {
+        setSession(activeSession);
+        setUser(activeSession.user);
+        setIsAdmin(true);
       } else {
-        setIsAdmin(!!data?.is_admin);
+        // Not an admin: unauthorized
+        await supabase.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setIsAdmin(false);
+        setAuthError('Unauthorized.');
       }
     } catch (err) {
       console.error('Admin status check exception:', err);
-      setIsAdmin(true); // Fallback: Treat as admin if error occurs
+      await supabase.auth.signOut();
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      setAuthError('Unauthorized.');
     } finally {
       setAuthLoading(false);
     }
@@ -102,8 +170,10 @@ const Admin = () => {
     setAuthLoading(true);
     setAuthError('');
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setAuthError(error.message);
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        setAuthError(error.message);
+      }
     } catch (err) {
       setAuthError('An unexpected login error occurred.');
     } finally {
@@ -139,10 +209,10 @@ const Admin = () => {
   };
 
   useEffect(() => {
-    if (isAdmin) {
+    if (session && isAdmin) {
       fetchOrders();
     }
-  }, [isAdmin]);
+  }, [session, isAdmin]);
 
   // Handle inline stock updates
   const handleInlineStockUpdate = async (prodId, newStock) => {
@@ -442,7 +512,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     return (
       <div className="min-h-screen bg-[#FEFBF1] flex items-center justify-center">
         <div className="text-center font-display text-accent tracking-widest text-lg animate-pulse">
-          Cleansing and preparing workspace...
+          Checking authentication...
         </div>
       </div>
     );
