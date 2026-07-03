@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { ProductsContext } from '../context/ProductsContext';
+// ProductsContext import removed; using direct Supabase fetch for admin
 import Button from '../components/ui/Button';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
@@ -17,9 +17,14 @@ const Admin = () => {
   const [authError, setAuthError] = useState('');
 
   // App data states
-  const { products, loading: productsLoading, refreshProducts } = useContext(ProductsContext);
+  const [adminProducts, setAdminProducts] = useState([]);
+const [adminProductsLoading, setAdminProductsLoading] = useState(true);
+
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+const products = adminProducts;
+const productsLoading = adminProductsLoading;
+const refreshProducts = async () => { await loadAllProducts(); };
 
   // Navigation state: 'dashboard' | 'products' | 'orders'
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -211,10 +216,28 @@ const Admin = () => {
   useEffect(() => {
     if (session && isAdmin) {
       fetchOrders();
+      loadAllProducts();
     }
   }, [session, isAdmin]);
 
-  // Handle inline stock updates
+  // Load all products (admin view)
+const loadAllProducts = async () => {
+  setAdminProductsLoading(true);
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('name', { ascending: true });
+    if (error) throw error;
+    setAdminProducts((data || []).map(item => ({ ...item, db_id: item.id })));
+  } catch (err) {
+    console.error('Failed to load products:', err);
+  } finally {
+    setAdminProductsLoading(false);
+  }
+};
+
+// Handle inline stock updates
   const handleInlineStockUpdate = async (prodId, newStock) => {
     try {
       const stockVal = parseInt(newStock) || 0;
@@ -233,31 +256,25 @@ const Admin = () => {
   // Handle inline active toggles
 // Handle inline active toggles
 const handleInlineActiveToggle = async (prodId, currentActive) => {
-  console.log('handleInlineActiveToggle entered', { prodId, currentActive });
+
   const product = products.find(p => p.db_id === prodId);
-  console.log('Current product object', {
-    name: product?.name,
-    slug: product?.slug,
-    db_id: product?.db_id,
-    stock: product?.stock,
-    active: product?.active,
-  });
+
   const payload = { active: !currentActive };
-  console.log('Mutation payload', payload);
+
   try {
     const { error } = await supabase
       .from('products')
       .update(payload)
       .eq('id', prodId);
-    console.log('Supabase response', { error });
+
     if (error) throw error;
     refreshProducts();
-    console.log('refreshProducts called');
+
   } catch (err) {
     alert('Failed to update active state: ' + err.message);
-    console.log('Error in handleInlineActiveToggle', err);
+
   }
-  console.log('handleInlineActiveToggle completed');
+
 };
 
   // Toast notification state
@@ -860,8 +877,31 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                       <td className="p-4 text-center">
                         <button
                           onClick={async () => {
-                            const { error } = await supabase.from('products').update({ featured: !p.featured }).eq('id', p.db_id);
-                            if (!error) refreshProducts();
+                            const newFeaturedVal = !p.featured;
+                            const payload = { featured: newFeaturedVal };
+
+
+                            // 2. Perform Supabase update
+                            const updateResponse = await supabase
+                              .from('products')
+                              .update(payload)
+                              .eq('id', p.db_id)
+                              .select('*');
+
+                            // 3. Immediate SELECT after update
+                            const dbResult = await supabase
+                              .from('products')
+                              .select('id,featured')
+                              .eq('id', p.db_id)
+                              .single();
+
+
+                            // 4. Refresh context and log after refresh
+                            refreshProducts();
+                            setTimeout(() => {
+                              const contextProd = products.find(prod => prod.db_id === p.db_id);
+
+                            }, 500);
                           }}
                           className={`inline-flex p-1.5 rounded-full transition-all ${
                             p.featured ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400'
@@ -1041,15 +1081,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     type="text"
                     value={prodForm.chakra}
                     onChange={(e) => setProdForm({...prodForm, chakra: e.target.value})}
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Country of Origin</label>
-                  <input
-                    type="text"
-                    value={prodForm.origin}
-                    onChange={(e) => setProdForm({...prodForm, origin: e.target.value})}
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   />
                 </div>

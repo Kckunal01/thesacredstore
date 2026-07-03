@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
+import FAQSection from '../components/ui/FAQSection';
 
 const About = () => {
   return (
     <div className="bg-background min-h-screen pt-20">
       <Section>
         <Container>
-
 
           {/* Image & Text Split */}
           <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center mb-32">
@@ -18,9 +18,9 @@ const About = () => {
             </div>
             <div className="w-full lg:w-1/2 flex flex-col justify-center">
               <span className="font-display text-2xl tracking-[0.15em] uppercase font-medium text-[#ffbd59] mb-4 block">THE FOUNDER</span>
-            <h3 className="text-4xl md:text-5xl font-display text-primary mb-6">
+              <h3 className="text-4xl md:text-5xl font-display text-primary mb-6">
                 <span className="text-primary">Guided by Energy</span>
-            </h3>
+              </h3>
               <p className="text-muted font-light leading-relaxed mb-6">
                 The Sacred Store was born from a deep connection to the Earth's energy, founded by a master Reiki healer dedicated to bringing authentic, potent healing into your everyday life.
               </p>
@@ -55,7 +55,12 @@ const About = () => {
               <p className="text-muted text-sm font-light">1-on-1 personalized guidance.</p>
             </div>
           </div>
+
         </Container>
+
+        {/* FAQ Section */}
+        <FAQSection />
+
       </Section>
     </div>
   );

@@ -1,11 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
+
+const NewsletterForm = () => {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState({ type: '', message: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    setStatus({ type: '', message: '' });
+
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert([{ email, status: 'active' }]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique key constraint in Postgres
+          setStatus({ type: 'error', message: "You're already subscribed." });
+        } else {
+          setStatus({ type: 'error', message: error.message });
+        }
+      } else {
+        setStatus({ type: 'success', message: '✓ Successfully subscribed' });
+        setEmail('');
+      }
+    } catch (err) {
+      setStatus({ type: 'error', message: 'An unexpected error occurred.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubscribe} className="space-y-3 font-body">
+      <div className="flex flex-col space-y-2">
+        <input
+          type="email"
+          required
+          placeholder="Email Address"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="bg-background border border-border px-3 py-2 text-xs focus:outline-none focus:border-accent text-primary placeholder-muted/60"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black py-2.5 text-[9px] uppercase tracking-[0.2em] font-bold transition-all"
+        >
+          {loading ? 'Subscribing...' : 'Subscribe'}
+        </button>
+      </div>
+      {status.message && (
+        <p className={`text-[10px] font-semibold tracking-wider uppercase ${status.type === 'success' ? 'text-green-600' : 'text-amber-600'}`}>
+          {status.message}
+        </p>
+      )}
+    </form>
+  );
+};
 
 const Footer = () => {
   return (
     <footer className="bg-surface border-t border-border pt-20 pb-12">
       <div className="w-full max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-12 lg:gap-16">
 
           {/* Column 1: Brand */}
           <div className="flex flex-col">
@@ -38,7 +100,7 @@ const Footer = () => {
           {/* Column 3: Quick Links */}
           <div className="flex flex-col">
             <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Quick Links</h4>
-            <nav className="flex flex-col space-y-4 text-base font-semibold tracking-widest uppercase text-muted">
+            <nav className="flex flex-col space-y-4 text-sm font-medium tracking-widest uppercase text-muted">
                <Link to="/track-order" className="text-primary hover:text-primary transition-colors cursor-pointer">Track Order</Link>
                <Link to="/privacy-policy" className="text-primary hover:text-primary transition-colors cursor-pointer">Privacy Policy</Link>
                <Link to="/refund-policy" className="text-primary hover:text-primary transition-colors cursor-pointer">Refund Policy</Link>
@@ -59,6 +121,15 @@ const Footer = () => {
                 <p className="text-sm text-muted font-light">+91 95549 30456</p>
               </div>
             </div>
+          </div>
+
+          {/* Column 5: Stay Connected Newsletter */}
+          <div className="flex flex-col col-span-1 md:col-span-1">
+            <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Stay Connected</h4>
+            <p className="text-xs text-muted leading-relaxed font-light mb-4 font-body">
+              Be the first to know about new collections, exclusive offers, and spiritual insights.
+            </p>
+            <NewsletterForm />
           </div>
 
         </div>

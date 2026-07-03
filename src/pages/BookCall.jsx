@@ -128,7 +128,7 @@ const BookCall = () => {
           const data = await completeRes.json();
           setIsSubmitted(true);
           // Store booking reference for UI (optional)
-          console.log('Booking reference:', data.bookingId);
+
         } catch (e) {
           console.error('Booking completion error:', e);
           alert('Booking failed: ' + e.message);

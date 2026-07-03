@@ -32,6 +32,11 @@ const Product = () => {
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [deliveryInfo, setDeliveryInfo] = useState(null);
+  const [estimatedRange, setEstimatedRange] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Find product by id (string comparison)
   const product = products.find(p => p.id?.toString() === id || p.db_id?.toString() === id || p.slug === id);
@@ -49,7 +54,66 @@ const Product = () => {
 
   const discountPercentage = product?.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
 
-  // Removed redundant stock fetch; fetchStockAndActive handles stock and active state.
+  // Delivery Estimator logic
+  const handleCheckPin = async () => {
+    // Sanitize input: keep only digits
+    const sanitized = pin.replace(/\D/g, '').trim();
+    if (sanitized.length !== 6) {
+      setPinError('Please enter a valid 6-digit PIN code.');
+      setEstimatedRange('');
+      return;
+    }
+    // Update pin state with sanitized value
+    setPin(sanitized);
+    setPinError('');
+    setLoading(true);
+    // Use sanitized PIN for caching & API calls
+    const effectivePin = sanitized;
+    const cached = sessionStorage.getItem(`pin_${effectivePin}`);
+    if (cached) {
+      const info = JSON.parse(cached);
+      applyDeliveryInfo(info);
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch(`https://api.postalpincode.in/pincode/${effectivePin}`);
+      const data = await res.json();
+      if (data[0].Status !== 'Success') throw new Error('API error');
+      const post = data[0].PostOffice[0];
+      const info = { city: post.District, state: post.State, district: post.District };
+      sessionStorage.setItem(`pin_${effectivePin}`, JSON.stringify(info));
+      applyDeliveryInfo(info);
+    } catch (e) {
+      setPinError('Delivery estimate unavailable. Please try again.');
+      setEstimatedRange('');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyDeliveryInfo = (info) => {
+    setDeliveryInfo(info);
+    const delDays = getDeliveryDays(info);
+    const now = new Date();
+    const add = (d) => new Date(now.getTime() + d * 24 * 60 * 60 * 1000);
+    const format = (d) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    if (delDays.min === delDays.max) {
+      setEstimatedRange(`${format(add(delDays.min))}`);
+    } else {
+      setEstimatedRange(`${format(add(delDays.min))} – ${format(add(delDays.max))}`);
+    }
+  };
+
+  const getDeliveryDays = (info) => {
+    const city = info.city.toLowerCase();
+    const delhiNcr = ['new delhi', 'delhi'];
+    const tier1 = ['mumbai', 'chennai', 'bangalore', 'hyderabad', 'pune', 'kochi'];
+    const tier2 = ['jaipur', 'lucknow', 'kanpur', 'nagpur', 'indore', 'bhopal'];
+    if (delhiNcr.includes(city)) return { min: 2, max: 3 };
+    if (tier1.includes(city) || tier2.includes(city)) return { min: 3, max: 5 };
+    return { min: 5, max: 7 };
+  };
 
   if (!product) {
     return (
@@ -301,6 +365,26 @@ const Product = () => {
                   </li>
                 </ul>
               )}
+            </div>
+
+            {/* Estimated Delivery Section (Moved below tabs) */}
+            <div className="mt-8 pt-6 border-t border-border">
+              <p className="text-[10px] uppercase tracking-widest text-[#000000] mb-2 font-bold font-body">Estimate Delivery</p>
+              <div className="flex items-center gap-2 max-w-xs">
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={pin}
+                  onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+                  className="w-full bg-background border border-border py-2 px-3 text-sm focus:outline-none focus:border-accent text-primary"
+                  placeholder="Enter 6-digit PIN"
+                />
+                <button onClick={handleCheckPin} className="bg-primary hover:bg-[#FFBD59] hover:text-[#000000] text-background px-4 py-2 text-xs uppercase tracking-widest font-bold transition-colors">
+                  {loading ? '...' : 'Go'}
+                </button>
+              </div>
+              {pinError && <p className="text-xs text-red-500 mt-2 font-body">{pinError}</p>}
+              {estimatedRange && <p className="text-xs text-accent mt-2 font-bold font-body">Delivers by {estimatedRange}</p>}
             </div>
           </div>
         </div>

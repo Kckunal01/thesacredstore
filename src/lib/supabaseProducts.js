@@ -53,7 +53,7 @@ export async function deductProductStockBySlug(slug, quantity) {
       console.error('Failed to update product stock by slug:', updateErr);
       return;
     }
-    console.log(`Stock for product ${slug} deducted by ${quantity}. New stock: ${newStock}`);
+
     // Low stock alert handling (<=2)
     if (newStock <= 2) {
       try {
@@ -77,7 +77,7 @@ export async function deductProductStockBySlug(slug, quantity) {
           if (insertErr) {
             console.error('[LOW STOCK] insert failed', insertErr);
           } else {
-            console.log('[LOW STOCK] alert created', product.name);
+
           }
         }
       } catch (alertErr) {

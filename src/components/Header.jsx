@@ -11,9 +11,7 @@ const Header = () => {
   const location = useLocation();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -28,11 +26,11 @@ const Header = () => {
           {children}
         </span>
         {active && (
-          <motion.div 
-            layoutId="nav-underline" 
-            className="absolute bottom-0 w-full h-[1px] bg-accent" 
+          <motion.div
+            layoutId="nav-underline"
+            className="absolute bottom-0 w-full h-[1px] bg-accent"
             initial={false}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           />
         )}
         {/* Hover underline for non-active */}
@@ -52,11 +50,11 @@ const Header = () => {
           {/* Left: Logo */}
           <Link to="/" className="flex items-center font-display tracking-[0.15em] uppercase font-medium text-accent hover:text-accent transition-colors">
             <picture>
-  <source srcSet="/assets/images/Logo-Nav.webp" type="image/webp" />
-  <img src="/assets/images/Logo-Nav.png" alt="Logo-Nav" className="w-16 h-16 object-contain" />
-</picture>
+              <source srcSet="/assets/images/Logo-Nav.webp" type="image/webp" />
+              <img src="/assets/images/Logo-Nav.png" alt="Logo-Nav" className="w-16 h-16 object-contain" />
+            </picture>
           </Link>
-          
+
           {/* Center: Navigation - Sequence: Home, Shop, Book Now, Blogs */}
           <nav className="hidden md:flex items-center space-x-10 font-medium text-[11px] tracking-[0.15em] uppercase">
             <NavLink to="/">Home</NavLink>
@@ -69,7 +67,7 @@ const Header = () => {
                   layoutId="nav-underline" 
                   className="absolute bottom-0 w-full h-[1px] bg-accent" 
                   initial={false}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 />
               )}
               {!isShopActive && (
@@ -77,10 +75,12 @@ const Header = () => {
               )}
               {/* Dropdown */}
               <div className="absolute top-[100%] left-0 mt-2 w-52 bg-surface border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-lg translate-y-2 group-hover:translate-y-0">
-                <Link to="/shop-crystals" className="block px-6 py-3 text-primary hover:bg-background hover:text-accent transition-colors">Crystals</Link>
-                <Link to="/shop-gems" className="block px-6 py-3 text-primary hover:bg-background hover:text-accent transition-colors">Gemstones</Link>
-                <Link to="/shop-jewellery" className="block px-6 py-3 text-primary hover:bg-background hover:text-accent transition-colors">Jewellery</Link>
-                <Link to="/shop-utility" className="block px-6 py-3 text-primary hover:bg-background hover:text-accent transition-colors">Utility & Decor</Link>
+                <nav className="flex flex-col space-y-4 text-sm font-medium text-[11px] tracking-[0.15em] uppercase text-muted p-4">
+                  <Link to="/shop-crystals" className="text-primary hover:text-primary transition-colors cursor-pointer">Crystals</Link>
+                  <Link to="/shop-gems" className="text-primary hover:text-primary transition-colors cursor-pointer">Gemstones</Link>
+                  <Link to="/shop-jewellery" className="text-primary hover:text-primary transition-colors cursor-pointer">Jewellery</Link>
+                  <Link to="/shop-utility" className="text-primary hover:text-primary transition-colors cursor-pointer">Utility &amp; Decor</Link>
+                </nav>
               </div>
             </div>
             <NavLink to="/book-a-call">Book Now</NavLink>
@@ -88,8 +88,18 @@ const Header = () => {
             <NavLink to="/aboutus">About Us</NavLink>
           </nav>
 
-          {/* Right: Cart */}
-          <div className="flex items-center space-x-6">
+          {/* Right: Cart and WhatsApp */}
+          <div className="flex items-center space-x-4">
+            <a
+              href="https://wa.me/9554930456"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-accent transition-colors"
+            >
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+            </a>
             <Link to="/checkout" className="relative text-primary hover:text-accent transition-colors group">
               <ShoppingBag className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
               {getCartCount() > 0 && (
@@ -111,10 +121,10 @@ const Header = () => {
         <Link to="/shop-crystals" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Crystals</Link>
         <Link to="/shop-gems" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Gemstones</Link>
         <Link to="/shop-jewellery" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Jewellery</Link>
-        <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility & Decor</Link>
+        <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility &amp; Decor</Link>
         <Link to="/book-a-call" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Book Now</Link>
         <Link to="/blogs" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Blogs</Link>
-            <Link to="/aboutus" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
+        <Link to="/aboutus" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
       </div>
     </header>
   );

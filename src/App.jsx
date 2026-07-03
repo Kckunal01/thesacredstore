@@ -26,12 +26,15 @@ import RefundPolicy from './pages/RefundPolicy';
 import TermsConditions from './pages/TermsConditions';
 import Admin from './pages/Admin';
 
+import WelcomePopup from './components/ui/WelcomePopup';
+
 function App() {
   return (
     <ProductsProvider>
       <CartProvider>
         <Router>
           <ScrollToTop />
+          <WelcomePopup />
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-grow pt-20">

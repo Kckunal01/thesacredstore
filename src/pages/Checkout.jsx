@@ -45,8 +45,19 @@ const Checkout = () => {
     city: '', state: '', pinCode: '', phone: '',
   });
 
+  // Coupon states
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [couponMessage, setCouponMessage] = useState('');
+
   const totalOriginal = cart.reduce((acc, item) => acc + (item.originalPrice || item.price) * item.quantity, 0);
   const totalDiscount = totalOriginal - getCartTotal();
+
+  // Coupon calculations
+  const subtotalAfterOriginalDiscount = getCartTotal();
+  const couponDiscountAmount = Math.round((subtotalAfterOriginalDiscount * discountPercent) / 100);
+  const finalTotalAmount = subtotalAfterOriginalDiscount - couponDiscountAmount;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,6 +74,7 @@ const Checkout = () => {
           razorpayResponse,
           formData,
           cart,
+          couponCode: appliedCoupon || undefined,
         }),
       });
 
@@ -117,7 +129,7 @@ const Checkout = () => {
       const res = await fetch('/api/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getCartTotal() }),
+        body: JSON.stringify({ amount: finalTotalAmount }),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -133,10 +145,6 @@ const Checkout = () => {
 
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID || '',
-      // Ensure Razorpay key is present
-      // If missing, alert the user and abort
-      // (Added guard for robustness)
-
       amount: orderData.amount,
       currency: orderData.currency,
       name: 'The Sacred Store',
@@ -188,6 +196,41 @@ const Checkout = () => {
       setIsProcessing(false);
     });
     paymentObject.open();
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput) {
+      setCouponMessage('Enter a coupon code');
+      return;
+    }
+    try {
+      const res = await fetch('/api/validate-coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          couponCode: couponInput,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || 'Invalid coupon');
+      }
+
+      setDiscountPercent(data.discount_percent || 0);
+      setAppliedCoupon(couponInput);
+      setCouponMessage(`Coupon applied: ${data.discount_percent}% off`);
+    } catch (err) {
+      setCouponMessage(err.message);
+      setDiscountPercent(0);
+      setAppliedCoupon('');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponInput('');
+    setAppliedCoupon('');
+    setDiscountPercent(0);
+    setCouponMessage('');
   };
 
   // ----- UI RENDERING -----
@@ -272,6 +315,43 @@ const Checkout = () => {
                           </div>
                         </div>
                       ))}
+
+                      {/* Coupon Section (Cart/Step 1) */}
+                      <div className="p-6 bg-surface border border-border space-y-4">
+                        <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold block">Apply Coupon</span>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <input
+                            type="text"
+                            placeholder="COUPON CODE"
+                            value={couponInput}
+                            onChange={(e) => setCouponInput(e.target.value.trim().toUpperCase())}
+                            className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs uppercase tracking-widest w-full sm:max-w-xs"
+                          />
+                          {appliedCoupon ? (
+                            <button
+                              type="button"
+                              onClick={handleRemoveCoupon}
+                              className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-[10px] uppercase tracking-widest font-bold transition-colors"
+                            >
+                              Remove Coupon
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleApplyCoupon}
+                              className="px-6 py-3 bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black text-[10px] uppercase tracking-widest font-bold transition-colors"
+                            >
+                              Apply Coupon
+                            </button>
+                          )}
+                        </div>
+                        {couponMessage && (
+                          <p className="text-xs font-semibold" style={{ color: appliedCoupon ? '#28a745' : '#dc3545' }}>
+                            {couponMessage}
+                          </p>
+                        )}
+                      </div>
+
                       <div className="flex justify-between items-center pt-8 border-t border-border">
                         <Link to="/shop-crystals" className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body">← Continue Shopping</Link>
                         <Button onClick={() => setStep(2)} variant="primary">Proceed to Shipping</Button>
@@ -283,6 +363,14 @@ const Checkout = () => {
                         <h3 className="font-display text-2xl text-primary font-medium">Shipping &amp; Delivery</h3>
                         <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-[#000000] hover:text-primary font-bold font-body">← Edit Cart</button>
                       </div>
+
+                      {/* Display Coupon Details without inputs */}
+                      {appliedCoupon && (
+                        <div className="p-4 bg-background border border-accent/20 flex justify-between items-center text-xs font-semibold text-primary">
+                          <span>Applied Coupon: {appliedCoupon}</span>
+                          <span className="text-accent">-{discountPercent}% OFF</span>
+                        </div>
+                      )}
 
                       <div className="grid grid-cols-2 gap-6">
                         <div className="col-span-2 md:col-span-1">
@@ -356,6 +444,12 @@ const Checkout = () => {
                           <span>-₹{totalDiscount.toLocaleString('en-IN')}</span>
                         </div>
                       )}
+                      {discountPercent > 0 && (
+                        <div className="flex justify-between text-xs font-body text-[#2ECC71]">
+                          <span>Coupon ({appliedCoupon})</span>
+                          <span>-₹{couponDiscountAmount.toLocaleString('en-IN')}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-xs font-body text-muted">
                         <span>Shipping</span>
                         <span className="text-accent uppercase tracking-wider font-bold">Free</span>
@@ -364,7 +458,7 @@ const Checkout = () => {
 
                     <div className="flex justify-between text-xl font-display text-primary border-t border-border pt-4">
                       <span>Total</span>
-                      <span className="font-semibold text-accent">₹{getCartTotal().toLocaleString('en-IN')}</span>
+                      <span className="font-semibold text-accent">₹{finalTotalAmount.toLocaleString('en-IN')}</span>
                     </div>
 
                     {step === 2 && (

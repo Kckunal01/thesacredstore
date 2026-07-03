@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { CartContext } from '../../context/CartContext';
@@ -17,12 +17,9 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
   const { products } = useContext(ProductsContext);
   const { cart, addToCart } = useContext(CartContext);
   const [quantity, setQuantity] = useState(1);
-  // Stock will be derived from ProductsContext
   const navigate = useNavigate();
   const mainImage = images && images.length > 0 ? images[0] : null;
   const discountPercentage = originalPrice && stamp !== 'Fresh' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-
-  // Removed per-product stock fetching; stock comes from context
 
   // Find if item is already in cart to check the 9-limit
   const cartItem = cart.find(item => item.id === id);
@@ -76,13 +73,13 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
 
           {/* Stamps */}
           {stamp === 'Fresh' ? (
-            <div className="absolute top-4 left-4 bg-accent text-background px-3 py-1 text-[9px] uppercase tracking-widest font-bold z-10">
-              FRESH
-            </div>
+            <div className="absolute top-4 left-4 bg-accent text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            FRESH
+          </div>
           ) : discountPercentage > 0 ? (
-            <div className="absolute top-4 right-4 bg-primary text-background px-3 py-1 text-[9px] uppercase tracking-widest font-bold z-10">
-              {discountPercentage}% OFF
-            </div>
+            <div className="absolute top-4 right-4 bg-primary text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            {discountPercentage}% OFF
+          </div>
           ) : null}
         </div>
 

@@ -8,6 +8,10 @@ export const CartProvider = ({ children }) => {
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
+  // Global coupon state
+  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [discountPercent, setDiscountPercent] = useState(0);
+
   useEffect(() => {
     localStorage.setItem('ritualist_cart', JSON.stringify(cart));
   }, [cart]);
@@ -45,7 +49,11 @@ export const CartProvider = ({ children }) => {
     });
   };
 
-  const clearCart = () => setCart([]);
+  const clearCart = () => {
+    setCart([]);
+    setAppliedCoupon('');
+    setDiscountPercent(0);
+  };
 
   const getCartTotal = () =>
     cart.reduce((total, item) => total + item.price * item.quantity, 0);
@@ -63,6 +71,10 @@ export const CartProvider = ({ children }) => {
         clearCart,
         getCartTotal,
         getCartCount,
+        appliedCoupon,
+        setAppliedCoupon,
+        discountPercent,
+        setDiscountPercent,
       }}
     >
       {children}

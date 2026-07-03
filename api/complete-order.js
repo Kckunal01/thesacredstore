@@ -15,7 +15,7 @@ export default async function handler(req, res) {
   console.log("SUPABASE_URL:", !!process.env.SUPABASE_URL);
   console.log("SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   try {
-    const { razorpayResponse, formData, cart } = req.body;
+    const { razorpayResponse, formData, cart, couponCode } = req.body;
 
     // ---------- Idempotency check ----------
     const { data: existingPayment } = await supabase
@@ -50,6 +50,33 @@ export default async function handler(req, res) {
     }
 
     // ---------- Order creation ----------
+    let discountPercent = 0;
+    let discountAmount = 0;
+    if (couponCode) {
+      const { data: coupon, error: couponError } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', couponCode)
+        .single();
+      if (couponError || !coupon || !coupon.active) {
+        return res.status(400).json({ success: false, message: 'Invalid or inactive coupon' });
+      }
+      // One‑time enforcement based on email or phone
+      const { data: priorUse } = await supabase
+        .from('coupon_redemptions')
+        .select('id')
+        .eq('coupon_code', couponCode)
+        .or(`email.eq.${formData.email},phone.eq.${formData.phone}`)
+        .maybeSingle();
+      if (priorUse) {
+        return res.status(400).json({ success: false, message: 'Coupon already used.' });
+      }
+      discountPercent = coupon.discount_percent || 0;
+      // Compute discount amount based on original cart total
+      const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+      discountAmount = Math.round((cartTotal * discountPercent) / 100);
+    }
+
     const orderPayload = {
       customer_id: customer.id,
       products: cart.map((item) => ({
@@ -57,7 +84,7 @@ export default async function handler(req, res) {
         quantity: item.quantity,
         price: item.price,
       })),
-      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      // Apply coupon discount if any\r\n      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0) - discountAmount,
       payment_status: "paid",
       payment_method: "razorpay",
     };
@@ -96,6 +123,29 @@ export default async function handler(req, res) {
       }
       console.error("Payment insertion failed", paymentError);
       return res.status(500).json({ success: false, message: "Payment insertion failed" });
+    }
+
+    // ---------- Coupon Redemption insertion (post‑payment) ----------
+    if (couponCode) {
+      const { error: redemptionError } = await supabase.from('coupon_redemptions').insert({
+        coupon_code: couponCode,
+        customer_id: customer.id,
+        email: formData.email,
+        phone: formData.phone,
+        order_id: order.id,
+        discount_percent: discountPercent,
+        discount_amount: discountAmount,
+        traffic_source: null,
+      });
+      if (redemptionError) {
+        // Detect duplicate redemption via unique constraint violation
+        if (redemptionError.code === '23505') {
+          // Unique constraint breach – coupon already used for this email or phone
+          return res.status(400).json({ success: false, message: 'Coupon already used.' });
+        }
+        console.error('Coupon redemption insert failed', redemptionError);
+        // Continue without failing the order for other errors
+      }
     }
 
     // ---------- Stock deduction ----------
