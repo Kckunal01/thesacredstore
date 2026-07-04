@@ -1,11 +1,13 @@
-// src/pages/Checkout.jsx
+import React, { useContext, useState, useMemo } from 'react';
 import Container from '../components/ui/Container';
-import React, { useContext, useState } from 'react';
 import Section from '../components/ui/Section';
 import SectionHeader from '../components/ui/SectionHeader';
 import Button from '../components/ui/Button';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
+import { ProductsContext } from '../context/ProductsContext';
+import { getCartRecommendations } from '../lib/recommendations';
+import ProductCard from '../components/ui/ProductCard';
 // Keep only stock map fetch for pre‑checkout validation
 import { getProductStockMap } from '../lib/supabaseProducts';
 
@@ -37,6 +39,13 @@ function slugify(text) {
 
 const Checkout = () => {
   const { cart, getCartTotal, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
+  const { products } = useContext(ProductsContext);
+  
+  const recommendations = useMemo(
+    () => getCartRecommendations(cart, products),
+    [cart, products]
+  );
+
   const [step, setStep] = useState(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState('');
@@ -352,7 +361,23 @@ const Checkout = () => {
                         )}
                       </div>
 
-                      <div className="flex justify-between items-center pt-8 border-t border-border">
+                      {/* Recommendations section */}
+                      {recommendations && recommendations.length > 0 && (
+                        <div className="pt-12 border-t border-border mt-12">
+                          <h3 className="text-xl font-display font-medium text-primary mb-6 tracking-widest uppercase">
+                            FREQUENTLY BOUGHT TOGETHER
+                          </h3>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                            {recommendations.map(product => (
+                              <div key={product.id} className="scale-95 transform transition-transform duration-300 hover:scale-100">
+                                <ProductCard {...product} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between items-center pt-8 border-t border-border mt-8">
                         <Link to="/shop-crystals" className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body">← Continue Shopping</Link>
                         <Button onClick={() => setStep(2)} variant="primary">Proceed to Shipping</Button>
                       </div>
@@ -420,45 +445,46 @@ const Checkout = () => {
                 </div>
 
                 <div className="w-full lg:w-1/3">
-                  <div className="bg-surface border border-border p-8 sticky top-24 space-y-6">
-                    <h3 className="font-display text-2xl text-primary font-medium border-b border-border pb-4">Order Summary</h3>
-                    <div className="space-y-4 max-h-48 overflow-y-auto pr-2">
+                  <div className="bg-[#FEFBF1]/40 backdrop-blur-md border border-accent/20 p-8 md:p-10 sticky top-24 space-y-8 rounded-lg shadow-sm">
+                    <h3 className="font-display text-3xl text-primary font-semibold border-b border-border/80 pb-4 tracking-wide">Order Summary</h3>
+                    
+                    <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
                       {cart.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center text-xs font-body text-muted">
-                          <span className="truncate max-w-[150px]">
-                            {item.name} <strong className="text-accent">x{item.quantity}</strong>
+                        <div key={item.id} className="flex justify-between items-center text-sm font-body text-primary">
+                          <span className="truncate max-w-[180px] font-medium">
+                            {item.name} <strong className="text-accent ml-1">x{item.quantity}</strong>
                           </span>
-                          <span>₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                          <span className="font-semibold">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
                         </div>
                       ))}
                     </div>
 
-                    <div className="space-y-3 pt-4 border-t border-border">
-                      <div className="flex justify-between text-xs font-body text-muted">
+                    <div className="space-y-4 pt-6 border-t border-border/80">
+                      <div className="flex justify-between text-sm font-body text-muted">
                         <span>Subtotal</span>
-                        <span>₹{totalOriginal.toLocaleString('en-IN')}</span>
+                        <span className="font-medium">₹{totalOriginal.toLocaleString('en-IN')}</span>
                       </div>
                       {totalDiscount > 0 && (
-                        <div className="flex justify-between text-xs font-body text-[#2ECC71]">
+                        <div className="flex justify-between text-sm font-body text-[#2ECC71] font-medium">
                           <span>Discount</span>
                           <span>-₹{totalDiscount.toLocaleString('en-IN')}</span>
                         </div>
                       )}
                       {discountPercent > 0 && (
-                        <div className="flex justify-between text-xs font-body text-[#2ECC71]">
+                        <div className="flex justify-between text-sm font-body text-[#2ECC71] font-medium">
                           <span>Coupon ({appliedCoupon})</span>
                           <span>-₹{couponDiscountAmount.toLocaleString('en-IN')}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-xs font-body text-muted">
+                      <div className="flex justify-between text-sm font-body text-muted">
                         <span>Shipping</span>
-                        <span className="text-accent uppercase tracking-wider font-bold">Free</span>
+                        <span className="text-accent uppercase tracking-widest font-bold text-xs">Free</span>
                       </div>
                     </div>
 
-                    <div className="flex justify-between text-xl font-display text-primary border-t border-border pt-4">
-                      <span>Total</span>
-                      <span className="font-semibold text-accent">₹{finalTotalAmount.toLocaleString('en-IN')}</span>
+                    <div className="flex justify-between items-baseline text-2xl font-display text-primary border-t-2 border-accent/30 pt-6">
+                      <span className="font-medium">Total Amount</span>
+                      <span className="font-bold text-accent text-3xl">₹{finalTotalAmount.toLocaleString('en-IN')}</span>
                     </div>
 
                     {step === 2 && (

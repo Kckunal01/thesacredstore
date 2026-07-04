@@ -76,7 +76,7 @@ const Footer = () => {
               Make Space for Meaning.
             </p>
             {/* Instagram Icon (SVG) */}
-            <a href="#" className="text-primary hover:text-accent transition-colors" aria-label="Instagram">
+            <a href="https://www.instagram.com/thesacredstore.co.in/?utm_source=ig_web_button_share_sheet" target="_blank" rel="noopener noreferrer" className="text-primary hover:text-accent transition-colors" aria-label="Instagram">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
