@@ -4,8 +4,9 @@ import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
 import { CartContext } from '../context/CartContext';
-import { Plus, Minus, X } from 'lucide-react';
+import { Plus, Minus, X, Play } from 'lucide-react';
 import { ProductsContext } from '../context/ProductsContext';
+import ProductRecommendations from '../components/ProductRecommendations';
 // Import necessary Supabase helpers
 // Supabase helpers are no longer needed for stock; keep only waitlist helpers
 import { checkStockRequestExists, createStockRequest } from '../lib/supabase';
@@ -28,7 +29,7 @@ const Product = () => {
   const { id } = useParams();
   const { cart, addToCart } = useContext(CartContext);
   const { products } = useContext(ProductsContext);
-  const [activeTab, setActiveTab] = useState('philosophy');
+  const [activeTab, setActiveTab] = useState('specifications');
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -268,15 +269,27 @@ const Product = () => {
               <div className="flex items-center gap-6 mb-8">
                 {/* Quantity Selector */}
                 <div className="flex items-center border border-border bg-surface px-4 py-3">
-                  <button onClick={handleDecrement} className="text-primary hover:text-accent transition-colors" disabled={isCartFull}>
+                  <button
+                    onClick={handleDecrement}
+                    className="text-primary hover:text-accent transition-colors"
+                    disabled={isCartFull}
+                  >
                     <Minus className="w-4 h-4" />
                   </button>
                   <span className="w-12 text-center text-sm font-semibold">{isCartFull ? 'Max' : quantity}</span>
-                  <button onClick={handleIncrement} className="text-primary hover:text-accent transition-colors" disabled={isCartFull}>
+                  <button
+                    onClick={handleIncrement}
+                    className="text-primary hover:text-accent transition-colors"
+                    disabled={isCartFull}
+                  >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-
+                {stock !== null && stock > 0 && stock <= 3 && (
+                  <p className="text-xs font-bold text-red-500 uppercase tracking-widest ml-2 font-body">
+                    Only {stock} left!
+                  </p>
+                )}
                 <Button
                   onClick={handleAddToCart}
                   variant="primary"
@@ -352,16 +365,30 @@ const Product = () => {
               ) : (
                 <ul className="space-y-4 text-xs">
                   <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Origin Country</span>
-                    <span className="text-primary font-medium">{product.origin}</span>
-                  </li>
-                  <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Primary Alignment</span>
-                    <span className="text-primary font-medium">{product.chakra}</span>
-                  </li>
-                  <li className="flex justify-between border-b border-border pb-3">
                     <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Material Integrity</span>
-                    <span className="text-primary font-medium">100% Sourced Naturally</span>
+                    <span className="text-primary font-medium">{product.material_integrity || '100% Natural, Ethically Sourced'}</span>
+                  </li>
+                  <li className="flex justify-between border-b border-border pb-3">
+                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Intention</span>
+                    <span className="text-primary font-medium">{product.intentions || 'Meditation, Grounding & Mindfulness'}</span>
+                  </li>
+                  <li className="flex justify-between border-b border-border pb-3">
+                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Dimensions</span>
+                    <span className="text-primary font-medium">{product.dimensions ? (product.dimensions.toString().includes('cm') ? product.dimensions : `${product.dimensions} cm`) : 'Approx. 5 - 8 cm'}</span>
+                  </li>
+                  {product.cleansing_charging && (
+                    <li className="flex justify-between border-b border-border pb-3">
+                      <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Cleansing & Charging</span>
+                      <span className="text-primary font-medium text-right">{product.cleansing_charging}</span>
+                    </li>
+                  )}
+                  <li className="flex justify-between border-b border-border pb-3">
+                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Certification</span>
+                    <span className="text-primary font-medium">{product.certification || 'Certified Authentic'}</span>
+                  </li>
+                  <li className="flex justify-between border-b border-border pb-3">
+                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Certification Number</span>
+                    <span className="text-primary font-medium">{product.certification_number || `RIT-${((product.id || 'crystal').toString().charCodeAt(0) * 12345) % 900000 + 100000}`}</span>
                   </li>
                 </ul>
               )}
@@ -388,7 +415,30 @@ const Product = () => {
             </div>
           </div>
         </div>
-      </Container>
+
+        {/* Complete Your Ritual recommendations section (full container width below the columns) */}
+        <ProductRecommendations currentProduct={product} products={products} />
+
+      {/* About & Videos Section with compact spacing */}
+      <div className="mt-12 mb-12 border-t border-border pt-12">
+        <h3 className="font-display text-2xl md:text-3xl text-primary font-medium tracking-[0.2em] uppercase mb-8 text-center">About {product.name}</h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto snap-x snap-mandatory">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="group flex flex-col bg-[#FEFBF1]/10 p-4 rounded-md hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 relative">
+              <div className="relative w-full aspect-[9/16] bg-[#e0e0e0] flex items-center justify-center mb-3 rounded-sm">
+                {/* Play button removed */}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="text-center mt-6">
+          <span className="text-xs font-bold uppercase tracking-widest text-red-500">Coming Soon!</span>
+        </div>
+      </div>
+
+    </Container>
 
       {/* Notify Waitlist Modal */}
       {isModalOpen && (

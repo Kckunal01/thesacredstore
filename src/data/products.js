@@ -16,6 +16,13 @@ export const products = [
     chakraColor: '#D5D8DC',
     effect: 'Amplifies energy and intention. Enhances clarity of mind.',
     usage: 'Use to amplify the energy of other stones by placing it next to them, or hold while setting morning intentions.',
+    // Specification fields for demo rendering
+    material_integrity: 'High transparency, minor inclusions',
+    intentions: 'Amplify intentions, healing',
+    dimensions: '4x4x10',
+    cleansing_charging: '🌙 Moonlight\n\n🧂 Running Water\n\n✨ Sunlight\n\n✨ Quartz Cluster',
+    certification: 'ISO9001',
+    certification_number: 'CERT-001',
     images: [
       "/assets/images/Clear Quartz Point/Clear Quartz Point 1.webp",
       "/assets/images/Clear Quartz Point/Clear Quartz Point 2.webp",

@@ -24,47 +24,47 @@ const FAQSection = () => {
   const toggle = (i) => setOpenIndex(openIndex === i ? null : i);
 
   return (
-    <section className="w-full py-20 px-4" style={{ background: 'linear-gradient(180deg, #fffdf7 0%, #fff9ed 100%)' }}>
-      <div className="max-w-3xl mx-auto text-center">
+    <section className="w-full pt-16 pb-0 px-4" style={{ background: 'transparent' }}>
+      <div className="max-w-2xl mx-auto text-center pb-8">
         {/* Heading */}
         <span
-          className="inline-block text-sm font-bold tracking-[0.25em] uppercase mb-3"
+          className="inline-block text-[10px] font-bold tracking-[0.2em] uppercase mb-2"
           style={{ color: '#c9a84c' }}
         >
           Got Questions?
         </span>
         <h2
-          className="text-4xl md:text-5xl font-display mb-4"
+          className="text-2xl md:text-3xl font-display mb-3 font-medium"
           style={{ color: '#1a1a1a' }}
         >
           Frequently Asked Questions
         </h2>
-        <div className="w-20 h-[2px] mx-auto mb-12" style={{ background: 'linear-gradient(90deg, #c9a84c, #e8d48b, #c9a84c)' }} />
+        <div className="w-12 h-[1px] mx-auto mb-8" style={{ background: 'linear-gradient(90deg, #c9a84c, #e8d48b, #c9a84c)' }} />
 
         {/* FAQ Items */}
-        <div className="space-y-3 text-left">
+        <div className="space-y-2 text-left">
           {faqs.map((faq, i) => {
             const isOpen = openIndex === i;
             return (
               <div
                 key={i}
                 onClick={() => toggle(i)}
-                className="cursor-pointer rounded-xl border transition-all duration-300"
+                className="cursor-pointer border transition-all duration-300 rounded-lg"
                 style={{
                   borderColor: isOpen ? '#c9a84c' : '#e8e0d0',
-                  background: isOpen ? 'linear-gradient(135deg, #fffef9, #fff8e7)' : '#ffffff',
-                  boxShadow: isOpen ? '0 4px 20px rgba(201,168,76,0.15)' : '0 1px 3px rgba(0,0,0,0.04)',
+                  background: isOpen ? '#fffef9' : '#ffffff',
+                  boxShadow: isOpen ? '0 4px 12px rgba(201,168,76,0.06)' : 'none',
                 }}
               >
-                <div className="flex items-center justify-between px-6 py-5">
+                <div className="flex items-center justify-between px-5 py-4">
                   <span
-                    className="font-semibold text-base md:text-lg pr-4"
-                    style={{ color: isOpen ? '#c9a84c' : '#1a1a1a' }}
+                    className="font-normal text-sm pr-4 font-body"
+                    style={{ color: isOpen ? '#c9a84c' : '#222222' }}
                   >
                     {faq.q}
                   </span>
                   <span
-                    className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-all duration-300"
+                    className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all duration-300"
                     style={{
                       background: isOpen ? '#c9a84c' : '#f5f0e4',
                       color: isOpen ? '#fff' : '#c9a84c',
@@ -77,11 +77,11 @@ const FAQSection = () => {
                 <div
                   className="overflow-hidden transition-all duration-300"
                   style={{
-                    maxHeight: isOpen ? '200px' : '0',
+                    maxHeight: isOpen ? '150px' : '0',
                     opacity: isOpen ? 1 : 0,
                   }}
                 >
-                  <p className="px-6 pb-5 text-sm md:text-base leading-relaxed" style={{ color: '#6b6b6b' }}>
+                  <p className="px-5 pb-4 text-xs leading-relaxed font-body" style={{ color: '#666666' }}>
                     {faq.a}
                   </p>
                 </div>

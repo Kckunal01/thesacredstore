@@ -85,6 +85,12 @@ export async function fetchProducts(forceRefetch = false) {
           active: item.active !== undefined ? item.active : true,
           featured: item.featured !== undefined ? item.featured : false,
           visible: item.visible !== undefined ? item.visible : true,
+          material_integrity: item.material_integrity || (localMatch ? localMatch.material_integrity : ''),
+          intentions: item.intentions || (localMatch ? localMatch.intentions : ''),
+          dimensions: item.dimensions || (localMatch ? localMatch.dimensions : ''),
+          cleansing_charging: item.cleansing_charging || (localMatch ? localMatch.cleansing_charging : ''),
+          certification: item.certification || (localMatch ? localMatch.certification : ''),
+          certification_number: item.certification_number || (localMatch ? localMatch.certification_number : ''),
           images: images
         };
       });
@@ -155,6 +161,12 @@ export async function fetchFeaturedProducts(forceRefetch = false) {
           active: item.active !== undefined ? item.active : true,
           featured: item.featured !== undefined ? item.featured : false,
           visible: item.visible !== undefined ? item.visible : true,
+          material_integrity: item.material_integrity || (localMatch ? localMatch.material_integrity : ''),
+          intentions: item.intentions || (localMatch ? localMatch.intentions : ''),
+          dimensions: item.dimensions || (localMatch ? localMatch.dimensions : ''),
+          cleansing_charging: item.cleansing_charging || (localMatch ? localMatch.cleansing_charging : ''),
+          certification: item.certification || (localMatch ? localMatch.certification : ''),
+          certification_number: item.certification_number || (localMatch ? localMatch.certification_number : ''),
           images: images
         };
       });

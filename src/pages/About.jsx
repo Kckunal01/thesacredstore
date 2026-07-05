@@ -12,7 +12,7 @@ const About = () => {
         <Container>
 
           {/* Image & Text Split */}
-          <div className="flex flex-col lg:flex-row gap-16 lg:gap-24 items-center mb-32">
+          <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center mb-32">
             <div className="w-full lg:w-1/2 overflow-hidden rounded-lg border border-border flex items-center justify-center">
               <img src="/assets/images/AboutUs.webp" alt="About Us" className="w-full h-24 md:h-32 lg:h-full object-cover" />
             </div>

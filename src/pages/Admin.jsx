@@ -50,6 +50,7 @@ const refreshProducts = async () => { await loadAllProducts(); };
     price: '', original_price: '', stamp: 'none', featured: false,
     stock: 10, active: true, philosophy: '', details: '',
     usage: '', chakra: '', effect: '', origin: '',
+    intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
     image_url: '', gallery_images: []
   });
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -409,6 +410,11 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         chakra: prodForm.chakra,
         effect: prodForm.effect,
         origin: prodForm.origin,
+        intentions: prodForm.intention,
+        dimensions: prodForm.dimensions,
+        cleansing_charging: prodForm.cleansing_charging,
+        certification: prodForm.certification,
+        certification_number: prodForm.certificationNumber,
         image_url: prodForm.image_url || null,
         gallery_images: prodForm.gallery_images || []
       };
@@ -455,6 +461,10 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       chakra: prod.chakra || '',
       effect: prod.effect || '',
       origin: prod.origin || '',
+      intention: prod.intentions || '',
+      dimensions: prod.dimensions || '',
+      cleansing_charging: prod.cleansing_charging || '',
+      certificationNumber: prod.certificationNumber || prod.certification_number || '',
       image_url: prod.image_url || (prod.images && prod.images[0]) || '',
       gallery_images: prod.gallery_images || prod.images || []
     });
@@ -468,6 +478,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       price: '', original_price: '', stamp: 'none', featured: false,
       stock: 10, active: true, philosophy: '', details: '',
       usage: '', chakra: '', effect: '', origin: '',
+      intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
       image_url: '', gallery_images: []
     });
     setIsProductModalOpen(true);
@@ -1099,14 +1110,62 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                       <input
                         type="checkbox"
                         checked={prodForm.active}
-                        onChange={(e) => setProdForm({...prodForm, active: e.target.checked})}
+                        onChange={(e) => setProdForm({ ...prodForm, active: e.target.checked })}
                         className="accent-accent"
                       />
                       Active / Available
                     </label>
                   </div>
                 </div>
-              </div>
+
+                {/* New Fields: Intention, Dimensions, Cleansing & Charging, Certification */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Intention</label>
+                    <input
+                      type="text"
+                      value={prodForm.intention}
+                      onChange={(e) => setProdForm({ ...prodForm, intention: e.target.value })}
+                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Dimensions (cm)</label>
+                    <input
+                      type="text"
+                      value={prodForm.dimensions}
+                      onChange={(e) => setProdForm({ ...prodForm, dimensions: e.target.value })}
+                      placeholder="e.g., 10×12×5"
+                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Cleansing & Charging</label>
+                    <textarea
+                      rows="4"
+                      value={prodForm.cleansing_charging}
+                      onChange={(e) => setProdForm({ ...prodForm, cleansing_charging: e.target.value })}
+                      placeholder="e.g., Moonlight or Selenite Plate"
+                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                    />
+                  </div>
+
+
+          
+                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Certification Number</label>
+                    <input
+                      type="text"
+                      value={prodForm.certificationNumber}
+                      onChange={(e) => setProdForm({ ...prodForm, certificationNumber: e.target.value })}
+                      placeholder="10‑digit number"
+                      maxLength={10}
+                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                    />
+                  </div>
+                </div>
+                  
+                
+              
 
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Description</label>
