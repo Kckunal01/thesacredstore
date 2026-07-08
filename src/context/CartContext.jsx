@@ -4,7 +4,7 @@ export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem('ritualist_cart');
+    const savedCart = localStorage.getItem('thesacredstore_cart');
     return savedCart ? JSON.parse(savedCart) : [];
   });
 
@@ -13,10 +13,10 @@ export const CartProvider = ({ children }) => {
   const [discountPercent, setDiscountPercent] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem('ritualist_cart', JSON.stringify(cart));
+    localStorage.setItem('thesacredstore_cart', JSON.stringify(cart));
   }, [cart]);
 
-  // Add product to cart, respecting stock limits and max 9 per product
+  // Add product/bundle to cart, respecting stock limits and max 9 per product
   const addToCart = (product, quantity = 1) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);

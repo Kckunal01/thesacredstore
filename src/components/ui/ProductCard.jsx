@@ -63,6 +63,10 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
             <img
               src={mainImage}
               alt={name}
+              loading="lazy"
+              decoding="async"
+              width="240"
+              height="300"
               className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-1"
             />
           ) : (

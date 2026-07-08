@@ -25,6 +25,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import RefundPolicy from './pages/RefundPolicy';
 import TermsConditions from './pages/TermsConditions';
 import Admin from './pages/Admin';
+import Bundles from './pages/Bundles';
+import BundleDetail from './pages/BundleDetail';
 
 import WelcomePopup from './components/ui/WelcomePopup';
 
@@ -58,6 +60,8 @@ function App() {
               <Route path="/terms-conditions" element={<TermsConditions />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/*" element={<Admin />} />
+              <Route path="/bundles" element={<Bundles />} />
+              <Route path="/bundles/:slug" element={<BundleDetail />} />
             </Routes>
           </main>
           <Footer />

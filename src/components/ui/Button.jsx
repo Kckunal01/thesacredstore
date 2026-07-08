@@ -8,7 +8,8 @@ const Button = ({ children, variant = 'primary', to, onClick, className = '', ty
     primary: "bg-[#FFBD59] text-[#000000] border-none hover:brightness-95",
     secondary: "bg-transparent text-[#000000] border border-[#000000] hover:bg-[#FEFBF1] hover:border-[#FFBD59]",
     ghost: "bg-transparent text-[#000000] border border-[#000000] hover:bg-[#FEFBF1] hover:border-[#FFBD59]",
-    gold: "bg-[#FFBD59] text-[#000000] border-none hover:brightness-95"
+    gold: "bg-[#FFBD59] text-[#000000] border-none hover:brightness-95",
+    dark: "bg-[#000000] text-[#FFFFFF] border-none hover:bg-neutral-900"
   };
 
   const combinedClass = `${baseStyle} ${variants[variant]} ${className}`;

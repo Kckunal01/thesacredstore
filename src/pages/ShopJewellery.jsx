@@ -70,6 +70,24 @@ const ShopJewellery = () => {
             </div>
           )}
         </div>
+
+        {/* Internal Linking Collection Links */}
+        <div className="mt-24 pt-12 border-t border-border/60">
+          <h4 className="text-center font-display text-lg uppercase tracking-[0.2em] mb-8 text-primary">Explore Related Collections</h4>
+          <div className="flex flex-wrap justify-center gap-6 text-xs uppercase tracking-widest font-semibold text-muted">
+            <Link to="/shop-crystals" className="hover:text-accent transition-colors">Crystals</Link>
+            <span>·</span>
+            <Link to="/shop-gems" className="hover:text-accent transition-colors">Gemstones</Link>
+            <span>·</span>
+            <Link to="/shop-bracelets" className="hover:text-accent transition-colors">Bracelets</Link>
+            <span>·</span>
+            <Link to="/shop-pendants" className="hover:text-accent transition-colors">Pendants</Link>
+            <span>·</span>
+            <Link to="/shop-utility" className="hover:text-accent transition-colors">Utility & Decor</Link>
+            <span>·</span>
+            <Link to="/bundles" className="hover:text-accent transition-colors">Curated Bundles</Link>
+          </div>
+        </div>
       </Container>
     </Section>
   );

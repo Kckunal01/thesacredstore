@@ -26,10 +26,10 @@ const TermsConditions = () => {
           <p>Prices may be updated at any time without prior notice.</p>
 
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Intellectual Property</h2>
-          <p>All content, branding, designs, logos, text, and images on this website are the property of Ritualist and may not be copied or reproduced without permission.</p>
+          <p>All content, branding, designs, logos, text, and images on this website are the property of The Sacred Store and may not be copied or reproduced without permission.</p>
 
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Limitation of Liability</h2>
-          <p>Ritualist shall not be liable for any indirect, incidental, or consequential damages arising from the use of our website, products, consultations, or services.</p>
+          <p>The Sacred Store shall not be liable for any indirect, incidental, or consequential damages arising from the use of our website, products, consultations, or services.</p>
         </div>
       </Container>
     </div>

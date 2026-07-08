@@ -29,7 +29,7 @@ const Product = () => {
   const { id } = useParams();
   const { cart, addToCart } = useContext(CartContext);
   const { products } = useContext(ProductsContext);
-  const [activeTab, setActiveTab] = useState('specifications');
+  const [activeTab, setActiveTab] = useState('philosophy');
   const [added, setAdded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -201,6 +201,7 @@ const Product = () => {
                   <img
                     src={mainImage}
                     alt={product.name}
+                    loading="lazy" decoding="async" width="100%" height="auto"
                     className="w-full h-full object-contain p-2 transition-all duration-500"
                   />
                 ) : (
@@ -237,6 +238,7 @@ const Product = () => {
                       <img
                         src={imgSrc}
                         alt={`${product.name} view ${idx + 1}`}
+                        loading="lazy" decoding="async" width="100%" height="auto"
                         className="w-full h-full object-contain p-1"
                       />
                     </button>
@@ -328,71 +330,25 @@ const Product = () => {
                   <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent"></div>
                 )}
               </button>
-              <button
-                onClick={() => setActiveTab('specifications')}
-                className={`pb-4 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 relative ${activeTab === 'specifications' ? 'text-primary' : 'text-muted hover:text-primary'}`}
-              >
-                Specifications
-                {activeTab === 'specifications' && (
-                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-accent"></div>
-                )}
-              </button>
             </div>
 
             <div className="text-muted font-light leading-relaxed text-sm font-body min-h-[120px]">
-              {activeTab === 'philosophy' ? (
-                <div className="space-y-4">
-                  <p className="italic text-primary border-l-2 border-accent pl-4">{product.philosophy}</p>
-                  <p>{product.details}</p>
-                  <div className="p-4 bg-surface mt-4 text-xs">
-                    <strong>Ritual recommendation:</strong> {product.usage}
-                  </div>
-                  {product.chakraColor && (
-                    <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
-                      <div
-                        className="w-4 h-4 rounded-full mt-0.5 shrink-0"
-                        style={{ backgroundColor: product.chakraColor }}
-                      ></div>
-                      <div>
-                        <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">
-                          {product.chakra} Alignment
-                        </p>
-                        <p className="text-xs text-muted/80 leading-relaxed">{product.effect}</p>
-                      </div>
+              <div className="space-y-4">
+                <p className="italic text-primary border-l-2 border-accent pl-4">{product.philosophy}</p>
+                <p>{product.details}</p>
+                <div className="p-4 bg-surface mt-4 text-xs"><strong>Ritual recommendation:</strong> {product.usage}</div>
+                {product.chakraColor && (
+                  <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
+                    <div className="w-4 h-4 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: product.chakraColor }}></div>
+                    <div>
+                      <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">{product.chakra} Alignment</p>
+                      <p className="text-xs text-muted/80 leading-relaxed">{product.effect}</p>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <ul className="space-y-4 text-xs">
-                  <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Material Integrity</span>
-                    <span className="text-primary font-medium">{product.material_integrity || '100% Natural, Ethically Sourced'}</span>
-                  </li>
-                  <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Intention</span>
-                    <span className="text-primary font-medium">{product.intentions || 'Meditation, Grounding & Mindfulness'}</span>
-                  </li>
-                  <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Dimensions</span>
-                    <span className="text-primary font-medium">{product.dimensions ? (product.dimensions.toString().includes('cm') ? product.dimensions : `${product.dimensions} cm`) : 'Approx. 5 - 8 cm'}</span>
-                  </li>
-                  {product.cleansing_charging && (
-                    <li className="flex justify-between border-b border-border pb-3">
-                      <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Cleansing & Charging</span>
-                      <span className="text-primary font-medium text-right">{product.cleansing_charging}</span>
-                    </li>
-                  )}
-                  <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Certification</span>
-                    <span className="text-primary font-medium">{product.certification || 'Certified Authentic'}</span>
-                  </li>
-                  <li className="flex justify-between border-b border-border pb-3">
-                    <span className="uppercase tracking-[0.15em] text-muted/80 font-bold">Certification Number</span>
-                    <span className="text-primary font-medium">{product.certification_number || `RIT-${((product.id || 'crystal').toString().charCodeAt(0) * 12345) % 900000 + 100000}`}</span>
-                  </li>
-                </ul>
-              )}
+                  </div>
+                )}
+              </div>
             </div>
+
 
             {/* Estimated Delivery Section (Moved below tabs) */}
             <div className="mt-8 pt-6 border-t border-border">

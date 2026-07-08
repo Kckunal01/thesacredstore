@@ -79,7 +79,10 @@ const Header = () => {
                   <Link to="/shop-crystals" className="text-primary hover:text-primary transition-colors cursor-pointer">Crystals</Link>
                   <Link to="/shop-gems" className="text-primary hover:text-primary transition-colors cursor-pointer">Gemstones</Link>
                   <Link to="/shop-jewellery" className="text-primary hover:text-primary transition-colors cursor-pointer">Jewellery</Link>
-                  <Link to="/shop-utility" className="text-primary hover:text-primary transition-colors cursor-pointer">Utility &amp; Decor</Link>
+                  <Link to="/shop-utility" className="text-primary hover:text-primary transition-colors cursor-pointer whitespace-nowrap">Utility &amp; Decor</Link>
+                  <Link to="/bundles" className="font-bold text-accent hover:text-accent transition-colors cursor-pointer flex items-center gap-1 border-t border-border/50 pt-2 mt-2 whitespace-nowrap">
+                    ✨ Curated Bundles
+                  </Link>
                 </nav>
               </div>
             </div>
@@ -118,6 +121,7 @@ const Header = () => {
       {/* Mobile Menu */}
       <div className={`md:hidden absolute top-full left-0 w-full bg-surface border-b border-border py-6 px-6 flex flex-col space-y-6 text-[11px] tracking-[0.15em] uppercase font-medium transition-all duration-300 transform origin-top ${isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0 pointer-events-none'}`}>
         <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Home</Link>
+        <Link to="/bundles" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-accent hover:text-accent flex items-center gap-1">✨ Curated Bundles</Link>
         <Link to="/shop-crystals" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Crystals</Link>
         <Link to="/shop-gems" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Gemstones</Link>
         <Link to="/shop-jewellery" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Jewellery</Link>

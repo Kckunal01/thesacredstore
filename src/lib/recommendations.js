@@ -70,6 +70,9 @@ export function getCartRecommendations(cartItems, allProducts) {
     };
   });
 
+  // Identify if any bundle is in the cart
+  const hasBundleInCart = cartItems.some(item => item.isBundle || item.isCustomBundle || item.category === 'Bundles');
+
   // 2. Strict Filter: eligible recommendations
   const eligiblePool = normalizedProducts.filter(p => {
     // - Not already in cart (matching id)
@@ -83,6 +86,15 @@ export function getCartRecommendations(cartItems, allProducts) {
     // - Different crystal identity (must not match any crystal identity currently in the cart)
     if (cartCrystalIdentities.has(p.crystalIdentity)) return false;
     
+    // IF bundle is in cart, ONLY upsell jewellery or selenite products
+    if (hasBundleInCart) {
+      const isJewellery = p.normalizedCategory === 'Jewellery' || p.category === 'Jewellery' || p.category === 'Bracelets' || p.category === 'Pendants';
+      const isSelenite = p.crystalIdentity === 'Selenite';
+      if (!isJewellery && !isSelenite) {
+        return false;
+      }
+    }
+
     return true;
   });
 

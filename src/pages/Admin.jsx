@@ -51,7 +51,10 @@ const refreshProducts = async () => { await loadAllProducts(); };
     stock: 10, active: true, philosophy: '', details: '',
     usage: '', chakra: '', effect: '', origin: '',
     intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
-    image_url: '', gallery_images: []
+    image_url: '', gallery_images: [],
+    // Bundle specific fields
+    bundle_products: [],
+    bundle_discount_percent: null
   });
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -416,7 +419,9 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         certification: prodForm.certification,
         certification_number: prodForm.certificationNumber,
         image_url: prodForm.image_url || null,
-        gallery_images: prodForm.gallery_images || []
+        gallery_images: prodForm.gallery_images || [],
+        bundle_discount_percent: prodForm.bundle_discount_percent,
+        bundle_products: prodForm.bundle_products || []
       };
 
       if (editingProduct) {
@@ -466,7 +471,9 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       cleansing_charging: prod.cleansing_charging || '',
       certificationNumber: prod.certificationNumber || prod.certification_number || '',
       image_url: prod.image_url || (prod.images && prod.images[0]) || '',
-      gallery_images: prod.gallery_images || prod.images || []
+      gallery_images: prod.gallery_images || prod.images || [],
+      bundle_discount_percent: prod.bundle_discount_percent ?? null,
+      bundle_products: prod.bundle_products || []
     });
     setIsProductModalOpen(true);
   };
@@ -479,7 +486,9 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       stock: 10, active: true, philosophy: '', details: '',
       usage: '', chakra: '', effect: '', origin: '',
       intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
-      image_url: '', gallery_images: []
+      image_url: '', gallery_images: [],
+      bundle_discount_percent: null,
+      bundle_products: []
     });
     setIsProductModalOpen(true);
   };
@@ -643,7 +652,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         {/* Admin Header */}
         <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-border pb-6 mb-8 gap-4">
           <div>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold block mb-1">Ritualist HQ</span>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-accent font-bold block mb-1">The Sacred Store HQ</span>
             <h1 className="text-4xl font-display font-medium text-primary">Sacred Operations</h1>
           </div>
           <div className="flex items-center gap-4">
@@ -689,7 +698,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
               <div className="bg-white border border-border p-6 flex items-center justify-between shadow-sm">
                 <div>
                   <span className="text-[10px] uppercase tracking-widest text-muted font-bold block mb-1">Pending Shipment</span>
-                  <span className="text-3xl font-display font-semibold text-primary">{pendingOrders}</span>
+                  <span className="text-3xl font-display font-semibold text-pendingOrders">{pendingOrders}</span>
                 </div>
                 <Package className="w-8 h-8 text-accent/40" />
               </div>
@@ -761,6 +770,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                   <option value="Bracelets">Bracelets</option>
                   <option value="Pendants">Pendants</option>
                   <option value="Utility & Decor">Utility & Decor</option>
+                  <option value="Bundles">Bundles</option>
                 </select>
               </div>
               <button
@@ -831,10 +841,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     <th className="p-4 uppercase tracking-wider font-bold">Category</th>
                     <th className="p-4 uppercase tracking-wider font-bold">Price</th>
                     <th className="p-4 uppercase tracking-wider font-bold">Original</th>
-                    <th className="p-4 uppercase tracking-wider font-bold">Stamp</th>
-                    <th className="p-4 uppercase tracking-wider font-bold text-center">Stock</th>
                     <th className="p-4 uppercase tracking-wider font-bold text-center">Active</th>
-                    <th className="p-4 uppercase tracking-wider font-bold text-center">Featured</th>
                     <th className="p-4 uppercase tracking-wider font-bold text-center">Action</th>
                   </tr>
                 </thead>
@@ -860,21 +867,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                       <td className="p-4 text-muted">{p.category}</td>
                       <td className="p-4 font-semibold">₹{p.price}</td>
                       <td className="p-4 text-muted/75">{p.originalPrice ? `₹${p.originalPrice}` : '-'}</td>
-                      <td className="p-4">
-                        {p.stamp && p.stamp !== 'none' ? (
-                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-sm font-semibold uppercase tracking-wider text-[9px]">{p.stamp}</span>
-                        ) : (
-                          '-'
-                        )}
-                      </td>
-                      <td className="p-4 text-center">
-                        <input
-                          type="number"
-                          value={p.stock}
-                          onChange={(e) => handleInlineStockUpdate(p.db_id, e.target.value)}
-                          className="w-16 border border-border bg-[#FEFBF1]/20 px-2 py-1 text-center focus:outline-none focus:border-accent text-xs font-semibold"
-                        />
-                      </td>
                       <td className="p-4 text-center">
                         <button
                           onClick={() => handleInlineActiveToggle(p.db_id, p.active)}
@@ -883,42 +875,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                           }`}
                         >
                           {p.active ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
-                        </button>
-                      </td>
-                      <td className="p-4 text-center">
-                        <button
-                          onClick={async () => {
-                            const newFeaturedVal = !p.featured;
-                            const payload = { featured: newFeaturedVal };
-
-
-                            // 2. Perform Supabase update
-                            const updateResponse = await supabase
-                              .from('products')
-                              .update(payload)
-                              .eq('id', p.db_id)
-                              .select('*');
-
-                            // 3. Immediate SELECT after update
-                            const dbResult = await supabase
-                              .from('products')
-                              .select('id,featured')
-                              .eq('id', p.db_id)
-                              .single();
-
-
-                            // 4. Refresh context and log after refresh
-                            refreshProducts();
-                            setTimeout(() => {
-                              const contextProd = products.find(prod => prod.db_id === p.db_id);
-
-                            }, 500);
-                          }}
-                          className={`inline-flex p-1.5 rounded-full transition-all ${
-                            p.featured ? 'bg-amber-50 text-amber-600' : 'bg-gray-50 text-gray-400'
-                          }`}
-                        >
-                          {p.featured ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
                         </button>
                       </td>
                       <td className="p-4 text-center">
@@ -1000,12 +956,12 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
             </div>
           </div>
         )}
-      </Container>
+</Container>
 
       {/* -------------------- MODAL: PRODUCT EDIT/ADD -------------------- */}
       {isProductModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#FEFBF1] border border-border max-w-4xl w-full p-8 relative rounded-sm shadow-xl my-8">
+          <div className="bg-[#FEFBF1] border border-border w-full max-w-4xl md:max-w-2xl lg:max-w-4xl max-h-screen overflow-y-auto p-4 md:p-8 rounded-sm shadow-xl my-4">
             <button
               onClick={() => setIsProductModalOpen(false)}
               className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
@@ -1051,7 +1007,48 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     <option value="Bracelets">Bracelets</option>
                     <option value="Pendants">Pendants</option>
                     <option value="Utility & Decor">Utility & Decor</option>
+                    <option value="Bundles">Bundles</option>
                   </select>
+
+                  {/* Bundle-specific fields */}
+                  {prodForm.category === 'Bundles' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Discount %</label>
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          placeholder="e.g., 15"
+                          value={prodForm.bundle_discount_percent ?? ''}
+                          onChange={(e) => setProdForm({ ...prodForm, bundle_discount_percent: e.target.value ? parseInt(e.target.value) : null })}
+                          className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Products</label>
+                        <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border border-border p-2">
+                          {adminProducts.filter(p => p.category !== 'Bundles').map(p => (
+                            <label key={p.id} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={prodForm.bundle_products?.includes(p.id)}
+                                onChange={(e) => {
+                                  const current = prodForm.bundle_products || [];
+                                  const updated = e.target.checked
+                                    ? [...current, p.id]
+                                    : current.filter(id => id !== p.id);
+                                  setProdForm({ ...prodForm, bundle_products: updated });
+                                }}
+                                className="accent-accent"
+                              />
+                              {p.name}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -1074,19 +1071,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Stamp</label>
-                  <select
-                    value={prodForm.stamp}
-                    onChange={(e) => setProdForm({...prodForm, stamp: e.target.value})}
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  >
-                    <option value="none">None</option>
-                    <option value="Fresh">Fresh</option>
-                    <option value="Sale">Sale</option>
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Chakra Alignment</label>
                   <input
                     type="text"
@@ -1097,15 +1081,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                 </div>
                 <div>
                   <div className="flex gap-6 mt-6">
-                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={prodForm.featured}
-                        onChange={(e) => setProdForm({...prodForm, featured: e.target.checked})}
-                        className="accent-accent"
-                      />
-                      Featured
-                    </label>
                     <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
                       <input
                         type="checkbox"

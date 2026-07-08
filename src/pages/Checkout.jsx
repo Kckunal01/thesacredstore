@@ -300,7 +300,15 @@ const Checkout = () => {
                           <div className="flex items-center space-x-6">
                             <div style={getPlaceholderStyle(item.name)} className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display">
                               {item.images && item.images.length > 0 ? (
-                                <img src={item.images[0]} alt={item.name} className="w-full h-full object-contain" />
+                                <img
+                                  src={item.images[0]}
+                                  alt={item.name}
+                                  loading="lazy"
+                                  decoding="async"
+                                  width="80"
+                                  height="96"
+                                  className="w-full h-full object-contain"
+                                />
                               ) : (
                                 item.name.charAt(0)
                               )}

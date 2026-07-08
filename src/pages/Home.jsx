@@ -7,6 +7,43 @@ import Button from '../components/ui/Button';
 import ProductCard from '../components/ui/ProductCard';
 import { useContext } from 'react';
 import { ProductsContext } from '../context/ProductsContext';
+import { bundles, getDynamicBundles } from '../data/bundles';
+import BundleCard from '../components/ui/BundleCard';
+
+import { getPageSEO } from '../seo/seoHelpers';
+import { SITE_URL } from '../config';
+import Seo from '../components/Seo';
+
+const homeSEO = getPageSEO({
+  title: 'The Sacred Store – Premium Crystals & Spiritual Accessories',
+  description: 'Explore high‑quality crystals, gemstones, and curated spiritual tools designed to elevate your practice and space.',
+  slug: '/',
+});
+
+const organizationJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'The Sacred Store',
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo.png`,
+  sameAs: [
+    'https://www.facebook.com/thesacredstore',
+    'https://www.instagram.com/thesacredstore',
+  ],
+};
+
+const websiteJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  url: SITE_URL,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${SITE_URL}/search?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
+
+const combinedJsonLd = { ...organizationJsonLd, ...websiteJsonLd };
 
 const Home = () => {
   const { products } = useContext(ProductsContext);
@@ -14,6 +51,7 @@ const Home = () => {
   const [currentHeroImage, setCurrentHeroImage] = useState(0);
   // Dynamically filter featured products from database (instead of hardcoded static IDs)
   const bestSellers = products.filter(p => p.featured === true).slice(0, 4);
+  const dynamicBundles = getDynamicBundles(products);
 
   const heroImages = [
     'https://images.unsplash.com/photo-1596700777174-da97ec0b2b8c?q=80&w=2000&auto=format&fit=crop', // Abstract neutral/mineral feel
@@ -39,13 +77,7 @@ const Home = () => {
   const nextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % (testimonials.length - 2));
   const prevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + (testimonials.length - 2)) % (testimonials.length - 2));
 
-  return (
-    <div className="w-full bg-background overflow-hidden">
-
-      {/* 1. Hero Sections */}
-      {/* Top Hero: Rolling Images Carousel */}
-
-
+  return ( <> <Seo {...homeSEO} jsonLd={combinedJsonLd} />
 
       <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
         <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
@@ -120,6 +152,31 @@ const Home = () => {
           <img src="/assets/images/Bookyourcall.JPG.jpeg" alt="Book Private Consultation" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
         </div>
       </section>
+
+      {/* Curated Bundles section directly ABOVE Testimonials */}
+      <Section className="border-b border-border bg-background py-16">
+        <Container>
+          <div className="text-center mb-10">
+            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
+              <span className="text-primary">Curated</span> <span className="half-gold">Bundles</span>
+            </h3>
+            <p className="text-xs text-muted font-light mt-2">
+              Thoughtfully paired crystals designed to complement each other.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto mb-10">
+            {/* Display first 2 bundle cards */}
+            {dynamicBundles.filter(b => b.active !== false).slice(0, 2).map(bundle => (
+              <BundleCard key={bundle.id} bundle={bundle} products={products} />
+            ))}
+          </div>
+
+          <div className="flex justify-center">
+            <Button to="/bundles" variant="dark" className="text-xs font-semibold">View All Bundles</Button>
+          </div>
+        </Container>
+      </Section>
 
       {/* 6. Testimonials (Reduced height, 3 visible, slider out of 5) */}
       <Section className="bg-surface border-b border-border py-16">
@@ -199,7 +256,7 @@ const Home = () => {
         </Container>
       </Section>
 
-    </div>
+    </>
   );
 };
 

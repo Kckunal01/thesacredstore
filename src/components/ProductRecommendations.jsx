@@ -191,6 +191,10 @@ const ProductRecommendations = ({ currentProduct, products }) => {
                   <img
                     src={mainImage}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    width="230"
+                    height="288"
                     className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-2"
                   />
                 ) : (

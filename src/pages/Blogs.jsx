@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
+import Seo from '../components/Seo';
+import { getBlogSEO } from '../seo/seoHelpers';
 
 const Blogs = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -56,7 +58,22 @@ const Blogs = () => {
   const activePost = blogId ? posts.find(p => p.id === parseInt(blogId)) : null;
 
   if (activePost) {
-    return (
+  const seoData = getBlogSEO({
+    title: activePost.title,
+    excerpt: activePost.excerpt,
+    slug: `/blogs/${activePost.id}`,
+    coverImage:
+      activePost.id === 1
+        ? '/assets/images/Blogs/which-crystal-anxiety-honest-guide.webp'
+        : activePost.id === 3
+        ? '/assets/images/Blogs/root-reset-practical-guide.webp'
+        : activePost.id === 4
+        ? '/assets/images/Blogs/creating-sacred-space.webp'
+        : '',
+  });
+  return (
+    <>
+      <Seo {...seoData} />
       <Section className="min-h-screen pt-32 bg-background">
         <Container className="max-w-3xl mx-auto">
           <button
@@ -99,7 +116,7 @@ const Blogs = () => {
               <span>·</span>
               <span>{activePost.readTime}</span>
               <span>·</span>
-              <span>By Ritualist Editorial</span>
+              <span>By The Sacred Store Editorial</span>
             </div>
 
             <div className="space-y-6 text-muted font-light font-body text-base leading-relaxed pt-4">
@@ -133,7 +150,8 @@ const Blogs = () => {
           </div>
         </Container>
       </Section>
-    );
+    </>
+);
   }
 
   return (
@@ -159,19 +177,43 @@ const Blogs = () => {
                 {post.id === 1 && (
                   <picture>
                     <source srcSet="/assets/images/Blogs/which-crystal-anxiety-honest-guide.webp, /assets/images/Blogs/which-crystal-anxiety-honest-guide@2x.webp 2x" type="image/webp" />
-                    <img src="/assets/images/Blogs/which-crystal-anxiety-honest-guide.png" alt={post.title} className="w-full h-full object-cover" />
+                    <img
+                      src="/assets/images/Blogs/which-crystal-anxiety-honest-guide.png"
+                      alt={post.title}
+                      loading="lazy"
+                      decoding="async"
+                      width="350"
+                      height="218"
+                      className="w-full h-full object-cover"
+                    />
                   </picture>
                 )}
                 {post.id === 3 && (
                   <picture>
                     <source srcSet="/assets/images/Blogs/root-reset-practical-guide.webp, /assets/images/Blogs/root-reset-practical-guide@2x.webp 2x" type="image/webp" />
-                    <img src="/assets/images/Blogs/root-reset-practical-guide.png" alt={post.title} className="w-full h-full object-cover" />
+                    <img
+                      src="/assets/images/Blogs/root-reset-practical-guide.png"
+                      alt={post.title}
+                      loading="lazy"
+                      decoding="async"
+                      width="350"
+                      height="218"
+                      className="w-full h-full object-cover"
+                    />
                   </picture>
                 )}
                 {post.id === 4 && (
                   <picture>
                     <source srcSet="/assets/images/Blogs/creating-sacred-space.webp, /assets/images/Blogs/creating-sacred-space@2x.webp 2x" type="image/webp" />
-                    <img src="/assets/images/Blogs/creating-sacred-space.png" alt={post.title} className="w-full h-full object-cover" />
+                    <img
+                      src="/assets/images/Blogs/creating-sacred-space.png"
+                      alt={post.title}
+                      loading="lazy"
+                      decoding="async"
+                      width="350"
+                      height="218"
+                      className="w-full h-full object-cover"
+                    />
                   </picture>
                 )}
               </div>
