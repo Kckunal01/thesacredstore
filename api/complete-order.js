@@ -52,11 +52,13 @@ export default async function handler(req, res) {
     // ---------- Order creation ----------
     let discountPercent = 0;
     let discountAmount = 0;
-    if (couponCode) {
+    const normalizedCoupon = couponCode ? couponCode.trim().toUpperCase() : null;
+    const normalizedEmail = formData.email ? formData.email.trim().toLowerCase() : '';
+    if (normalizedCoupon) {
       const { data: coupon, error: couponError } = await supabase
         .from('coupons')
         .select('*')
-        .eq('code', couponCode)
+        .eq('code', normalizedCoupon)
         .single();
       if (couponError || !coupon || !coupon.active) {
         return res.status(400).json({ success: false, message: 'Invalid or inactive coupon' });
@@ -65,8 +67,8 @@ export default async function handler(req, res) {
       const { data: priorUse } = await supabase
         .from('coupon_redemptions')
         .select('id')
-        .eq('coupon_code', couponCode)
-        .or(`email.eq.${formData.email},phone.eq.${formData.phone}`)
+        .eq('coupon_code', normalizedCoupon)
+        .or(`email.eq.${normalizedEmail},phone.eq.${formData.phone}`)
         .maybeSingle();
       if (priorUse) {
         return res.status(400).json({ success: false, message: 'Coupon already used.' });
@@ -126,11 +128,11 @@ export default async function handler(req, res) {
     }
 
     // ---------- Coupon Redemption insertion (post‑payment) ----------
-    if (couponCode) {
+    if (normalizedCoupon) {
       const { error: redemptionError } = await supabase.from('coupon_redemptions').insert({
-        coupon_code: couponCode,
+        coupon_code: normalizedCoupon,
         customer_id: customer.id,
-        email: formData.email,
+        email: normalizedEmail,
         phone: formData.phone,
         order_id: order.id,
         discount_percent: discountPercent,

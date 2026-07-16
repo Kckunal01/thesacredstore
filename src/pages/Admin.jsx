@@ -1093,6 +1093,19 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Stamp (Ribbon)</label>
+                  <select
+                    value={prodForm.stamp}
+                    onChange={(e) => setProdForm({...prodForm, stamp: e.target.value})}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  >
+                    <option value="none">None</option>
+                    <option value="Fresh">Fresh</option>
+                    <option value="Sale">Sale</option>
+                  </select>
+                </div>
+
                 {/* New Fields: Intention, Dimensions, Cleansing & Charging, Certification */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                   <div>

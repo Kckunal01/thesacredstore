@@ -14,6 +14,10 @@ import { getProductStockMap } from '../lib/supabaseProducts';
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
     const script = document.createElement('script');
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     script.onload = () => resolve(true);
@@ -56,6 +60,7 @@ const Checkout = () => {
 
   // Coupon states
   const [couponInput, setCouponInput] = useState('');
+  const [couponEmail, setCouponEmail] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
   const [couponMessage, setCouponMessage] = useState('');
@@ -212,12 +217,17 @@ const Checkout = () => {
       setCouponMessage('Enter a coupon code');
       return;
     }
+    if (!couponEmail || !/\S+@\S+\.\S+/.test(couponEmail)) {
+      setCouponMessage('Enter a valid email to apply coupon');
+      return;
+    }
     try {
       const res = await fetch('/api/validate-coupon', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           couponCode: couponInput,
+          email: couponEmail.trim().toLowerCase(),
         }),
       });
       const data = await res.json();
@@ -228,6 +238,10 @@ const Checkout = () => {
       setDiscountPercent(data.discount_percent || 0);
       setAppliedCoupon(couponInput);
       setCouponMessage(`Coupon applied: ${data.discount_percent}% off`);
+      // Pre-fill email in shipping form
+      if (!formData.email) {
+        setFormData((prev) => ({ ...prev, email: couponEmail.trim().toLowerCase() }));
+      }
     } catch (err) {
       setCouponMessage(err.message);
       setDiscountPercent(0);
@@ -336,31 +350,41 @@ const Checkout = () => {
                       {/* Coupon Section (Cart/Step 1) */}
                       <div className="p-6 bg-surface border border-border space-y-4">
                         <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold block">Apply Coupon</span>
-                        <div className="flex flex-col sm:flex-row gap-3">
+                        <div className="flex flex-col gap-3">
                           <input
-                            type="text"
-                            placeholder="COUPON CODE"
-                            value={couponInput}
-                            onChange={(e) => setCouponInput(e.target.value.trim().toUpperCase())}
-                            className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs uppercase tracking-widest w-full sm:max-w-xs"
+                            type="email"
+                            placeholder="YOUR EMAIL"
+                            value={couponEmail}
+                            onChange={(e) => setCouponEmail(e.target.value)}
+                            disabled={!!appliedCoupon}
+                            className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs tracking-widest w-full sm:max-w-xs"
                           />
-                          {appliedCoupon ? (
-                            <button
-                              type="button"
-                              onClick={handleRemoveCoupon}
-                              className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-[10px] uppercase tracking-widest font-bold transition-colors"
-                            >
-                              Remove Coupon
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={handleApplyCoupon}
-                              className="px-6 py-3 bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black text-[10px] uppercase tracking-widest font-bold transition-colors"
-                            >
-                              Apply Coupon
-                            </button>
-                          )}
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                              type="text"
+                              placeholder="COUPON CODE"
+                              value={couponInput}
+                              onChange={(e) => setCouponInput(e.target.value.trim().toUpperCase())}
+                              className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs uppercase tracking-widest w-full sm:max-w-xs"
+                            />
+                            {appliedCoupon ? (
+                              <button
+                                type="button"
+                                onClick={handleRemoveCoupon}
+                                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-[10px] uppercase tracking-widest font-bold transition-colors"
+                              >
+                                Remove Coupon
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={handleApplyCoupon}
+                                className="px-6 py-3 bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black text-[10px] uppercase tracking-widest font-bold transition-colors"
+                              >
+                                Apply Coupon
+                              </button>
+                            )}
+                          </div>
                         </div>
                         {couponMessage && (
                           <p className="text-xs font-semibold" style={{ color: appliedCoupon ? '#28a745' : '#dc3545' }}>

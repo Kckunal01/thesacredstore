@@ -6,9 +6,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { couponCode } = req.body || {};
+    const { couponCode, email } = req.body || {};
     if (!couponCode) {
       return res.status(400).json({ success: false, message: 'Coupon code is required' });
+    }
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email is required to validate coupon' });
     }
 
     const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
@@ -30,16 +33,32 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, message: 'Database error fetching coupon' });
     }
 
-    if (coupon && coupon.active) {
+    if (!coupon || !coupon.active) {
       return res.status(200).json({
-        success: true,
-        discount_percent: coupon.discount_percent
+        success: false,
+        message: 'Invalid coupon'
+      });
+    }
+
+    // Check prior redemption by email
+    const { data: priorUse } = await supabase
+      .from('coupon_redemptions')
+      .select('id')
+      .eq('coupon_code', couponCode.trim().toUpperCase())
+      .eq('email', email.trim().toLowerCase())
+      .maybeSingle();
+
+    if (priorUse) {
+      return res.status(200).json({
+        success: false,
+        reason: 'already_used',
+        message: 'This coupon has already been used with this email.'
       });
     }
 
     return res.status(200).json({
-      success: false,
-      message: 'Invalid coupon'
+      success: true,
+      discount_percent: coupon.discount_percent
     });
   } catch (err) {
     return res.status(500).json({
