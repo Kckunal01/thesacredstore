@@ -91,7 +91,11 @@ export async function fetchProducts(forceRefetch = false) {
           cleansing_charging: item.cleansing_charging || (localMatch ? localMatch.cleansing_charging : ''),
           certification: item.certification || (localMatch ? localMatch.certification : ''),
           certification_number: item.certification_number || (localMatch ? localMatch.certification_number : ''),
-          images: images
+          images: images,
+          // Bundle-specific fields (null/empty for regular products)
+          bundle_products: item.bundle_products || [],
+          bundle_product_descriptions: item.bundle_product_descriptions || {},
+          bundle_discount_percent: item.bundle_discount_percent || 0,
         };
       });
       return cachedProducts;
@@ -167,7 +171,10 @@ export async function fetchFeaturedProducts(forceRefetch = false) {
           cleansing_charging: item.cleansing_charging || (localMatch ? localMatch.cleansing_charging : ''),
           certification: item.certification || (localMatch ? localMatch.certification : ''),
           certification_number: item.certification_number || (localMatch ? localMatch.certification_number : ''),
-          images: images
+          images: images,
+          bundle_products: item.bundle_products || [],
+          bundle_product_descriptions: item.bundle_product_descriptions || {},
+          bundle_discount_percent: item.bundle_discount_percent || 0,
         };
       });
       return cachedProducts;

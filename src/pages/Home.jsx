@@ -7,7 +7,7 @@ import Button from '../components/ui/Button';
 import ProductCard from '../components/ui/ProductCard';
 import { useContext } from 'react';
 import { ProductsContext } from '../context/ProductsContext';
-import { bundles, getDynamicBundles } from '../data/bundles';
+import { getDynamicBundles } from '../data/bundles';
 import BundleCard from '../components/ui/BundleCard';
 
 import { getPageSEO } from '../seo/seoHelpers';
@@ -168,7 +168,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto mb-10">
             {/* Display first 2 bundle cards */}
             {dynamicBundles.filter(b => b.active !== false).slice(0, 2).map(bundle => (
-              <BundleCard key={bundle.id} bundle={bundle} products={products} />
+              <BundleCard key={bundle.id} bundle={bundle} />
             ))}
           </div>
 

@@ -1,6 +1,6 @@
 import React, { useContext, useMemo } from 'react';
 import { ProductsContext } from '../context/ProductsContext';
-import { bundles, getDynamicBundles } from '../data/bundles';
+import { getDynamicBundles } from '../data/bundles';
 import BundleCard from '../components/ui/BundleCard';
 import BundleBuilder from '../components/ui/BundleBuilder';
 import Container from '../components/ui/Container';
@@ -8,10 +8,6 @@ import Section from '../components/ui/Section';
 
 const Bundles = () => {
   const { products } = useContext(ProductsContext);
-
-  const activeProducts = useMemo(() => {
-    return products.filter(p => p.active !== false);
-  }, [products]);
 
   const dynamicBundles = useMemo(() => {
     return getDynamicBundles(products).filter(b => b.active !== false);
@@ -34,7 +30,7 @@ const Bundles = () => {
         <Section className="py-0 mb-20">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {dynamicBundles.map(bundle => (
-              <BundleCard key={bundle.id} bundle={bundle} products={activeProducts} />
+              <BundleCard key={bundle.id} bundle={bundle} />
             ))}
           </div>
         </Section>

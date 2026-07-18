@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-// ProductsContext import removed; using direct Supabase fetch for admin
 import Button from '../components/ui/Button';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
-import { Search, Plus, Filter, Edit, Package, DollarSign, ShoppingCart, LogOut, Check, X, ArrowUp, ArrowDown, Percent, Image, Trash2 } from 'lucide-react';
+import { Search, Plus, Filter, Edit, Package, DollarSign, ShoppingCart, LogOut, Check, X, ArrowUp, ArrowDown, Percent, Image, Trash2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 
 const Admin = () => {
   // Auth states
@@ -18,23 +17,25 @@ const Admin = () => {
 
   // App data states
   const [adminProducts, setAdminProducts] = useState([]);
-const [adminProductsLoading, setAdminProductsLoading] = useState(true);
-
+  const [adminProductsLoading, setAdminProductsLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
-const products = adminProducts;
-const productsLoading = adminProductsLoading;
-const refreshProducts = async () => { await loadAllProducts(); };
 
-  // Navigation state: 'dashboard' | 'products' | 'orders'
+  // Navigation state: 'dashboard' | 'products' | 'bundles' | 'orders'
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // UI state
+  // UI search/filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [selectedProductIds, setSelectedProductIds] = useState([]);
+  
+  // Modals visibility states
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+  const [isBundleModalOpen, setIsBundleModalOpen] = useState(false);
+  
+  // Editing target state
   const [editingProduct, setEditingProduct] = useState(null);
+  const [editingBundle, setEditingBundle] = useState(null);
 
   // Bulk actions states
   const [bulkAction, setBulkAction] = useState('');
@@ -44,26 +45,56 @@ const refreshProducts = async () => { await loadAllProducts(); };
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingOrderStatus, setUpdatingOrderStatus] = useState(false);
 
-  // New/Edit product form states
+  // Product form state (NO bundle fields here)
   const [prodForm, setProdForm] = useState({
     name: '', slug: '', category: 'Crystals', description: '',
     price: '', original_price: '', stamp: 'none', featured: false,
     stock: 10, active: true, philosophy: '', details: '',
     usage: '', chakra: '', effect: '', origin: '',
     intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
-    image_url: '', gallery_images: [],
-    // Bundle specific fields
-    bundle_products: [],
-    bundle_discount_percent: null
+    image_url: '', gallery_images: []
   });
-  const [uploadingImage, setUploadingImage] = useState(false);
 
-  // 1. Auto logout after 30 minutes of inactivity
+  // Bundle form state
+  const [bundleForm, setBundleForm] = useState({
+    name: '',
+    slug: '',
+    description: '',
+    image_url: '',
+    gallery_images: [],
+    bundle_discount_percent: 0,
+    bundle_products: [], // array of product UUIDs
+    bundle_product_descriptions: {}, // Map of { [productId]: specificDescription }
+    active: true,
+    featured: false
+  });
+
+  const [bundleSearchQuery, setBundleSearchQuery] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [toast, setToast] = useState({ message: '', type: '' });
+
+  // Auto-generate and validate slug for product or bundle
+  const generateSlug = (name) => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  // Toast notification timer
+  useEffect(() => {
+    if (!toast.message) return;
+    const timer = setTimeout(() => setToast({ message: '', type: '' }), 4000);
+    return () => clearTimeout(timer);
+  }, [toast.message]);
+
+  // Auto logout after 30 minutes of inactivity
   useEffect(() => {
     if (!session || !isAdmin) return;
 
     let timeoutId;
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
+    const INACTIVITY_LIMIT = 30 * 60 * 1000;
 
     const resetTimer = () => {
       clearTimeout(timeoutId);
@@ -78,11 +109,8 @@ const refreshProducts = async () => { await loadAllProducts(); };
       }, INACTIVITY_LIMIT);
     };
 
-    // Events to monitor for activity
     const events = ['mousemove', 'keydown', 'mousedown', 'scroll', 'touchstart'];
     events.forEach(event => window.addEventListener(event, resetTimer));
-    
-    // Start initial timer
     resetTimer();
 
     return () => {
@@ -91,7 +119,7 @@ const refreshProducts = async () => { await loadAllProducts(); };
     };
   }, [session, isAdmin]);
 
-  // Check user authentication and profiles.is_admin
+  // Auth setup and change subscription
   useEffect(() => {
     const initSession = async () => {
       const { data: { session: activeSession } } = await supabase.auth.getSession();
@@ -144,7 +172,6 @@ const refreshProducts = async () => { await loadAllProducts(); };
       
       if (error) {
         console.error('Error fetching admin status:', error);
-        // Unauthorized
         await supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -155,7 +182,6 @@ const refreshProducts = async () => { await loadAllProducts(); };
         setUser(activeSession.user);
         setIsAdmin(true);
       } else {
-        // Not an admin: unauthorized
         await supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -217,6 +243,23 @@ const refreshProducts = async () => { await loadAllProducts(); };
     }
   };
 
+  // Fetch products
+  const loadAllProducts = async () => {
+    setAdminProductsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('name', { ascending: true });
+      if (error) throw error;
+      setAdminProducts((data || []).map(item => ({ ...item, db_id: item.id })));
+    } catch (err) {
+      console.error('Failed to load products:', err);
+    } finally {
+      setAdminProductsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (session && isAdmin) {
       fetchOrders();
@@ -224,73 +267,41 @@ const refreshProducts = async () => { await loadAllProducts(); };
     }
   }, [session, isAdmin]);
 
-  // Load all products (admin view)
-const loadAllProducts = async () => {
-  setAdminProductsLoading(true);
-  try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('name', { ascending: true });
-    if (error) throw error;
-    setAdminProducts((data || []).map(item => ({ ...item, db_id: item.id })));
-  } catch (err) {
-    console.error('Failed to load products:', err);
-  } finally {
-    setAdminProductsLoading(false);
-  }
-};
+  const refreshProducts = async () => {
+    await loadAllProducts();
+  };
 
-// Handle inline stock updates
-  const handleInlineStockUpdate = async (prodId, newStock) => {
+  // Helper to handle inline active toggle for products
+  const handleInlineActiveToggle = async (prodId, currentActive) => {
     try {
-      const stockVal = parseInt(newStock) || 0;
       const { error } = await supabase
         .from('products')
-        .update({ stock: stockVal })
+        .update({ active: !currentActive })
         .eq('id', prodId);
 
       if (error) throw error;
       refreshProducts();
     } catch (err) {
-      alert('Failed to update stock: ' + err.message);
+      alert('Failed to update active state: ' + err.message);
     }
   };
 
-  // Handle inline active toggles
-// Handle inline active toggles
-const handleInlineActiveToggle = async (prodId, currentActive) => {
+  // Helper to handle inline active toggle for bundles
+  const handleInlineBundleActiveToggle = async (bundleId, currentActive) => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ active: !currentActive })
+        .eq('id', bundleId);
 
-  const product = products.find(p => p.db_id === prodId);
+      if (error) throw error;
+      refreshProducts();
+    } catch (err) {
+      alert('Failed to update bundle active state: ' + err.message);
+    }
+  };
 
-  const payload = { active: !currentActive };
-
-  try {
-    const { error } = await supabase
-      .from('products')
-      .update(payload)
-      .eq('id', prodId);
-
-    if (error) throw error;
-    refreshProducts();
-
-  } catch (err) {
-    alert('Failed to update active state: ' + err.message);
-
-  }
-
-};
-
-  // Toast notification state
-  const [toast, setToast] = useState({ message: '', type: '' });
-
-  useEffect(() => {
-    if (!toast.message) return;
-    const timer = setTimeout(() => setToast({ message: '', type: '' }), 4000);
-    return () => clearTimeout(timer);
-  }, [toast.message]);
-
-  // Bulk operation processing
+  // Bulk actions for products
   const handleBulkAction = async () => {
     if (selectedProductIds.length === 0) {
       setToast({ message: 'Please select at least one product.', type: 'error' });
@@ -302,11 +313,11 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     }
 
     try {
-      const selectedProds = products.filter(p => selectedProductIds.includes(p.id));
+      const selectedProds = adminProducts.filter(p => selectedProductIds.includes(p.id));
       const dbIds = selectedProds.map(p => p.db_id).filter(Boolean);
 
       if (dbIds.length === 0) {
-        setToast({ message: 'Could not find Supabase db_ids for selected products.', type: 'error' });
+        setToast({ message: 'Could not find database IDs for selection.', type: 'error' });
         return;
       }
 
@@ -343,14 +354,10 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         return supabase
           .from('products')
           .update(updates)
-          .eq('id', p.db_id)
-          .then(({ error }) => {
-            if (error) throw error;
-          });
+          .eq('id', p.db_id);
       });
 
       await Promise.all(updatePromises);
-
       setToast({ message: 'Bulk action executed successfully.', type: 'success' });
       setSelectedProductIds([]);
       refreshProducts();
@@ -359,8 +366,8 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     }
   };
 
-  // Image Upload handler (Vite / client upload to storage)
-  const handleImageUpload = async (e, fieldType) => {
+  // Image Upload handler (to Supabase storage)
+  const handleImageUpload = async (e, fieldType, target = 'product') => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -380,10 +387,18 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         .from('product-images')
         .getPublicUrl(filePath);
 
-      if (fieldType === 'cover') {
-        setProdForm(prev => ({ ...prev, image_url: publicUrl }));
+      if (target === 'product') {
+        if (fieldType === 'cover') {
+          setProdForm(prev => ({ ...prev, image_url: publicUrl }));
+        } else {
+          setProdForm(prev => ({ ...prev, gallery_images: [...(prev.gallery_images || []), publicUrl] }));
+        }
       } else {
-        setProdForm(prev => ({ ...prev, gallery_images: [...(prev.gallery_images || []), publicUrl] }));
+        if (fieldType === 'cover') {
+          setBundleForm(prev => ({ ...prev, image_url: publicUrl }));
+        } else {
+          setBundleForm(prev => ({ ...prev, gallery_images: [...(prev.gallery_images || []), publicUrl] }));
+        }
       }
     } catch (err) {
       alert('Image upload failed: ' + err.message);
@@ -392,13 +407,19 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     }
   };
 
-  // Save Product (Create or Edit)
+  // Save Product
   const handleSaveProduct = async (e) => {
     e.preventDefault();
     try {
+      const slugVal = prodForm.slug.trim() || generateSlug(prodForm.name);
+      if (!slugVal) {
+        alert('Slug cannot be empty.');
+        return;
+      }
+
       const payload = {
-        name: prodForm.name,
-        slug: prodForm.slug || prodForm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        name: prodForm.name.trim(),
+        slug: slugVal,
         category: prodForm.category,
         description: prodForm.description,
         price: parseFloat(prodForm.price) || 0,
@@ -416,12 +437,10 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         intentions: prodForm.intention,
         dimensions: prodForm.dimensions,
         cleansing_charging: prodForm.cleansing_charging,
-        certification: prodForm.certification,
+        certification: prodForm.certificationNumber ? 'Certified' : null,
         certification_number: prodForm.certificationNumber,
         image_url: prodForm.image_url || null,
         gallery_images: prodForm.gallery_images || [],
-        bundle_discount_percent: prodForm.bundle_discount_percent,
-        bundle_products: prodForm.bundle_products || []
       };
 
       if (editingProduct) {
@@ -430,13 +449,13 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
           .update(payload)
           .eq('id', editingProduct.db_id);
         if (error) throw error;
-        alert('Product updated successfully.');
+        setToast({ message: 'Product updated successfully.', type: 'success' });
       } else {
         const { error } = await supabase
           .from('products')
           .insert(payload);
         if (error) throw error;
-        alert('Product created successfully.');
+        setToast({ message: 'Product created successfully.', type: 'success' });
       }
 
       setIsProductModalOpen(false);
@@ -444,6 +463,101 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       refreshProducts();
     } catch (err) {
       alert('Failed to save product: ' + err.message);
+    }
+  };
+
+  // Bundle pricing logic (calculated dynamically)
+  const bundlePrices = useMemo(() => {
+    const selectedProds = adminProducts.filter(p => bundleForm.bundle_products.includes(p.id));
+    const originalTotal = selectedProds.reduce((sum, p) => sum + (parseFloat(p.price) || 0), 0);
+    const discountFactor = (100 - (parseFloat(bundleForm.bundle_discount_percent) || 0)) / 100;
+    const finalTotal = Math.round(originalTotal * discountFactor);
+    return { originalTotal, finalTotal };
+  }, [bundleForm.bundle_products, bundleForm.bundle_discount_percent, adminProducts]);
+
+  // Save Bundle
+  const handleSaveBundle = async (e) => {
+    e.preventDefault();
+    try {
+      const slugVal = bundleForm.slug.trim() || generateSlug(bundleForm.name);
+      
+      // Validations
+      if (!bundleForm.name.trim()) {
+        alert('Bundle name is required.');
+        return;
+      }
+      if (!slugVal) {
+        alert('Slug cannot be empty.');
+        return;
+      }
+      if (!bundleForm.image_url) {
+        alert('Cover image is required.');
+        return;
+      }
+      if (bundleForm.bundle_products.length < 2) {
+        alert('A bundle must contain at least 2 products.');
+        return;
+      }
+      const disc = parseFloat(bundleForm.bundle_discount_percent);
+      if (isNaN(disc) || disc < 0 || disc > 100) {
+        alert('Discount % must be between 0 and 100.');
+        return;
+      }
+
+      // Check duplicates in slug
+      const slugExists = adminProducts.some(p => p.slug === slugVal && p.id !== (editingBundle?.db_id || editingBundle?.id));
+      if (slugExists) {
+        alert('A product or bundle with this slug already exists.');
+        return;
+      }
+
+      const payload = {
+        name: bundleForm.name.trim(),
+        slug: slugVal,
+        category: 'Bundles',
+        description: bundleForm.description,
+        price: bundlePrices.finalTotal,
+        original_price: bundlePrices.originalTotal,
+        image_url: bundleForm.image_url,
+        gallery_images: bundleForm.gallery_images,
+        bundle_discount_percent: disc,
+        bundle_products: bundleForm.bundle_products,
+        bundle_product_descriptions: bundleForm.bundle_product_descriptions,
+        active: bundleForm.active,
+        featured: bundleForm.featured,
+        // No crystal specs
+        stock: 10,
+        philosophy: editingBundle?.philosophy || '',
+        details: editingBundle?.details || '',
+        usage: editingBundle?.usage || '',
+        chakra: editingBundle?.chakra || '',
+        effect: editingBundle?.effect || '',
+        origin: editingBundle?.origin || '',
+        intentions: editingBundle?.intentions || '',
+        dimensions: editingBundle?.dimensions || '',
+        cleansing_charging: editingBundle?.cleansing_charging || ''
+      };
+
+      if (editingBundle) {
+        const { error } = await supabase
+          .from('products')
+          .update(payload)
+          .eq('id', editingBundle.db_id);
+        if (error) throw error;
+        setToast({ message: 'Bundle updated successfully.', type: 'success' });
+      } else {
+        const { error } = await supabase
+          .from('products')
+          .insert(payload);
+        if (error) throw error;
+        setToast({ message: 'Bundle created successfully.', type: 'success' });
+      }
+
+      setIsBundleModalOpen(false);
+      setEditingBundle(null);
+      refreshProducts();
+    } catch (err) {
+      alert('Failed to save bundle: ' + err.message);
     }
   };
 
@@ -455,7 +569,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       category: prod.category || 'Crystals',
       description: prod.description || '',
       price: prod.price || '',
-      original_price: prod.originalPrice || '',
+      original_price: prod.originalPrice || prod.original_price || '',
       stamp: prod.stamp || 'none',
       featured: !!prod.featured,
       stock: prod.stock !== undefined ? prod.stock : 10,
@@ -469,11 +583,9 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       intention: prod.intentions || '',
       dimensions: prod.dimensions || '',
       cleansing_charging: prod.cleansing_charging || '',
-      certificationNumber: prod.certificationNumber || prod.certification_number || '',
-      image_url: prod.image_url || (prod.images && prod.images[0]) || '',
-      gallery_images: prod.gallery_images || prod.images || [],
-      bundle_discount_percent: prod.bundle_discount_percent ?? null,
-      bundle_products: prod.bundle_products || []
+      certificationNumber: prod.certification_number || '',
+      image_url: prod.image_url || '',
+      gallery_images: prod.gallery_images || [],
     });
     setIsProductModalOpen(true);
   };
@@ -487,10 +599,42 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
       usage: '', chakra: '', effect: '', origin: '',
       intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
       image_url: '', gallery_images: [],
-      bundle_discount_percent: null,
-      bundle_products: []
     });
     setIsProductModalOpen(true);
+  };
+
+  const openAddBundleModal = () => {
+    setEditingBundle(null);
+    setBundleForm({
+      name: '',
+      slug: '',
+      description: '',
+      image_url: '',
+      gallery_images: [],
+      bundle_discount_percent: 0,
+      bundle_products: [],
+      bundle_product_descriptions: {},
+      active: true,
+      featured: false
+    });
+    setIsBundleModalOpen(true);
+  };
+
+  const openEditBundleModal = (bndl) => {
+    setEditingBundle(bndl);
+    setBundleForm({
+      name: bndl.name || '',
+      slug: bndl.slug || '',
+      description: bndl.description || '',
+      image_url: bndl.image_url || '',
+      gallery_images: bndl.gallery_images || [],
+      bundle_discount_percent: bndl.bundle_discount_percent || 0,
+      bundle_products: bndl.bundle_products || [],
+      bundle_product_descriptions: bndl.bundle_product_descriptions || {},
+      active: bndl.active !== false,
+      featured: !!bndl.featured
+    });
+    setIsBundleModalOpen(true);
   };
 
   // Update order status
@@ -533,7 +677,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     }
   };
 
-  // Toggle selections
+  // Toggles for bulk select
   const toggleProductSelect = (id) => {
     setSelectedProductIds(prev => 
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
@@ -548,17 +692,42 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     }
   };
 
-   // Filtered products list
- const filteredProducts = products.filter(p => {
-   const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     p.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     p.category.toLowerCase().includes(searchTerm.toLowerCase());
-   const matchesCategory = categoryFilter === 'All' || p.category === categoryFilter;
-   return matchesSearch && matchesCategory;
- }); 
+  // Filtered actual products (category !== 'Bundles')
+  const filteredProducts = useMemo(() => {
+    return adminProducts.filter(p => {
+      if (p.category === 'Bundles') return false;
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = categoryFilter === 'All' || p.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [adminProducts, searchTerm, categoryFilter]);
 
+  // Filtered bundles list
+  const filteredBundles = useMemo(() => {
+    return adminProducts.filter(p => {
+      if (p.category !== 'Bundles') return false;
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.slug.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesSearch;
+    });
+  }, [adminProducts, searchTerm]);
 
-  // Loading indicator for Auth check
+  // Get available products list for bundle selection
+  const poolProductsForBundle = useMemo(() => {
+    return adminProducts.filter(p => p.category !== 'Bundles');
+  }, [adminProducts]);
+
+  // Filtered list of products inside the bundle picker modal
+  const bundlePickerFilteredProducts = useMemo(() => {
+    return poolProductsForBundle.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(bundleSearchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(bundleSearchQuery.toLowerCase());
+      return matchesSearch;
+    });
+  }, [poolProductsForBundle, bundleSearchQuery]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#FEFBF1] flex items-center justify-center">
@@ -569,7 +738,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     );
   }
 
-  // Not authenticated login screen
   if (!session || !isAdmin) {
     return (
       <Section className="min-h-screen bg-[#FEFBF1] pt-32 flex items-center justify-center">
@@ -578,7 +746,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
             <span className="text-[10px] uppercase tracking-[0.3em] text-[#000000] font-bold block mb-2">Internal Portal</span>
             <h1 className="text-3xl font-display font-medium text-primary">Founder Operations</h1>
           </div>
-
           {session && !isAdmin ? (
             <div className="space-y-6 text-center">
               <p className="text-red-500 text-sm font-light font-body">
@@ -631,14 +798,12 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
     );
   }
 
-  // Dashboard calculations
   const totalOrders = orders.length;
   const pendingOrders = orders.filter(o => o.status !== 'Delivered' && o.status !== 'Cancelled').length;
-  const lowStockProds = products.filter(p => p.stock <= 2).length;
+  const lowStockProds = adminProducts.filter(p => p.category !== 'Bundles' && p.stock <= 2).length;
 
   return (
     <Section className="bg-[#FEFBF1] min-h-screen pt-24 pb-12 relative">
-      {/* Toast Notification Container */}
       {toast.message && (
         <div className={`fixed top-24 right-6 z-50 px-6 py-3 border text-xs font-semibold uppercase tracking-wider shadow-lg transition-all duration-300 ${
           toast.type === 'error' ? 'bg-rose-50 border-rose-200 text-rose-700' :
@@ -668,7 +833,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
 
         {/* Tab Buttons */}
         <div className="flex border-b border-border mb-8 gap-6">
-          {['dashboard', 'products', 'orders'].map(tab => (
+          {['dashboard', 'products', 'bundles', 'orders'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -698,7 +863,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
               <div className="bg-white border border-border p-6 flex items-center justify-between shadow-sm">
                 <div>
                   <span className="text-[10px] uppercase tracking-widest text-muted font-bold block mb-1">Pending Shipment</span>
-                  <span className="text-3xl font-display font-semibold text-pendingOrders">{pendingOrders}</span>
+                  <span className="text-3xl font-display font-semibold text-accent">{pendingOrders}</span>
                 </div>
                 <Package className="w-8 h-8 text-accent/40" />
               </div>
@@ -714,7 +879,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
             {/* Low Stock Quick List */}
             <div className="bg-white border border-border p-6 rounded-sm">
               <h3 className="text-lg font-display text-primary font-medium mb-4">Immediate Restock Recommendations</h3>
-              {products.filter(p => p.stock <= 2).length === 0 ? (
+              {adminProducts.filter(p => p.category !== 'Bundles' && p.stock <= 2).length === 0 ? (
                 <p className="text-sm font-light text-muted font-body">All crystal channels are fully stocked.</p>
               ) : (
                 <div className="overflow-x-auto">
@@ -727,7 +892,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                       </tr>
                     </thead>
                     <tbody>
-                      {products.filter(p => p.stock <= 2).map(p => (
+                      {adminProducts.filter(p => p.category !== 'Bundles' && p.stock <= 2).map(p => (
                         <tr key={p.id} className="border-b border-border/40 last:border-0">
                           <td className="py-3 font-semibold text-primary">{p.name}</td>
                           <td className="py-3 text-muted">{p.category}</td>
@@ -745,7 +910,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         {/* -------------------- TAB: PRODUCTS -------------------- */}
         {activeTab === 'products' && (
           <div className="space-y-6">
-            {/* Search and Filter Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4 flex-grow max-w-xl">
                 <div className="relative flex-grow">
@@ -770,7 +934,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                   <option value="Bracelets">Bracelets</option>
                   <option value="Pendants">Pendants</option>
                   <option value="Utility & Decor">Utility & Decor</option>
-                  <option value="Bundles">Bundles</option>
                 </select>
               </div>
               <button
@@ -857,8 +1020,8 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                         />
                       </td>
                       <td className="p-4">
-                        {p.images && p.images[0] ? (
-                          <img src={p.images[0]} alt={p.name} className="w-10 h-12 object-contain bg-[#FEFBF1] border border-border" />
+                        {p.image_url ? (
+                          <img src={p.image_url} alt={p.name} className="w-10 h-12 object-contain bg-[#FEFBF1] border border-border" />
                         ) : (
                           <div className="w-10 h-12 bg-[#FEFBF1] border border-border flex items-center justify-center text-[10px] text-muted">No Img</div>
                         )}
@@ -866,7 +1029,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                       <td className="p-4 font-semibold text-primary">{p.name}</td>
                       <td className="p-4 text-muted">{p.category}</td>
                       <td className="p-4 font-semibold">₹{p.price}</td>
-                      <td className="p-4 text-muted/75">{p.originalPrice ? `₹${p.originalPrice}` : '-'}</td>
+                      <td className="p-4 text-muted/75">{p.original_price ? `₹${p.original_price}` : '-'}</td>
                       <td className="p-4 text-center">
                         <button
                           onClick={() => handleInlineActiveToggle(p.db_id, p.active)}
@@ -889,7 +1052,90 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                   ))}
                   {filteredProducts.length === 0 && (
                     <tr>
-                      <td colSpan="11" className="p-12 text-center text-muted font-light font-body">No products matched current query.</td>
+                      <td colSpan="8" className="p-12 text-center text-muted font-light font-body">No products matched current query.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* -------------------- TAB: BUNDLES -------------------- */}
+        {activeTab === 'bundles' && (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="relative flex-grow max-w-xl">
+                <input
+                  type="text"
+                  placeholder="Search bundle name or slug..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-white border border-border px-4 py-2.5 pl-10 text-xs focus:outline-none focus:border-accent text-primary placeholder-muted/60"
+                />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" />
+              </div>
+              <button
+                onClick={openAddBundleModal}
+                className="flex items-center gap-2 bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black px-6 py-2.5 text-xs uppercase tracking-[0.2em] font-bold transition-all font-body"
+              >
+                <Plus className="w-4 h-4" /> Add Bundle
+              </button>
+            </div>
+
+            {/* Bundles Table */}
+            <div className="bg-white border border-border overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs font-body">
+                <thead>
+                  <tr className="border-b border-border bg-[#FEFBF1]/40 text-muted">
+                    <th className="p-4 uppercase tracking-wider font-bold">Image</th>
+                    <th className="p-4 uppercase tracking-wider font-bold">Name</th>
+                    <th className="p-4 uppercase tracking-wider font-bold">Included Products Count</th>
+                    <th className="p-4 uppercase tracking-wider font-bold">Calculated Price</th>
+                    <th className="p-4 uppercase tracking-wider font-bold">Original Price</th>
+                    <th className="p-4 uppercase tracking-wider font-bold">Discount %</th>
+                    <th className="p-4 uppercase tracking-wider font-bold text-center">Active</th>
+                    <th className="p-4 uppercase tracking-wider font-bold text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBundles.map(b => (
+                    <tr key={b.id} className="border-b border-border/40 hover:bg-[#FEFBF1]/20">
+                      <td className="p-4">
+                        {b.image_url ? (
+                          <img src={b.image_url} alt={b.name} className="w-10 h-12 object-contain bg-[#FEFBF1] border border-border" />
+                        ) : (
+                          <div className="w-10 h-12 bg-[#FEFBF1] border border-border flex items-center justify-center text-[10px] text-muted">No Img</div>
+                        )}
+                      </td>
+                      <td className="p-4 font-semibold text-primary">{b.name}</td>
+                      <td className="p-4 text-muted">{(b.bundle_products || []).length} products</td>
+                      <td className="p-4 font-semibold">₹{b.price}</td>
+                      <td className="p-4 text-muted/75">₹{b.original_price || b.price}</td>
+                      <td className="p-4 font-bold text-accent">{b.bundle_discount_percent || 0}%</td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => handleInlineBundleActiveToggle(b.db_id, b.active)}
+                          className={`inline-flex p-1.5 rounded-full transition-all ${
+                            b.active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'
+                          }`}
+                        >
+                          {b.active ? <Check className="w-4 h-4" /> : <X className="w-4 h-4" />}
+                        </button>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => openEditBundleModal(b)}
+                          className="p-1 hover:text-accent text-primary transition-all inline-block"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {filteredBundles.length === 0 && (
+                    <tr>
+                      <td colSpan="8" className="p-12 text-center text-muted font-light font-body">No bundles found in database.</td>
                     </tr>
                   )}
                 </tbody>
@@ -901,7 +1147,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         {/* -------------------- TAB: ORDERS -------------------- */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
-            {/* Orders Table */}
             <div className="bg-white border border-border overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs font-body">
                 <thead>
@@ -956,12 +1201,12 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
             </div>
           </div>
         )}
-</Container>
+      </Container>
 
-      {/* -------------------- MODAL: PRODUCT EDIT/ADD -------------------- */}
+      {/* -------------------- MODAL: PRODUCT EDIT/ADD (CLEANED) -------------------- */}
       {isProductModalOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-[#FEFBF1] border border-border w-full max-w-4xl md:max-w-2xl lg:max-w-4xl max-h-screen overflow-y-auto p-4 md:p-8 rounded-sm shadow-xl my-4">
+          <div className="bg-[#FEFBF1] border border-border w-full max-w-4xl max-h-screen overflow-y-auto p-4 md:p-8 rounded-sm shadow-xl my-4 relative">
             <button
               onClick={() => setIsProductModalOpen(false)}
               className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
@@ -980,7 +1225,14 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     required
                     type="text"
                     value={prodForm.name}
-                    onChange={(e) => setProdForm({...prodForm, name: e.target.value})}
+                    onChange={(e) => {
+                      const newName = e.target.value;
+                      setProdForm(prev => ({
+                        ...prev,
+                        name: newName,
+                        slug: prev.slug === generateSlug(prev.name) ? generateSlug(newName) : prev.slug
+                      }));
+                    }}
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   />
                 </div>
@@ -990,7 +1242,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     type="text"
                     placeholder="Auto-generated if empty"
                     value={prodForm.slug}
-                    onChange={(e) => setProdForm({...prodForm, slug: e.target.value})}
+                    onChange={(e) => setProdForm({...prodForm, slug: generateSlug(e.target.value)})}
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   />
                 </div>
@@ -1007,48 +1259,7 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     <option value="Bracelets">Bracelets</option>
                     <option value="Pendants">Pendants</option>
                     <option value="Utility & Decor">Utility & Decor</option>
-                    <option value="Bundles">Bundles</option>
                   </select>
-
-                  {/* Bundle-specific fields */}
-                  {prodForm.category === 'Bundles' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div>
-                        <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Discount %</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="e.g., 15"
-                          value={prodForm.bundle_discount_percent ?? ''}
-                          onChange={(e) => setProdForm({ ...prodForm, bundle_discount_percent: e.target.value ? parseInt(e.target.value) : null })}
-                          className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Products</label>
-                        <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto border border-border p-2">
-                          {adminProducts.filter(p => p.category !== 'Bundles').map(p => (
-                            <label key={p.id} className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={prodForm.bundle_products?.includes(p.id)}
-                                onChange={(e) => {
-                                  const current = prodForm.bundle_products || [];
-                                  const updated = e.target.checked
-                                    ? [...current, p.id]
-                                    : current.filter(id => id !== p.id);
-                                  setProdForm({ ...prodForm, bundle_products: updated });
-                                }}
-                                className="accent-accent"
-                              />
-                              {p.name}
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <div>
@@ -1079,19 +1290,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   />
                 </div>
-                <div>
-                  <div className="flex gap-6 mt-6">
-                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={prodForm.active}
-                        onChange={(e) => setProdForm({ ...prodForm, active: e.target.checked })}
-                        className="accent-accent"
-                      />
-                      Active / Available
-                    </label>
-                  </div>
-                </div>
 
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Stamp (Ribbon)</label>
@@ -1105,55 +1303,82 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     <option value="Sale">Sale</option>
                   </select>
                 </div>
-
-                {/* New Fields: Intention, Dimensions, Cleansing & Charging, Certification */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Intention</label>
-                    <input
-                      type="text"
-                      value={prodForm.intention}
-                      onChange={(e) => setProdForm({ ...prodForm, intention: e.target.value })}
-                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Dimensions (cm)</label>
-                    <input
-                      type="text"
-                      value={prodForm.dimensions}
-                      onChange={(e) => setProdForm({ ...prodForm, dimensions: e.target.value })}
-                      placeholder="e.g., 10×12×5"
-                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Cleansing & Charging</label>
-                    <textarea
-                      rows="4"
-                      value={prodForm.cleansing_charging}
-                      onChange={(e) => setProdForm({ ...prodForm, cleansing_charging: e.target.value })}
-                      placeholder="e.g., Moonlight or Selenite Plate"
-                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                    />
-                  </div>
-
-
-          
-                    <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Certification Number</label>
-                    <input
-                      type="text"
-                      value={prodForm.certificationNumber}
-                      onChange={(e) => setProdForm({ ...prodForm, certificationNumber: e.target.value })}
-                      placeholder="10‑digit number"
-                      maxLength={10}
-                      className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                    />
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Stock Inventory</label>
+                  <input
+                    required
+                    type="number"
+                    value={prodForm.stock}
+                    onChange={(e) => setProdForm({...prodForm, stock: e.target.value})}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <div className="flex gap-6 mt-6">
+                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={prodForm.active}
+                        onChange={(e) => setProdForm({ ...prodForm, active: e.target.checked })}
+                        className="accent-accent"
+                      />
+                      Active / Available
+                    </label>
+                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={prodForm.featured}
+                        onChange={(e) => setProdForm({ ...prodForm, featured: e.target.checked })}
+                        className="accent-accent"
+                      />
+                      Featured
+                    </label>
                   </div>
                 </div>
-                  
-                
-              
+              </div>
+
+              {/* Specs & Info */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-surface p-4 border border-border/40">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Intention</label>
+                  <input
+                    type="text"
+                    value={prodForm.intention}
+                    onChange={(e) => setProdForm({ ...prodForm, intention: e.target.value })}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Dimensions (cm)</label>
+                  <input
+                    type="text"
+                    value={prodForm.dimensions}
+                    onChange={(e) => setProdForm({ ...prodForm, dimensions: e.target.value })}
+                    placeholder="e.g., 10×12×5"
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Origin</label>
+                  <input
+                    type="text"
+                    value={prodForm.origin}
+                    onChange={(e) => setProdForm({ ...prodForm, origin: e.target.value })}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Certification Number</label>
+                  <input
+                    type="text"
+                    value={prodForm.certificationNumber}
+                    onChange={(e) => setProdForm({ ...prodForm, certificationNumber: e.target.value })}
+                    placeholder="10‑digit number"
+                    maxLength={10}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+              </div>
 
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Description</label>
@@ -1165,7 +1390,17 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="md:col-span-2">
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Cleansing & Charging</label>
+                  <textarea
+                    rows="2"
+                    value={prodForm.cleansing_charging}
+                    onChange={(e) => setProdForm({ ...prodForm, cleansing_charging: e.target.value })}
+                    placeholder="e.g., Moonlight or Selenite Plate"
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Philosophy</label>
                   <textarea
@@ -1184,18 +1419,8 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary resize-none"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Ritual Usage</label>
-                  <textarea
-                    value={prodForm.usage}
-                    onChange={(e) => setProdForm({...prodForm, usage: e.target.value})}
-                    rows="2"
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary resize-none"
-                  />
-                </div>
               </div>
 
-              {/* Cover and Gallery Images Upload */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#FEFBF1]/50 border border-border/40 p-4">
                 <div>
                   <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Cover Image</span>
@@ -1261,6 +1486,330 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
         </div>
       )}
 
+      {/* -------------------- MODAL: BUNDLE EDIT/ADD (NEW) -------------------- */}
+      {isBundleModalOpen && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-[#FEFBF1] border border-border w-full max-w-5xl max-h-screen overflow-y-auto p-4 md:p-8 rounded-sm shadow-xl my-4 relative">
+            <button
+              onClick={() => setIsBundleModalOpen(false)}
+              className="absolute top-4 right-4 text-muted hover:text-primary transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="font-display text-2xl text-primary mb-6 uppercase tracking-wider">
+              {editingBundle ? 'Edit Curated Bundle' : 'Add New Curated Bundle'}
+            </h3>
+
+            <form onSubmit={handleSaveBundle} className="space-y-6 text-xs font-body">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={bundleForm.name}
+                    onChange={(e) => {
+                      const newName = e.target.value;
+                      setBundleForm(prev => ({
+                        ...prev,
+                        name: newName,
+                        slug: prev.slug === generateSlug(prev.name) ? generateSlug(newName) : prev.slug
+                      }));
+                    }}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Slug</label>
+                  <input
+                    type="text"
+                    placeholder="Auto-generated if empty"
+                    value={bundleForm.slug}
+                    onChange={(e) => setBundleForm({...bundleForm, slug: generateSlug(e.target.value)})}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Discount %</label>
+                  <input
+                    required
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={bundleForm.bundle_discount_percent}
+                    onChange={(e) => setBundleForm({...bundleForm, bundle_discount_percent: Math.min(100, Math.max(0, parseInt(e.target.value) || 0))})}
+                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Description</label>
+                <textarea
+                  required
+                  value={bundleForm.description}
+                  onChange={(e) => setBundleForm({...bundleForm, description: e.target.value})}
+                  rows="3"
+                  className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary resize-none"
+                />
+              </div>
+
+              {/* Pricing breakdown summary */}
+              <div className="bg-[#FEFBF1]/80 border border-accent/20 p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-1">Products Subtotal</span>
+                  <span className="text-base font-bold text-primary">₹{bundlePrices.originalTotal}</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-1">Discount % applied</span>
+                  <span className="text-base font-bold text-accent">{bundleForm.bundle_discount_percent}%</span>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-1">Calculated Final Price</span>
+                  <span className="text-base font-bold text-emerald-600">₹{bundlePrices.finalTotal}</span>
+                </div>
+                <div className="flex gap-4 items-center">
+                  <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bundleForm.active}
+                      onChange={(e) => setBundleForm({ ...bundleForm, active: e.target.checked })}
+                      className="accent-accent"
+                    />
+                    Active
+                  </label>
+                  <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={bundleForm.featured}
+                      onChange={(e) => setBundleForm({ ...bundleForm, featured: e.target.checked })}
+                      className="accent-accent"
+                    />
+                    Featured
+                  </label>
+                </div>
+              </div>
+
+              {/* INCLUDED PRODUCTS SELECTION INTERFACE */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                {/* Left picker box */}
+                <div className="lg:col-span-7 bg-white border border-border p-4 flex flex-col h-[350px]">
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Available Products Picker</span>
+                  <input
+                    type="text"
+                    placeholder="Search name or category..."
+                    value={bundleSearchQuery}
+                    onChange={(e) => setBundleSearchQuery(e.target.value)}
+                    className="w-full bg-[#FEFBF1]/40 border border-border p-2 text-xs focus:outline-none mb-3"
+                  />
+                  <div className="flex-grow overflow-y-auto space-y-2 pr-2">
+                    {bundlePickerFilteredProducts.map(p => {
+                      const isSelected = bundleForm.bundle_products.includes(p.id);
+                      const isOutOfStock = (p.stock ?? 0) <= 0;
+                      const isInactive = !p.active;
+
+                      return (
+                        <div 
+                          key={p.id} 
+                          className={`flex items-center justify-between p-2 border rounded-sm text-xs ${
+                            isSelected ? 'bg-accent/5 border-accent' : 'bg-white border-border/60'
+                          } ${isInactive ? 'opacity-50' : ''}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {p.image_url ? (
+                              <img src={p.image_url} alt={p.name} className="w-8 h-8 object-cover border border-border" />
+                            ) : (
+                              <div className="w-8 h-8 bg-background flex items-center justify-center text-[8px] text-muted">No Img</div>
+                            )}
+                            <div>
+                              <div className="font-semibold text-primary flex items-center gap-1.5">
+                                {p.name} 
+                                {isOutOfStock && <span className="text-[8px] uppercase tracking-widest bg-red-100 text-red-700 px-1 font-bold">Out of Stock</span>}
+                                {isInactive && <span className="text-[8px] uppercase tracking-widest bg-gray-200 text-gray-700 px-1 font-bold">Inactive (Disabled)</span>}
+                              </div>
+                              <div className="text-[10px] text-muted">{p.category} · ₹{p.price}</div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={isInactive}
+                            onClick={() => {
+                              const alreadySelected = bundleForm.bundle_products.includes(p.id);
+                              let updated = [];
+                              if (alreadySelected) {
+                                updated = bundleForm.bundle_products.filter(id => id !== p.id);
+                              } else {
+                                updated = [...bundleForm.bundle_products, p.id];
+                              }
+                              setBundleForm(prev => ({ ...prev, bundle_products: updated }));
+                            }}
+                            className={`px-3 py-1 text-[9px] uppercase tracking-wider font-bold rounded-sm border ${
+                              isInactive ? 'border-gray-200 text-gray-400 cursor-not-allowed' :
+                              isSelected ? 'border-accent bg-accent text-white hover:bg-accent/90' :
+                              'border-border hover:border-accent text-primary'
+                            }`}
+                          >
+                            {isSelected ? 'Remove' : 'Select'}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right re-ordering & description mapping box */}
+                <div className="lg:col-span-5 bg-white border border-border p-4 flex flex-col h-[350px]">
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">
+                    Curation List (Order & specific descriptions)
+                  </span>
+                  
+                  <div className="flex-grow overflow-y-auto space-y-3 pr-2">
+                    {bundleForm.bundle_products.map((productId, index) => {
+                      const prod = adminProducts.find(p => p.id === productId);
+                      if (!prod) return null;
+
+                      return (
+                        <div key={productId} className="p-3 border border-border/80 bg-[#FEFBF1]/20 flex flex-col gap-2 rounded-sm">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-muted font-bold">{index + 1}.</span>
+                              <span className="font-semibold text-primary">{prod.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                disabled={index === 0}
+                                onClick={() => {
+                                  const updated = [...bundleForm.bundle_products];
+                                  const temp = updated[index - 1];
+                                  updated[index - 1] = updated[index];
+                                  updated[index] = temp;
+                                  setBundleForm(prev => ({ ...prev, bundle_products: updated }));
+                                }}
+                                className="p-1 hover:text-accent disabled:opacity-30 text-primary"
+                              >
+                                <ArrowUpCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={index === bundleForm.bundle_products.length - 1}
+                                onClick={() => {
+                                  const updated = [...bundleForm.bundle_products];
+                                  const temp = updated[index + 1];
+                                  updated[index + 1] = updated[index];
+                                  updated[index] = temp;
+                                  setBundleForm(prev => ({ ...prev, bundle_products: updated }));
+                                }}
+                                className="p-1 hover:text-accent disabled:opacity-30 text-primary"
+                              >
+                                <ArrowDownCircle className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updated = bundleForm.bundle_products.filter(id => id !== productId);
+                                  setBundleForm(prev => ({ ...prev, bundle_products: updated }));
+                                }}
+                                className="p-1 text-rose-500 hover:text-rose-700"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Bundle-specific description (optional)"
+                              value={bundleForm.bundle_product_descriptions[productId] || ''}
+                              onChange={(e) => {
+                                const newDesc = e.target.value;
+                                setBundleForm(prev => ({
+                                  ...prev,
+                                  bundle_product_descriptions: {
+                                    ...prev.bundle_product_descriptions,
+                                    [productId]: newDesc
+                                  }
+                                }));
+                              }}
+                              className="w-full bg-white border border-border/80 p-2 text-[10px] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {bundleForm.bundle_products.length === 0 && (
+                      <div className="py-12 text-center text-muted font-light">No items curated yet. Select items from the left list.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Cover & Gallery upload */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#FEFBF1]/50 border border-border/40 p-4">
+                <div>
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Bundle Cover Image</span>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'cover', 'bundle')}
+                      disabled={uploadingImage}
+                      className="text-xs text-muted"
+                    />
+                    {bundleForm.image_url && (
+                      <img src={bundleForm.image_url} alt="Cover Preview" className="w-16 h-16 object-contain border border-border bg-white" />
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Gallery Images</span>
+                  <div className="flex flex-col gap-3">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(e, 'gallery', 'bundle')}
+                      disabled={uploadingImage}
+                      className="text-xs text-muted"
+                    />
+                    <div className="flex gap-2 overflow-x-auto py-1">
+                      {bundleForm.gallery_images?.map((url, idx) => (
+                        <div key={idx} className="relative group">
+                          <img src={url} alt="Gallery Preview" className="w-14 h-14 object-contain border border-border bg-white" />
+                          <button
+                            type="button"
+                            onClick={() => setBundleForm({...bundleForm, gallery_images: bundleForm.gallery_images.filter(x => x !== url)})}
+                            className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setIsBundleModalOpen(false)}
+                  className="bg-white border border-border px-6 py-2.5 uppercase tracking-widest font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploadingImage}
+                  className="bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black px-8 py-2.5 uppercase tracking-[0.2em] font-bold transition-all"
+                >
+                  Save Bundle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* -------------------- MODAL: ORDER DETAILS -------------------- */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
@@ -1276,7 +1825,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
             </h3>
 
             <div className="space-y-6">
-              {/* Customer summary */}
               <div className="grid grid-cols-2 gap-4 border-b border-border pb-4">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-muted font-bold block mb-1">Customer Details</span>
@@ -1292,7 +1840,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                 </div>
               </div>
 
-              {/* Status actions */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-muted font-bold block mb-2">Order Status</span>
@@ -1323,7 +1870,6 @@ const handleInlineActiveToggle = async (prodId, currentActive) => {
                 </div>
               </div>
 
-              {/* Products items */}
               <div>
                 <span className="text-[10px] uppercase tracking-wider text-muted font-bold block mb-3">Line Items</span>
                 <div className="space-y-3 max-h-48 overflow-y-auto pr-2">

@@ -9,7 +9,7 @@ export const CartProvider = ({ children }) => {
   });
 
   // Global coupon state
-  const [appliedCoupon, setAppliedCoupon] = useState('');
+  const [couponState, setCouponState] = useState('');
   const [discountPercent, setDiscountPercent] = useState(0);
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     setCart([]);
-    setAppliedCoupon('');
+    setCouponState('');
     setDiscountPercent(0);
   };
 
@@ -71,8 +71,8 @@ export const CartProvider = ({ children }) => {
         clearCart,
         getCartTotal,
         getCartCount,
-        appliedCoupon,
-        setAppliedCoupon,
+        couponState,
+        setCouponState,
         discountPercent,
         setDiscountPercent,
       }}

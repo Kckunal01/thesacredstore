@@ -8,9 +8,7 @@ import { CartContext } from '../context/CartContext';
 import { ProductsContext } from '../context/ProductsContext';
 import { getCartRecommendations } from '../lib/recommendations';
 import ProductCard from '../components/ui/ProductCard';
-// Keep only stock map fetch for pre‑checkout validation
 import { getProductStockMap } from '../lib/supabaseProducts';
-
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -25,14 +23,12 @@ const loadRazorpayScript = () =>
     document.body.appendChild(script);
   });
 
-// Helper to generate placeholder style (unchanged)
 function getPlaceholderStyle(name) {
   const hash = Array.from(name || '').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const hue = hash % 360;
   return { background: `hsl(${hue}, 25%, 95%)` };
 }
 
-// Simple slugify (kept for client‑side validation only)
 function slugify(text) {
   return text
     .toString()
@@ -42,7 +38,7 @@ function slugify(text) {
 }
 
 const Checkout = () => {
-  const { cart, getCartTotal, removeFromCart, updateQuantity, clearCart } = useContext(CartContext);
+  const { cart, getCartTotal, removeFromCart, updateQuantity, clearCart, couponState, setCouponState, discountPercent, setDiscountPercent } = useContext(CartContext);
   const { products } = useContext(ProductsContext);
   
   const recommendations = useMemo(
@@ -58,17 +54,14 @@ const Checkout = () => {
     city: '', state: '', pinCode: '', phone: '',
   });
 
-  // Coupon states
-  const [couponInput, setCouponInput] = useState('');
-  const [couponEmail, setCouponEmail] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState('');
-  const [discountPercent, setDiscountPercent] = useState(0);
+  // Coupon UI Local states
+  const [couponInput, setCouponInput] = useState(couponState || '');
   const [couponMessage, setCouponMessage] = useState('');
 
   const totalOriginal = cart.reduce((acc, item) => acc + (item.originalPrice || item.price) * item.quantity, 0);
   const totalDiscount = totalOriginal - getCartTotal();
 
-  // Coupon calculations
+  // Pricing calculations
   const subtotalAfterOriginalDiscount = getCartTotal();
   const couponDiscountAmount = Math.round((subtotalAfterOriginalDiscount * discountPercent) / 100);
   const finalTotalAmount = subtotalAfterOriginalDiscount - couponDiscountAmount;
@@ -78,7 +71,6 @@ const Checkout = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // ----------- POST‑PAYMENT HANDLER (backend) ------------
   const completeOrderOnServer = async (razorpayResponse) => {
     try {
       const res = await fetch('/api/complete-order', {
@@ -88,7 +80,7 @@ const Checkout = () => {
           razorpayResponse,
           formData,
           cart,
-          couponCode: appliedCoupon || undefined,
+          couponCode: couponState || undefined,
         }),
       });
 
@@ -113,7 +105,7 @@ const Checkout = () => {
     e.preventDefault();
     setIsProcessing(true);
 
-    // ---- Stock validation (client side) ----
+    // Stock validation
     const stockMap = await getProductStockMap();
     const issues = [];
     for (const item of cart) {
@@ -198,7 +190,6 @@ const Checkout = () => {
       },
     };
 
-    // Guard: ensure Razorpay key is set
     if (!options.key) {
       alert('Razorpay key is missing. Please configure VITE_RAZORPAY_KEY_ID.');
       setIsProcessing(false);
@@ -213,13 +204,9 @@ const Checkout = () => {
   };
 
   const handleApplyCoupon = async () => {
-    if (!couponInput) {
-      setCouponMessage('Enter a coupon code');
-      return;
-    }
-    if (!couponEmail || !/\S+@\S+\.\S+/.test(couponEmail)) {
-      setCouponMessage('Enter a valid email to apply coupon');
-      return;
+    if (!couponInput) { setCouponMessage('Enter a coupon code'); return; }
+    if (!formData.phone) {
+      setCouponMessage('Please fill in your Phone Number in Shipping Details first'); return;
     }
     try {
       const res = await fetch('/api/validate-coupon', {
@@ -227,36 +214,30 @@ const Checkout = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           couponCode: couponInput,
-          email: couponEmail.trim().toLowerCase(),
+          phone: formData.phone,
+          email: formData.email || undefined,
+          cart
         }),
       });
       const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.message || 'Invalid coupon');
-      }
-
+      if (!data.success) throw new Error(data.message || 'Invalid coupon');
       setDiscountPercent(data.discount_percent || 0);
-      setAppliedCoupon(couponInput);
+      setCouponState(couponInput.toUpperCase());
       setCouponMessage(`Coupon applied: ${data.discount_percent}% off`);
-      // Pre-fill email in shipping form
-      if (!formData.email) {
-        setFormData((prev) => ({ ...prev, email: couponEmail.trim().toLowerCase() }));
-      }
     } catch (err) {
       setCouponMessage(err.message);
       setDiscountPercent(0);
-      setAppliedCoupon('');
+      setCouponState('');
     }
   };
 
   const handleRemoveCoupon = () => {
     setCouponInput('');
-    setAppliedCoupon('');
+    setCouponState('');
     setDiscountPercent(0);
     setCouponMessage('');
   };
 
-  // ----- UI RENDERING -----
   return (
     <>
       {step === 3 ? (
@@ -347,53 +328,6 @@ const Checkout = () => {
                         </div>
                       ))}
 
-                      {/* Coupon Section (Cart/Step 1) */}
-                      <div className="p-6 bg-surface border border-border space-y-4">
-                        <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold block">Apply Coupon</span>
-                        <div className="flex flex-col gap-3">
-                          <input
-                            type="email"
-                            placeholder="YOUR EMAIL"
-                            value={couponEmail}
-                            onChange={(e) => setCouponEmail(e.target.value)}
-                            disabled={!!appliedCoupon}
-                            className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs tracking-widest w-full sm:max-w-xs"
-                          />
-                          <div className="flex flex-col sm:flex-row gap-3">
-                            <input
-                              type="text"
-                              placeholder="COUPON CODE"
-                              value={couponInput}
-                              onChange={(e) => setCouponInput(e.target.value.trim().toUpperCase())}
-                              className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs uppercase tracking-widest w-full sm:max-w-xs"
-                            />
-                            {appliedCoupon ? (
-                              <button
-                                type="button"
-                                onClick={handleRemoveCoupon}
-                                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-[10px] uppercase tracking-widest font-bold transition-colors"
-                              >
-                                Remove Coupon
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                onClick={handleApplyCoupon}
-                                className="px-6 py-3 bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black text-[10px] uppercase tracking-widest font-bold transition-colors"
-                              >
-                                Apply Coupon
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        {couponMessage && (
-                          <p className="text-xs font-semibold" style={{ color: appliedCoupon ? '#28a745' : '#dc3545' }}>
-                            {couponMessage}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Recommendations section */}
                       {recommendations && recommendations.length > 0 && (
                         <div className="pt-12 border-t border-border mt-12">
                           <h3 className="text-xl font-display font-medium text-primary mb-6 tracking-widest uppercase">
@@ -409,70 +343,86 @@ const Checkout = () => {
                         </div>
                       )}
 
-                      <div className="flex justify-between items-center pt-8 border-t border-border mt-8">
+                      <div className="pt-6 border-t border-border mt-8">
                         <Link to="/shop-crystals" className="text-xs uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-semibold font-body">← Continue Shopping</Link>
-                        <Button onClick={() => setStep(2)} variant="primary">Proceed to Shipping</Button>
                       </div>
                     </div>
                   ) : (
-                    <form id="checkout-form" onSubmit={handleCheckout} className="bg-surface border border-border p-8 md:p-10 space-y-8">
-                      <div className="flex justify-between items-center border-b border-border pb-4">
-                        <h3 className="font-display text-2xl text-primary font-medium">Shipping &amp; Delivery</h3>
-                        <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-[#000000] hover:text-primary font-bold font-body">← Edit Cart</button>
+                    <div className="space-y-8">
+                      <form id="checkout-form" onSubmit={handleCheckout} className="bg-surface border border-border p-8 md:p-10 space-y-8">
+                        <div className="flex justify-between items-center border-b border-border pb-4">
+                          <h3 className="font-display text-2xl text-primary font-medium">Shipping Details</h3>
+                          <button type="button" onClick={() => setStep(1)} className="text-[10px] uppercase tracking-widest text-[#000000] hover:text-primary font-bold font-body">← Edit Cart</button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">First Name</label>
+                            <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Last Name</label>
+                            <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Email Address</label>
+                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Phone Number</label>
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+
+                          <div className="col-span-2">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Delivery Address</label>
+                            <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">City / Town</label>
+                            <input type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">State</label>
+                            <input type="text" name="state" value={formData.state} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+
+                          <div className="col-span-2 md:col-span-1">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Postal PIN Code</label>
+                            <input type="text" name="pinCode" value={formData.pinCode} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
+                          </div>
+                        </div>
+                      </form>
+
+                      {/* Coupon block directly under Shipping Details on Checkout step */}
+                      <div className="p-8 md:p-10 bg-surface border border-border space-y-6">
+                        <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold block">Coupon</span>
+                        <div className="space-y-4">
+                          <label className="block text-[10px] uppercase tracking-wider text-muted font-bold">
+                            Coupon Code
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-3">
+                            <input type="text" placeholder="ENTER COUPON CODE"
+                              value={couponInput} onChange={(e) => setCouponInput(e.target.value.trim().toUpperCase())}
+                              disabled={!!couponState}
+                              className="bg-background border border-border p-3 text-primary focus:outline-none focus:border-accent font-body text-xs uppercase tracking-widest w-full sm:max-w-xs"
+                            />
+                            {couponState ? (
+                              <button type="button" onClick={handleRemoveCoupon}
+                                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white text-[10px] uppercase tracking-widest font-bold transition-colors">Remove Coupon</button>
+                            ) : (
+                              <button type="button" onClick={handleApplyCoupon}
+                                className="px-6 py-3 bg-[#000000] hover:bg-[#FFBD59] text-white hover:text-black text-[10px] uppercase tracking-widest font-bold transition-colors">Apply Coupon</button>
+                            )}
+                          </div>
+                          {couponMessage && (
+                            <p className="text-xs font-semibold" style={{ color: couponState ? '#28a745' : '#dc3545' }}>{couponMessage}</p>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Display Coupon Details without inputs */}
-                      {appliedCoupon && (
-                        <div className="p-4 bg-background border border-accent/20 flex justify-between items-center text-xs font-semibold text-primary">
-                          <span>Applied Coupon: {appliedCoupon}</span>
-                          <span className="text-accent">-{discountPercent}% OFF</span>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">First Name</label>
-                          <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Last Name</label>
-                          <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Email Address</label>
-                          <input type="email" name="email" value={formData.email} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Phone Number</label>
-                          <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Delivery Address</label>
-                          <input type="text" name="address" value={formData.address} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">City / Town</label>
-                          <input type="text" name="city" value={formData.city} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">State</label>
-                          <input type="text" name="state" value={formData.state} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-
-                        <div className="col-span-2 md:col-span-1">
-                          <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Postal PIN Code</label>
-                          <input type="text" name="pinCode" value={formData.pinCode} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
-                        </div>
-                      </div>
-
-                      <Button type="submit" variant="primary" className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]" disabled={isProcessing}>
-                        {isProcessing ? 'Processing...' : 'Pay with Razorpay'}
-                      </Button>
-                    </form>
+                    </div>
                   )}
                 </div>
 
@@ -502,9 +452,9 @@ const Checkout = () => {
                           <span>-₹{totalDiscount.toLocaleString('en-IN')}</span>
                         </div>
                       )}
-                      {discountPercent > 0 && (
+                      {couponState && couponDiscountAmount > 0 && (
                         <div className="flex justify-between text-sm font-body text-[#2ECC71] font-medium">
-                          <span>Coupon ({appliedCoupon})</span>
+                          <span>Coupon ({couponState})</span>
                           <span>-₹{couponDiscountAmount.toLocaleString('en-IN')}</span>
                         </div>
                       )}
@@ -519,6 +469,11 @@ const Checkout = () => {
                       <span className="font-bold text-accent text-3xl">₹{finalTotalAmount.toLocaleString('en-IN')}</span>
                     </div>
 
+                    {step === 1 && (
+                      <Button onClick={() => setStep(2)} variant="primary" className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]">
+                        Proceed to Shipping
+                      </Button>
+                    )}
                     {step === 2 && (
                       <Button type="submit" form="checkout-form" variant="primary" className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]" disabled={isProcessing}>
                         {isProcessing ? 'Processing...' : 'Pay'}

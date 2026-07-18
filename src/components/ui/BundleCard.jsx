@@ -1,23 +1,19 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const BundleCard = ({ bundle, products }) => {
+const BundleCard = ({ bundle }) => {
   const navigate = useNavigate();
 
-  // Find matching products in DB
-  const matchedProducts = bundle.productNames.map(name => {
-    return products.find(p => p.name.toLowerCase() === name.toLowerCase());
-  }).filter(Boolean);
+  // includedProducts is pre-resolved by getDynamicBundles (from DB)
+  const productsToRender = bundle.includedProducts || [];
 
-  const subtotal = matchedProducts.reduce((sum, p) => sum + p.price, 0);
-
-  const finalTotal = bundle.price || subtotal;
-  const originalTotal = bundle.originalPrice || subtotal;
+  const finalTotal = bundle.price || 0;
+  const originalTotal = bundle.originalPrice || finalTotal;
   const discountAmount = Math.max(0, originalTotal - finalTotal);
   const discountPercent = originalTotal > 0 ? (discountAmount / originalTotal) : 0;
 
-  // Option for a unique/fresh cover image of the bundle, else cover image of first product
-  const coverImage = bundle.imageUrl || bundle.uniqueCover || matchedProducts[0]?.images?.[0] || matchedProducts[0]?.image_url;
+  // Cover image from DB or first included product
+  const coverImage = bundle.imageUrl || bundle.image_url || productsToRender[0]?.images?.[0] || productsToRender[0]?.image_url;
 
   const handleCardClick = () => {
     navigate(`/bundles/${bundle.slug}`);
@@ -67,7 +63,7 @@ const BundleCard = ({ bundle, products }) => {
 
           <div className="mb-2">
             <div className="flex flex-wrap gap-1.5">
-              {matchedProducts.map((p, idx) => (
+              {productsToRender.map((p, idx) => (
                 <div key={idx} className="w-8 h-8 rounded-sm overflow-hidden border border-border/60 bg-background flex-shrink-0" title={p.name}>
                   <img 
                     src={p.images?.[0] || p.image_url} 

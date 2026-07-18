@@ -52,41 +52,36 @@ export default async function handler(req, res) {
     // ---------- Order creation ----------
     let discountPercent = 0;
     let discountAmount = 0;
+    let couponId = null;
     const normalizedCoupon = couponCode ? couponCode.trim().toUpperCase() : null;
     const normalizedEmail = formData.email ? formData.email.trim().toLowerCase() : '';
+    
     if (normalizedCoupon) {
-      const { data: coupon, error: couponError } = await supabase
-        .from('coupons')
-        .select('*')
-        .eq('code', normalizedCoupon)
-        .single();
-      if (couponError || !coupon || !coupon.active) {
-        return res.status(400).json({ success: false, message: 'Invalid or inactive coupon' });
+      const { validateCoupon } = require("./couponService.js");
+      const validation = await validateCoupon({
+        couponCode: normalizedCoupon,
+        phone: formData.phone,
+        email: normalizedEmail,
+        cart
+      });
+      if (!validation.success) {
+        return res.status(400).json({ success: false, message: validation.message });
       }
-      // One‑time enforcement based on email or phone
-      const { data: priorUse } = await supabase
-        .from('coupon_redemptions')
-        .select('id')
-        .eq('coupon_code', normalizedCoupon)
-        .or(`email.eq.${normalizedEmail},phone.eq.${formData.phone}`)
-        .maybeSingle();
-      if (priorUse) {
-        return res.status(400).json({ success: false, message: 'Coupon already used.' });
-      }
-      discountPercent = coupon.discount_percent || 0;
-      // Compute discount amount based on original cart total
-      const cartTotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
-      discountAmount = Math.round((cartTotal * discountPercent) / 100);
+      discountPercent = validation.discountPercent;
+      discountAmount = validation.discountAmount;
+      couponId = validation.couponId;
     }
 
     const orderPayload = {
       customer_id: customer.id,
       products: cart.map((item) => ({
         name: item.name,
+        slug: item.slug,
         quantity: item.quantity,
         price: item.price,
       })),
-      // Apply coupon discount if any\r\n      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0) - discountAmount,
+      // Apply coupon discount if any
+      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0) - discountAmount,
       payment_status: "paid",
       payment_method: "razorpay",
     };
@@ -131,6 +126,7 @@ export default async function handler(req, res) {
     if (normalizedCoupon) {
       const { error: redemptionError } = await supabase.from('coupon_redemptions').insert({
         coupon_code: normalizedCoupon,
+        coupon_id: couponId,
         customer_id: customer.id,
         email: normalizedEmail,
         phone: formData.phone,
