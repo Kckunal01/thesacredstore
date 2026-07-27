@@ -375,26 +375,7 @@ const Product = () => {
         {/* Complete Your Ritual recommendations section (full container width below the columns) */}
         <ProductRecommendations currentProduct={product} products={products} />
 
-      {/* About & Videos Section with compact spacing */}
-      <div className="mt-12 mb-12 border-t border-border pt-12">
-        <h3 className="font-display text-2xl md:text-3xl text-primary font-medium tracking-[0.2em] uppercase mb-8 text-center">About {product.name}</h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto snap-x snap-mandatory">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="group flex flex-col bg-[#FEFBF1]/10 p-4 rounded-md hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 relative">
-              <div className="relative w-full aspect-[9/16] bg-[#e0e0e0] flex items-center justify-center mb-3 rounded-sm">
-                {/* Play button removed */}
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        <div className="text-center mt-6">
-          <span className="text-xs font-bold uppercase tracking-widest text-red-500">Coming Soon!</span>
-        </div>
-      </div>
-
-    </Container>
+      </Container>
 
       {/* Notify Waitlist Modal */}
       {isModalOpen && (

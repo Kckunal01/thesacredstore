@@ -39,7 +39,7 @@ export async function fetchProducts(forceRefetch = false) {
       .order('name', { ascending: true });
     if (error) throw error;
     if (data && data.length > 0) {
-      cachedProducts = data.map(item => {
+      const dbMapped = data.map(item => {
         const localMatch = localProducts.find(lp => {
           const lpSlug = lp.slug || slugify(lp.name);
           return lpSlug === item.slug;
@@ -98,11 +98,47 @@ export async function fetchProducts(forceRefetch = false) {
           bundle_discount_percent: item.bundle_discount_percent || 0,
         };
       });
+      // Merge: DB products + any local-only products not yet in DB
+      const dbSlugs = new Set(dbMapped.map(p => p.slug));
+      const localOnly = localProducts
+        .filter(lp => {
+          const s = lp.slug || slugify(lp.name);
+          return !dbSlugs.has(s);
+        })
+        .map(lp => ({ ...lp, db_id: null, slug: lp.slug || slugify(lp.name), visible: true, active: true, featured: lp.featured || false }));
+      cachedProducts = [...dbMapped, ...localOnly];
       return cachedProducts;
     }
+    // Supabase returned 0 rows — fall back to local
+    console.warn('Supabase returned 0 products. Using local product data.');
+    cachedProducts = localProducts.map(lp => ({
+      ...lp,
+      db_id: null,
+      slug: lp.slug || slugify(lp.name),
+      visible: true,
+      active: true,
+      featured: lp.featured || false,
+      stock: lp.stock !== undefined ? lp.stock : 10,
+      bundle_products: [],
+      bundle_product_descriptions: {},
+      bundle_discount_percent: 0,
+    }));
+    return cachedProducts;
   } catch (err) {
-    console.error('Supabase fetch failed:', err);
-    return [];
+    console.error('Supabase fetch failed, using local fallback:', err);
+    cachedProducts = localProducts.map(lp => ({
+      ...lp,
+      db_id: null,
+      slug: lp.slug || slugify(lp.name),
+      visible: true,
+      active: true,
+      featured: lp.featured || false,
+      stock: lp.stock !== undefined ? lp.stock : 10,
+      bundle_products: [],
+      bundle_product_descriptions: {},
+      bundle_discount_percent: 0,
+    }));
+    return cachedProducts;
   }
 }
 

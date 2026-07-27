@@ -10,12 +10,35 @@ import { ProductsContext } from '../context/ProductsContext';
 const ShopUtility = () => {
   const { products } = useContext(ProductsContext);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
 
-  const displayedProducts = searchQuery.trim() !== ''
-    ? products.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase()))
-    : products.filter(p => p.category === 'Utility & Decor');
+  const utilityItems = products.filter(p => (p.category === 'Utility & Decor' || p.category === 'Pendants'));
+
+  const filterMatches = (p, filter) => {
+    if (filter === 'All') return true;
+    const name = p.name.toLowerCase();
+    if (filter === 'Pendants') return p.category === 'Pendants' || name.includes('pendant');
+    if (filter === 'Crystal Trees') return name.includes('tree');
+    if (filter === 'Crystal Pyramids') return name.includes('pyramid');
+    if (filter === 'Charging Items') return name.includes('charging') || name.includes('bowl');
+    return true;
+  };
+
+  const displayedProducts = utilityItems.filter(p => {
+    const matchesSearch = searchQuery.trim() === '' ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = filterMatches(p, activeFilter);
+    return matchesSearch && matchesCategory;
+  });
+
+  const filterOptions = [
+    { label: 'All', value: 'All' },
+    { label: 'Pendants', value: 'Pendants' },
+    { label: 'Crystal Trees', value: 'Crystal Trees' },
+    { label: 'Crystal Pyramids', value: 'Crystal Pyramids' },
+    { label: 'Charging Items', value: 'Charging Items' },
+  ];
 
   return (
     <Section className="bg-background pt-32 min-h-screen">
@@ -26,7 +49,7 @@ const ShopUtility = () => {
             <span className="text-black">Utility & Decor</span>
           </h1>
 
-          <div className="max-w-md mx-auto relative">
+          <div className="max-w-md mx-auto relative mb-8">
             <input
               type="text"
               placeholder="Search utility & decor..."
@@ -35,6 +58,23 @@ const ShopUtility = () => {
               className="w-full bg-[#FFBD59]/10 border border-accent px-4 py-3 pl-12 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-colors text-primary placeholder-accent/70"
             />
             <Search className="w-4 h-4 absolute left-4 top-1/2 transform -translate-y-1/2 text-accent" />
+          </div>
+
+          {/* Sub-category Filter Tabs */}
+          <div className="flex flex-wrap items-center justify-center gap-2 border border-border/80 p-1.5 inline-flex mx-auto bg-surface/50 rounded-sm">
+            {filterOptions.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setActiveFilter(opt.value)}
+                className={`px-4 py-2 text-[10px] uppercase tracking-[0.15em] font-bold transition-all duration-200 ${
+                  activeFilter === opt.value
+                    ? 'bg-primary text-background shadow-sm'
+                    : 'text-muted hover:text-primary'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -45,31 +85,16 @@ const ShopUtility = () => {
             ))
           ) : (
             <div className="col-span-full text-center text-muted py-12">
-              No products found matching "{searchQuery}"
+              No products found matching active filters.
             </div>
           )}
         </div>
 
-        {/* Internal Linking Collection Links */}
-        <div className="mt-24 pt-12 border-t border-border/60">
-          <h4 className="text-center font-display text-lg uppercase tracking-[0.2em] mb-8 text-primary">Explore Related Collections</h4>
-          <div className="flex flex-wrap justify-center gap-6 text-xs uppercase tracking-widest font-semibold text-muted">
-            <Link to="/shop-crystals" className="hover:text-accent transition-colors">Crystals</Link>
-            <span>·</span>
-            <Link to="/shop-gems" className="hover:text-accent transition-colors">Gemstones</Link>
-            <span>·</span>
-            <Link to="/shop-jewellery" className="hover:text-accent transition-colors">Jewellery</Link>
-            <span>·</span>
-            <Link to="/shop-bracelets" className="hover:text-accent transition-colors">Bracelets</Link>
-            <span>·</span>
-            <Link to="/shop-pendants" className="hover:text-accent transition-colors">Pendants</Link>
-            <span>·</span>
-            <Link to="/bundles" className="hover:text-accent transition-colors">Curated Bundles</Link>
-          </div>
-        </div>
+
       </Container>
     </Section>
   );
 };
 
 export default ShopUtility;
+

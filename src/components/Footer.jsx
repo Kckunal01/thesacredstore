@@ -105,7 +105,7 @@ const Footer = () => {
                <Link to="/privacy-policy" className="text-primary hover:text-accent transition-colors cursor-pointer">Privacy Policy</Link>
                <Link to="/refund-policy" className="text-primary hover:text-accent transition-colors cursor-pointer">Refund Policy</Link>
                <Link to="/terms-conditions" className="text-primary hover:text-accent transition-colors cursor-pointer">Terms & Conditions</Link>
-               <Link to="/bundles#build-your-own-bundle" className="text-primary hover:text-accent transition-colors cursor-pointer">Custom Bundle Builder</Link>
+               <Link to="/bundles#build-your-own-bundle" className="text-primary hover:text-accent transition-colors cursor-pointer">Bundle Builder</Link>
             </nav>
           </div>
 

@@ -78,7 +78,7 @@ const Header = () => {
                 <nav className="flex flex-col space-y-4 text-sm font-medium text-[11px] tracking-[0.15em] uppercase text-muted p-4">
                   <Link to="/shop-crystals" className="text-primary hover:text-primary transition-colors cursor-pointer">Crystals</Link>
                   <Link to="/shop-gems" className="text-primary hover:text-primary transition-colors cursor-pointer">Gemstones</Link>
-                  <Link to="/shop-jewellery" className="text-primary hover:text-primary transition-colors cursor-pointer">Jewellery</Link>
+                  <Link to="/shop-bracelets" className="text-primary hover:text-primary transition-colors cursor-pointer">Bracelets</Link>
                   <Link to="/shop-utility" className="text-primary hover:text-primary transition-colors cursor-pointer whitespace-nowrap">Utility &amp; Decor</Link>
                   <Link to="/bundles" className="font-bold text-accent hover:text-accent transition-colors cursor-pointer flex items-center gap-1 border-t border-border/50 pt-2 mt-2 whitespace-nowrap">
                     ✨ Curated Bundles
@@ -124,7 +124,7 @@ const Header = () => {
         <Link to="/bundles" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-accent hover:text-accent flex items-center gap-1">✨ Curated Bundles</Link>
         <Link to="/shop-crystals" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Crystals</Link>
         <Link to="/shop-gems" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Gemstones</Link>
-        <Link to="/shop-jewellery" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Jewellery</Link>
+        <Link to="/shop-bracelets" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Bracelets</Link>
         <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility &amp; Decor</Link>
         <Link to="/book-a-call" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Book Now</Link>
         <Link to="/blogs" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Blogs</Link>

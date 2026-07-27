@@ -101,7 +101,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
       </Link>
 
       {/* Add to Cart / Out of Stock UI */}
-      <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4">
+      <div className="flex flex-col opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 px-2 sm:px-4 mt-2">
         {(() => {
           const productData = products.find(p => p.id === id || p.db_id === id || p.slug === slugify(name));
           const stock = productData?.stock ?? null;

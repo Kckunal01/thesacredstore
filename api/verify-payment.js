@@ -24,6 +24,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Invalid signature' });
   } catch (err) {
     console.error('Verify error:', err);
-    return res.status(500).json({ message: 'Verification error', error: err });
+    return res.status(500).json({ message: 'Verification error' });
   }
 }

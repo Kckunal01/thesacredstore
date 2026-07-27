@@ -928,12 +928,16 @@ const Admin = () => {
                   className="bg-white border border-border px-4 py-2.5 text-xs focus:outline-none focus:border-accent text-primary"
                 >
                   <option value="All">All Categories</option>
+                  <option value="Bracelets">Bracelets</option>
+                  <option value="Raw Crystals">Raw Crystals</option>
+                  <option value="Towers">Towers</option>
+                  <option value="Pyramids">Pyramids</option>
+                  <option value="Crystal Trees">Crystal Trees</option>
+                  <option value="Utility & Decor">Utility & Decor</option>
+                  <option value="Pendants">Pendants</option>
                   <option value="Crystals">Crystals</option>
                   <option value="Gemstones">Gemstones</option>
-                  <option value="Jewellery">Jewellery</option>
-                  <option value="Bracelets">Bracelets</option>
-                  <option value="Pendants">Pendants</option>
-                  <option value="Utility & Decor">Utility & Decor</option>
+                  <option value="Bundles">Bundles</option>
                 </select>
               </div>
               <button
@@ -1253,12 +1257,16 @@ const Admin = () => {
                     onChange={(e) => setProdForm({...prodForm, category: e.target.value})}
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   >
+                    <option value="Bracelets">Bracelets</option>
+                    <option value="Raw Crystals">Raw Crystals</option>
+                    <option value="Towers">Towers</option>
+                    <option value="Pyramids">Pyramids</option>
+                    <option value="Crystal Trees">Crystal Trees</option>
+                    <option value="Utility & Decor">Utility & Decor</option>
+                    <option value="Pendants">Pendants</option>
                     <option value="Crystals">Crystals</option>
                     <option value="Gemstones">Gemstones</option>
-                    <option value="Jewellery">Jewellery</option>
-                    <option value="Bracelets">Bracelets</option>
-                    <option value="Pendants">Pendants</option>
-                    <option value="Utility & Decor">Utility & Decor</option>
+                    <option value="Bundles">Bundles</option>
                   </select>
                 </div>
 

@@ -33,8 +33,8 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error('Razorpay Error:', err);
     if (err.statusCode === 401) {
-      return res.status(401).json({ message: 'Authentication failure', error: err });
+      return res.status(401).json({ message: 'Authentication failure' });
     }
-    return res.status(500).json({ message: 'Failed to create order', error: err });
+    return res.status(500).json({ message: 'Failed to create order' });
   }
 }

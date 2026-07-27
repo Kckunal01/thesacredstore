@@ -1,36 +1,54 @@
 name,category,price,stock,image_url,active,slug
-Clear Quartz Point,Crystals,2100,10,/assets/images/Clear Quartz Point/Clear Quartz Point 1.png,true,clear-quartz-point
-Rose Quartz Cluster,Crystals,1800,10,/assets/images/Rose Quartz Cluster/Rose Quartz Cluster 1.png,true,rose-quartz-cluster
-Amethyst Cluster,Crystals,2500,10,/assets/images/Amethyst Cluster/Amethyst Cluster 1.png,true,amethyst-cluster
-Black Tourmaline Raw,Crystals,1200,10,/assets/images/Black Tourmaline Raw/Black Tourmaline Raw 1.png,true,black-tourmaline-raw
-Citrine Point,Crystals,1800,10,/assets/images/Citrine Point/Citrine Point 1.png,true,citrine-point
-Pyrite Cluster,Crystals,2200,10,/assets/images/Pyrite Cluster/Pyrite Cluster 1.png,true,pyrite-cluster
-Selenite Tower,Crystals,1600,10,/assets/images/Selenite Tower/Selenite Tower 1.png,true,selenite-tower
-Labradorite Freeform,Crystals,2800,10,/assets/images/Labradorite Freeform/Labradorite Freeform 1.png,true,labradorite-freeform
-Clear Quartz,Gemstones,3200,10,/assets/images/Clear Quartz/Clear Quartz 1.png,true,clear-quartz
-Rose Quartz,Gemstones,2800,10,/assets/images/Rose Quartz/Rose Quartz 1.png,true,rose-quartz
-Amethyst,Gemstones,3500,10,/assets/images/Amethyst/Amethyst 1.png,true,amethyst
-Black Tourmaline,Gemstones,2400,10,/assets/images/Black Tourmaline/Black Tourmaline 1.png,true,black-tourmaline
-Citrine,Gemstones,2900,10,/assets/images/Citrine/Citrine 1.png,true,citrine
-Pyrite,Gemstones,2600,10,/assets/images/Pyrite/Pyrite 1.png,true,pyrite
-Labradorite,Gemstones,3800,10,/assets/images/Labradorite/Labradorite 1.png,true,labradorite
-Green Aventurine,Gemstones,1800,10,/assets/images/Green Aventurine/Green Aventurine 1.png,true,green-aventurine
-Tiger's Eye,Gemstones,2000,10,/assets/images/Tiger's Eye/Tiger's Eye 1.png,true,tiger-s-eye
-Selenite,Gemstones,1500,10,/assets/images/Selenite/Selenite 1.png,true,selenite
-Black Tourmaline Bracelet,Bracelets,1800,10,/assets/images/Black Tourmaline Bracelet/Black Tourmaline Bracelet 1.png,true,black-tourmaline-bracelet
-Tiger's Eye Bracelet,Bracelets,1600,10,/assets/images/Tiger's Eye Bracelet/Tiger's Eye Bracelet 1.png,true,tiger-s-eye-bracelet
-Rose Quartz Bracelet,Bracelets,1400,10,/assets/images/Rose Quartz Bracelet/Rose Quartz Bracelet 1.png,true,rose-quartz-bracelet
-Amethyst Bracelet,Bracelets,1600,10,/assets/images/Amethyst Bracelet/Amethyst Bracelet 1.png,true,amethyst-bracelet
-Citrine Bracelet,Bracelets,1500,10,/assets/images/Citrine Bracelet/Citrine Bracelet 1.png,true,citrine-bracelet
-Green Aventurine Bracelet,Bracelets,1300,10,/assets/images/Green Aventurine Bracelet/Green Aventurine Bracelet 1.png,true,green-aventurine-bracelet
-7 Chakra Bracelet,Bracelets,2200,10,/assets/images/7 Chakra Bracelet/7 Chakra Bracelet 1.png,true,7-chakra-bracelet
-Black Tourmaline Pendant,Pendants,2800,10,/assets/images/Black Tourmaline Pendant/Black Tourmaline Pendant 1.png,true,black-tourmaline-pendant
-Clear Quartz Pendant,Pendants,3200,10,/assets/images/Clear Quartz Pendant/Clear Quartz Pendant 1.png,true,clear-quartz-pendant
-Rose Quartz Pendant,Pendants,2600,10,/assets/images/Rose Quartz Pendant/Rose Quartz Pendant 1.png,true,rose-quartz-pendant
-Amethyst Pendant,Pendants,3000,10,/assets/images/Amethyst Pendant/Amethyst Pendant 1.png,true,amethyst-pendant
-Citrine Pendant,Pendants,2900,10,/assets/images/Citrine Pendant/Citrine Pendant 1.png,true,citrine-pendant
-Selenite Charging Plate,Utility & Decor,2200,10,/assets/images/Selenite Charging Plate/Selenite Charging Plate 1.png,true,selenite-charging-plate
-7 Chakra Crystal Tree,Utility & Decor,3500,10,/assets/images/7 Chakra Crystal Tree/7 Chakra Crystal Tree 1.png,true,7-chakra-crystal-tree
-Rose Quartz Crystal Tree,Utility & Decor,2800,10,/assets/images/Rose Quartz Crystal Tree/Rose Quartz Crystal Tree 1.png,true,rose-quartz-crystal-tree
-Amethyst Crystal Tree,Utility & Decor,2800,10,/assets/images/Amethyst Crystal Tree/Amethyst Crystal Tree 1.png,true,amethyst-crystal-tree
-Selenite Charging Bowl,Utility & Decor,2600,10,/assets/images/Selenite Charging Bowl/Selenite Charging Bowl 1.png,true,selenite-charging-bowl
+Clear Quartz Point,Crystals,1,10,/assets/images/Clear Quartz Point/Clear Quartz Point 1.webp,true,clear-quartz-point
+Rose Quartz Cluster,Crystals,1800,10,/assets/images/Rose Quartz Cluster/Rose Quartz Cluster 1.webp,true,rose-quartz-cluster
+Amethyst Cluster,Crystals,2500,10,/assets/images/Amethyst Cluster/Amethyst Cluster 1.webp,true,amethyst-cluster
+Black Tourmaline Raw,Crystals,1200,10,/assets/images/Black Tourmaline Raw/Black Tourmaline Raw 1.webp,true,black-tourmaline-raw
+Citrine Point,Crystals,1800,10,/assets/images/Citrine Point/Citrine Point 1.webp,true,citrine-point
+Pyrite Cluster,Crystals,2200,10,/assets/images/Pyrite Cluster/Pyrite Cluster 1.webp,true,pyrite-cluster
+Selenite Tower,Crystals,1600,10,/assets/images/Selenite Tower/Selenite Tower 1.webp,true,selenite-tower
+Labradorite Freeform,Crystals,2800,10,/assets/images/Labradorite Freeform/Labradorite Freeform 1.webp,true,labradorite-freeform
+Clear Quartz,Gemstones,3200,10,/assets/images/Clear Quartz/Clear Quartz 1.webp,true,clear-quartz
+Rose Quartz,Gemstones,2800,10,/assets/images/Rose Quartz/Rose Quartz 1.webp,true,rose-quartz
+Amethyst,Gemstones,3500,10,/assets/images/Amethyst/Amethyst 1.webp,true,amethyst
+Black Tourmaline,Gemstones,2400,10,/assets/images/Black Tourmaline/Black Tourmaline 1.webp,true,black-tourmaline
+Citrine,Gemstones,2900,10,/assets/images/Citrine/Citrine 1.webp,true,citrine
+Pyrite,Gemstones,2600,10,/assets/images/Pyrite/Pyrite 1.webp,true,pyrite
+Labradorite,Gemstones,3800,10,/assets/images/Labradorite/Labradorite 1.webp,true,labradorite
+Green Aventurine,Gemstones,1800,10,/assets/images/Green Aventurine/Green Aventurine 1.webp,true,green-aventurine
+Tiger's Eye,Gemstones,2000,10,/assets/images/Tiger's Eye/Tiger's Eye 1.webp,true,tiger-s-eye
+Selenite,Gemstones,1500,10,/assets/images/Selenite/Selenite 1.webp,true,selenite
+Black Tourmaline Bracelet,Bracelets,1800,10,/assets/images/Black Tourmaline Bracelet/Black Tourmaline Bracelet 1.webp,true,black-tourmaline-bracelet
+Tiger's Eye Bracelet,Bracelets,1600,10,/assets/images/Tiger's Eye Bracelet/Tiger's Eye Bracelet 1.webp,true,tiger-s-eye-bracelet
+Rose Quartz Bracelet,Bracelets,1400,10,/assets/images/Rose Quartz Bracelet/Rose Quartz Bracelet 1.webp,true,rose-quartz-bracelet
+Amethyst Bracelet,Bracelets,700,10,/assets/images/Amethyst Bracelet/Amethyst Bracelet 1.webp,true,amethyst-bracelet
+Citrine Bracelet,Bracelets,1500,10,/assets/images/Citrine Bracelet/Citrine Bracelet 1.webp,true,citrine-bracelet
+Green Aventurine Bracelet,Bracelets,1300,10,/assets/images/Green Aventurine Bracelet/Green Aventurine Bracelet 1.webp,true,green-aventurine-bracelet
+7 Chakra Bracelet,Bracelets,2200,10,/assets/images/7 Chakra Bracelet/7 Chakra Bracelet 1.webp,true,7-chakra-bracelet
+Black Tourmaline Pendant,Pendants,2800,10,/assets/images/Black Tourmaline Pendant/Black Tourmaline Pendant 1.webp,true,black-tourmaline-pendant
+Clear Quartz Pendant,Pendants,3200,10,/assets/images/Clear Quartz Pendant/Clear Quartz Pendant 1.webp,true,clear-quartz-pendant
+Rose Quartz Pendant,Pendants,2600,10,/assets/images/Rose Quartz Pendant/Rose Quartz Pendant 1.webp,true,rose-quartz-pendant
+Amethyst Pendant,Pendants,3000,10,/assets/images/Amethyst Pendant/Amethyst Pendant 1.webp,true,amethyst-pendant
+Citrine Pendant,Pendants,2900,10,/assets/images/Citrine Pendant/Citrine Pendant 1.webp,true,citrine-pendant
+Selenite Charging Plate,Utility & Decor,2200,10,/assets/images/Selenite Charging Plate/Selenite Charging Plate 1.webp,true,selenite-charging-plate
+7 Chakra Crystal Tree,Utility & Decor,3500,10,/assets/images/7 Chakra Crystal Tree/7 Chakra Crystal Tree 1.webp,true,7-chakra-crystal-tree
+Rose Quartz Crystal Tree,Utility & Decor,2800,10,/assets/images/Rose Quartz Crystal Tree/Rose Quartz Crystal Tree 1.webp,true,rose-quartz-crystal-tree
+Amethyst Crystal Tree,Utility & Decor,2800,10,/assets/images/Amethyst Crystal Tree/Amethyst Crystal Tree 1.webp,true,amethyst-crystal-tree
+Selenite Charging Bowl,Utility & Decor,2600,10,/assets/images/Selenite Charging Bowl/Selenite Charging Bowl 1.webp,true,selenite-charging-bowl
+Blue Lace Agate Bracelet,Bracelets,1600,10,/assets/images/Blue Lasagate Bracelet/Blue Lace Agate Bracelet 1 original.webp,true,blue-lace-agate-bracelet
+Carnelian Bracelet,Bracelets,1500,10,/assets/images/Carnelian Bracelet/Carnelian Bracelet 1 original.webp,true,carnelian-bracelet
+Carnelian Crystal Tree,Utility & Decor,3200,10,/assets/images/Carnelian Crystal Tree/Carnelian Crystal Tree 1 original.webp,true,carnelian-crystal-tree
+Clear Quartz Crystal Pyramid,Utility & Decor,2900,10,/assets/images/Clear Quartz Crystal Pyramid/Clear Quartz Crystal Pyramid 1 original.webp,true,clear-quartz-crystal-pyramid
+Clear Quartz Bracelet,Bracelets,1400,10,/assets/images/Clear Quartz Bracelet/Clear Quartz Bracelet 1 original.webp,true,clear-quartz-bracelet
+Golden Hematite Bracelet,Bracelets,1700,10,/assets/images/Golden Hamatite Bracelet/Golden Hematite Bracelet 1 original.webp,true,golden-hematite-bracelet
+Green Aventurine Crystal Pyramid,Utility & Decor,2700,10,/assets/images/Green Aventurine Crystal Pyramid/Green Aventurine Crystal Pyramid 1 original.webp,true,green-aventurine-crystal-pyramid
+Green Aventurine Crystal Tree,Utility & Decor,3100,10,/assets/images/Green Aventurine Crystal Tree/Green Aventurine Crystal Tree 1 original.webp,true,green-aventurine-crystal-tree
+Green Jade Bracelet,Bracelets,1800,10,/assets/images/Green Jade Bracelet/Green Jade Bracelet 1 original.webp,true,green-jade-bracelet
+Pink Tourmaline Bracelet,Bracelets,2400,10,/assets/images/Pink Tourmaline Bracelet/Pink Tourmaline Bracelet 1 original.webp,true,pink-tourmaline-bracelet
+Pyrite Bracelet,Bracelets,1900,10,/assets/images/Pyrite Bracelet/Pyrite Bracelet 1 original.webp,true,pyrite-bracelet
+Pyrite Crystal Pyramid,Utility & Decor,3400,10,/assets/images/Pyrite Crystal Pyramid/Pyrite Crystal Pyramid 1 original.webp,true,pyrite-crystal-pyramid
+Pyrite Crystal Tree,Utility & Decor,3800,10,/assets/images/Pyrite Crystal Tree/Pyrite Crystal Tree 1 original.webp,true,pyrite-crystal-tree
+Red Jasper Bracelet,Bracelets,1300,10,/assets/images/Red Jasper Bracelet/Red Jasper Bracelet 1 original.webp,true,red-jasper-bracelet
+Rutile Quartz Bracelet,Bracelets,2600,10,/assets/images/Rutile Quartz Bracelet/Rutile Quartz Bracelet 1 original.webp,true,rutile-quartz-bracelet
+Selenite Bracelet,Bracelets,1500,10,/assets/images/Selenite Bracelet/Selenite Bracelet 1 original.webp,true,selenite-bracelet
+Sodalite Bracelet,Bracelets,1400,10,/assets/images/Sodalite Bracelet/Sodalite Bracelet 1 original.webp,true,sodalite-bracelet
+Turquoise Bracelet,Bracelets,2100,10,/assets/images/Turquoise Bracelet/Turquoise Bracelet 1 original.webp,true,turquoise-bracelet

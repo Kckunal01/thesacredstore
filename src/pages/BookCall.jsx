@@ -32,7 +32,7 @@ const BookCall = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const sessionPrice = 1;
+  const sessionPrice = 799;
   const navigate = useNavigate();
 
   const tomorrow = new Date();

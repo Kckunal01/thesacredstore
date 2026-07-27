@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
@@ -9,6 +9,8 @@ import { useContext } from 'react';
 import { ProductsContext } from '../context/ProductsContext';
 import { getDynamicBundles } from '../data/bundles';
 import BundleCard from '../components/ui/BundleCard';
+import HeroCarousel from '../components/ui/HeroCarousel';
+import ReelsSection from '../components/ui/ReelsSection';
 
 import { getPageSEO } from '../seo/seoHelpers';
 import { SITE_URL } from '../config';
@@ -48,23 +50,8 @@ const combinedJsonLd = { ...organizationJsonLd, ...websiteJsonLd };
 const Home = () => {
   const { products } = useContext(ProductsContext);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [currentHeroImage, setCurrentHeroImage] = useState(0);
-  // Dynamically filter featured products from database (instead of hardcoded static IDs)
   const bestSellers = products.filter(p => p.featured === true).slice(0, 4);
   const dynamicBundles = getDynamicBundles(products);
-
-  const heroImages = [
-    'https://images.unsplash.com/photo-1596700777174-da97ec0b2b8c?q=80&w=2000&auto=format&fit=crop', // Abstract neutral/mineral feel
-    'https://images.unsplash.com/photo-1549887552-cb1071d3e5ca?q=80&w=2000&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1520690214124-2405c5217036?q=80&w=2000&auto=format&fit=crop'
-  ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentHeroImage((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [heroImages.length]);
 
   const testimonials = [
     { quote: "They didn't just tell me my root chakra was blocked. They explained why I felt so ungrounded at work, and the black tourmaline actually shifted things.", author: "Priya K." },
@@ -79,6 +66,10 @@ const Home = () => {
 
   return ( <> <Seo {...homeSEO} jsonLd={combinedJsonLd} />
 
+      {/* 1. Hero Carousel */}
+      <HeroCarousel />
+
+      {/* Existing Homepage Hero restored exactly as it was in Git */}
       <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
         <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4">THE <span className="font-allura" style={{ color: '#D4AF37' }}>SACRED</span> STORE</h1>
@@ -117,7 +108,7 @@ const Home = () => {
       </div>
 
       {/* 3. Best Sellers: Featured Collection */}
-      <Section className="border-b border-border py-12">
+      <Section id="best-sellers" className="border-b border-border py-12">
         <Container>
           <div className="text-center mb-12">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
@@ -177,6 +168,9 @@ const Home = () => {
           </div>
         </Container>
       </Section>
+
+      {/* Reels Section */}
+      <ReelsSection />
 
       {/* 6. Testimonials (Reduced height, 3 visible, slider out of 5) */}
       <Section className="bg-surface border-b border-border py-16">

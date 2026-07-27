@@ -22,11 +22,13 @@ export const CartProvider = ({ children }) => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
         const newQty = Math.min(9, existing.quantity + quantity);
+        // Merge latest product fields (price, images, etc.) while preserving quantity
         return prev.map(item =>
-          item.id === product.id ? { ...item, quantity: newQty } : item
+          item.id === product.id ? { ...item, ...product, quantity: newQty } : item
         );
       }
       const allowedQty = Math.min(9, quantity, product.stock ?? 9);
+      // Store fresh product data
       return [...prev, { ...product, quantity: allowedQty }];
     });
   };
