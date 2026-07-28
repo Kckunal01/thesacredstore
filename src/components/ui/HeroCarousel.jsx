@@ -82,9 +82,9 @@ const HeroCarousel = () => {
             className="absolute inset-0 w-full h-full"
           >
             <picture className="w-full h-full block">
-              <source media="(max-width: 767px)" srcSet={slide.mobile} />
+              <source media="(max-width: 767px)" srcSet={encodeURI(slide.mobile)} />
               <img
-                src={slide.desktop}
+                src={encodeURI(slide.desktop)}
                 alt=""
                 loading={currentIndex === 0 ? 'eager' : 'lazy'}
                 fetchpriority={currentIndex === 0 ? 'high' : 'auto'}
