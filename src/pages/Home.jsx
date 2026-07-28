@@ -92,16 +92,18 @@ const Home = () => {
       {/* Existing Homepage Hero restored exactly as it was in Git */}
       <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
         <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-center mb-2 flex items-center justify-center gap-x-2 md:gap-x-4">THE <span className="font-allura" style={{ color: '#D4AF37' }}>SACRED</span> STORE</h1>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-2">
+            THE <span className="font-allura" style={{ color: '#D4AF37' }}>SACRED</span> STORE
+          </h1>
           <h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-8 mb-2">
             <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
           </h2>
           <p className="text-base md:text-lg text-muted font-light mb-4 max-w-xl">
             Reiki‑healing crystals, gems, and simple life‑changing rituals.
           </p>
-          <div className="flex gap-3 mt-4">
-            <Button to="/shop-crystals" variant="gold" className="text-sm px-5 py-2">Shop Collection</Button>
-            <Button to="/book-a-call" variant="ghost" className="text-sm px-5 py-2">Book Consultation</Button>
+          <div className="flex flex-col sm:flex-row gap-3 mt-4">
+            <Button to="/shop-crystals" variant="gold" className="text-sm px-5 py-2 w-full sm:w-auto text-center">Shop Collection</Button>
+            <Button to="/book-a-call" variant="ghost" className="text-sm px-5 py-2 w-full sm:w-auto text-center">Book Consultation</Button>
           </div>
         </div>
         <div className="w-full md:w-5/12 min-h-[40vh] md:min-h-0 flex items-stretch bg-surface p-0 group overflow-hidden">

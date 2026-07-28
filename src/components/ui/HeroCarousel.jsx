@@ -71,7 +71,7 @@ const HeroCarousel = () => {
       aria-label="Hero Carousel"
     >
       {/* Slide */}
-      <div className="relative w-full h-[70vh] md:h-[75vh] lg:h-[80vh]">
+      <div className="relative w-full h-[55dvh] sm:h-[65dvh] md:h-[75dvh] lg:h-[80dvh]">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
