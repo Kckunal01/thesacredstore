@@ -55,10 +55,10 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
   };
 
   return (
-    <div className="group flex flex-col cursor-pointer block relative">
-      <Link to={`/product/${id}`} className="block">
+    <div className="group flex flex-col h-full justify-between cursor-pointer block relative">
+      <Link to={`/product/${id}`} className="block flex-grow flex flex-col justify-between">
         {/* Image Container */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-6 border border-border">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-4 border border-border">
           {mainImage ? (
             <img
               src={mainImage}
@@ -88,12 +88,12 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
         </div>
 
         {/* Product Info */}
-        <div className="flex flex-col text-center mb-4">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-muted font-bold mb-2">{category}</span>
-          <h3 className="font-display text-xl text-primary mb-2 transition-colors group-hover:text-accent">{name}</h3>
-          <div className="flex items-center justify-center space-x-3">
+        <div className="flex flex-col text-center mb-4 flex-grow justify-end">
+          <span className="text-[10px] uppercase tracking-[0.2em] text-muted font-bold mb-1">{category}</span>
+          <h3 className="font-display text-[15px] sm:text-lg text-primary mb-1 transition-colors group-hover:text-accent line-clamp-2 min-h-[2.5rem] flex items-center justify-center px-1 leading-snug">{name}</h3>
+          <div className="flex items-center justify-center space-x-2">
             {originalPrice && (
-              <span className="text-sm font-light tracking-wider text-muted line-through">₹{originalPrice}</span>
+              <span className="text-xs font-light tracking-wider text-muted line-through">₹{originalPrice}</span>
             )}
             <span className="text-sm font-semibold tracking-wider text-primary">₹{price}</span>
           </div>

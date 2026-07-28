@@ -106,6 +106,10 @@ const BundleDetail = () => {
               <p className="text-base text-muted font-light leading-relaxed">
                 {bundle.description || 'A thoughtfully curated crystal bundle.'}
               </p>
+              <div className="mt-4 p-4 bg-surface border border-border/60 rounded">
+                <span className="text-[10px] uppercase tracking-wider text-accent font-semibold block mb-1">Handpicked by Sacred Store</span>
+                <p className="text-xs text-muted font-light leading-relaxed">A thoughtfully curated collection designed to work beautifully together.</p>
+              </div>
             </div>
 
             {/* Included Products */}

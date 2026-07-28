@@ -92,26 +92,31 @@ const Header = () => {
           </nav>
 
           {/* Right: Cart and WhatsApp */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <a
               href="https://wa.me/9554930456"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:text-accent transition-colors"
+              className="text-primary hover:text-accent transition-colors w-11 h-11 flex items-center justify-center cursor-pointer"
+              aria-label="Contact WhatsApp"
             >
               <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
               </svg>
             </a>
-            <Link to="/checkout" className="relative text-primary hover:text-accent transition-colors group">
+            <Link to="/checkout" className="relative text-primary hover:text-accent transition-colors group w-11 h-11 flex items-center justify-center cursor-pointer" aria-label="View Cart">
               <ShoppingBag className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
               {getCartCount() > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#000000] text-[#FFBD59] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute top-1.5 right-1.5 bg-[#000000] text-[#FFBD59] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
                   {getCartCount()}
                 </span>
               )}
             </Link>
-            <button className="md:hidden text-primary hover:text-accent transition-colors" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <button 
+              className="md:hidden text-primary hover:text-accent transition-colors w-11 h-11 flex items-center justify-center cursor-pointer" 
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle Menu"
+            >
               {isMobileMenuOpen ? <X className="w-6 h-6" strokeWidth={1.5} /> : <Menu className="w-6 h-6" strokeWidth={1.5} />}
             </button>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Container from '../components/ui/Container';
@@ -50,8 +50,27 @@ const combinedJsonLd = { ...organizationJsonLd, ...websiteJsonLd };
 const Home = () => {
   const { products } = useContext(ProductsContext);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const bestSellers = products.filter(p => p.featured === true).slice(0, 4);
   const dynamicBundles = getDynamicBundles(products);
+  const homeBundles = React.useMemo(() => {
+    return [...dynamicBundles]
+      .filter(b => b.active !== false)
+      .sort((a, b) => {
+        if (a.slug === 'everyday-balance-bundle') return -1;
+        if (b.slug === 'everyday-balance-bundle') return 1;
+        return 0;
+      })
+      .slice(0, 2);
+  }, [dynamicBundles]);
 
   const testimonials = [
     { quote: "They didn't just tell me my root chakra was blocked. They explained why I felt so ungrounded at work, and the black tourmaline actually shifted things.", author: "Priya K." },
@@ -61,8 +80,9 @@ const Home = () => {
     { quote: "My space feels completely different after placing the amethyst clusters as recommended. A brilliant service.", author: "Neha V." }
   ];
 
-  const nextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % (testimonials.length - 2));
-  const prevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + (testimonials.length - 2)) % (testimonials.length - 2));
+  const maxSlide = isMobile ? testimonials.length - 1 : testimonials.length - 3;
+  const nextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % (maxSlide + 1));
+  const prevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + (maxSlide + 1)) % (maxSlide + 1));
 
   return ( <> <Seo {...homeSEO} jsonLd={combinedJsonLd} />
 
@@ -158,7 +178,7 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto mb-10">
             {/* Display first 2 bundle cards */}
-            {dynamicBundles.filter(b => b.active !== false).slice(0, 2).map(bundle => (
+            {homeBundles.map(bundle => (
               <BundleCard key={bundle.id} bundle={bundle} />
             ))}
           </div>
@@ -187,7 +207,7 @@ const Home = () => {
             <div className="w-full overflow-hidden">
               <motion.div
                 className="flex transition-transform duration-500 ease-out"
-                style={{ transform: `translateX(-${currentTestimonial * (100 / 3)}%)` }}
+                style={{ transform: `translateX(-${currentTestimonial * (isMobile ? 100 : (100 / 3))}%)` }}
               >
                 {testimonials.map((test, idx) => (
                   <div key={idx} className="w-full md:w-1/3 flex-shrink-0 px-4">

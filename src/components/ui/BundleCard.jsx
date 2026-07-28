@@ -78,6 +78,10 @@ const BundleCard = ({ bundle }) => {
               ))}
             </div>
           </div>
+          <div className="mt-2 pt-2 border-t border-border/10">
+            <span className="text-[9px] uppercase tracking-wider text-accent font-semibold block mb-0.5">Handpicked by Sacred Store</span>
+            <p className="text-[10px] text-muted font-light leading-relaxed">A thoughtfully curated collection designed to work beautifully together.</p>
+          </div>
         </div>
 
         <div className="mt-2 pt-2 border-t border-border/50 flex justify-between items-center">
