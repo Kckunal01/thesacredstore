@@ -59,7 +59,9 @@ const Home = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const bestSellers = products.filter(p => p.featured === true).slice(0, 4);
+  const bestSellers = products
+    .filter(p => p.featured === true && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle)
+    .slice(0, 4);
   const dynamicBundles = getDynamicBundles(products);
   const homeBundles = React.useMemo(() => {
     return [...dynamicBundles]
@@ -130,12 +132,15 @@ const Home = () => {
       </div>
 
       {/* 3. Best Sellers: Featured Collection */}
-      <Section id="best-sellers" className="border-b border-border py-12">
+      <Section id="best-sellers" className="border-b border-border py-16">
         <Container>
-          <div className="text-center mb-12">
+          <div className="text-center mb-10">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Featured</span> <span className="half-gold">Collection</span>
             </h3>
+            <p className="text-xs text-muted font-light mt-2">
+              Handpicked reiki-charged raw crystals and intentional jewelry.
+            </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
             {bestSellers.map(product => (
@@ -201,6 +206,9 @@ const Home = () => {
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary tracking-wider">
               <span className="text-primary">Loved By the</span> <span className="half-gold">Community</span>
             </h3>
+            <p className="text-xs text-muted font-light mt-2">
+              Real stories and transformative shifts from our sacred circle.
+            </p>
           </div>
 
           <div className="relative flex items-center max-w-7xl mx-auto group">
@@ -237,12 +245,15 @@ const Home = () => {
       </Section>
 
       {/* 7. Blog Section: Learn More */}
-      <Section className="border-b border-border py-12 bg-background">
+      <Section className="border-b border-border py-16 bg-background">
         <Container>
-          <div className="text-center mb-12">
+          <div className="text-center mb-10">
             <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Learn</span> <span className="half-gold">More</span>
             </h3>
+            <p className="text-xs text-muted font-light mt-2">
+              Explore deep dives, grounding rituals, and sacred space arrangement guides.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-10">
