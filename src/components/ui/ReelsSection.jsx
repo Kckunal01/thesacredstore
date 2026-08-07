@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Container from './Container';
 import Section from './Section';
 import { Play, Pause } from 'lucide-react';
+import HomeCarousel from '../common/HomeCarousel';
 
 const reelsData = [
   {
@@ -57,7 +58,7 @@ const ReelCard = ({ reel, isPlaying, onPlay, onPause }) => {
   };
 
   return (
-    <div className="group relative bg-background border border-border overflow-hidden rounded-md flex flex-col hover:border-accent transition-all duration-300 shadow-sm hover:shadow-md">
+    <div className="group relative bg-background border border-border overflow-hidden rounded-md flex flex-col hover:border-accent transition-all duration-300 shadow-sm hover:shadow-md w-full h-full">
       <div 
         onClick={handleTogglePlay}
         className="relative aspect-[9/16] w-full bg-surface overflow-hidden flex items-center justify-center bg-gray-200 cursor-pointer"
@@ -124,8 +125,10 @@ const ReelsSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {reelsData.map((reel) => (
+        <HomeCarousel
+          items={reelsData}
+          trackClassName="slides-4"
+          renderItem={(reel) => (
             <ReelCard
               key={reel.id}
               reel={reel}
@@ -133,8 +136,8 @@ const ReelsSection = () => {
               onPlay={handlePlay}
               onPause={handlePause}
             />
-          ))}
-        </div>
+          )}
+        />
       </Container>
     </Section>
   );

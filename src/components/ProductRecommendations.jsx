@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { getSmartRecommendations } from '../lib/recommendations';
+import { resolveProductImage } from '../utils/productImageResolver';
 
 const ProductRecommendations = ({ currentProduct, products }) => {
   const recommendations = useMemo(() => {
@@ -20,7 +21,7 @@ const ProductRecommendations = ({ currentProduct, products }) => {
         recommendations.length === 3 ? 'md:grid-cols-3 max-w-4xl mx-auto' : 'md:grid-cols-2 lg:grid-cols-4'
       }`}>
         {recommendations.map((product) => {
-          const mainImage = product.images && product.images.length > 0 ? product.images[0] : null;
+          const mainImage = resolveProductImage(product);
           return (
             <Link
               key={product.id}

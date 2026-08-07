@@ -56,7 +56,6 @@ const ShopCrystals = () => {
             <Search className="w-4 h-4 absolute left-4 top-1/2 transform -translate-y-1/2 text-accent" />
           </div>
 
-          {/* Sub-category Filter Tabs */}
           {searchQuery.trim() === '' && (
             <div className="flex flex-wrap items-center justify-center gap-2 border border-border/80 p-1.5 inline-flex mx-auto bg-surface/50 rounded-sm">
               {filterOptions.map(opt => (
@@ -75,8 +74,9 @@ const ShopCrystals = () => {
             </div>
           )}
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+
+        {/* Product Grid — 2 cols on mobile, 2 on sm, 4 on lg */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-8 md:gap-y-16">
           {displayedProducts.length > 0 ? (
             displayedProducts.map(product => (
               <ProductCard key={product.id} {...product} />

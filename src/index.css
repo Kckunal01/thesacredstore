@@ -11,6 +11,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 @layer base {
   body {
     @apply text-primary font-body antialiased bg-offwhite;
@@ -59,6 +60,7 @@
   }
 }
 
+
 /* ─────────────────────────────────────────────────────────────
    Rakhi Collection Section — artwork-first layout
    ───────────────────────────────────────────────────────────── */
@@ -81,25 +83,11 @@
   object-position: center top;   /* NEVER crop the heading */
 }
 
-/* Carousel: horizontal scroll strip that overlaps the banner bottom */
-.rakhi-carousel {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding: 0 1rem 1.5rem;
+/* Carousel wrapper: overlaps the banner bottom */
+.rakhi-carousel-wrapper {
   margin-top: -12px;             /* mobile overlap */
   position: relative;
   z-index: 2;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
-}
-.rakhi-carousel::-webkit-scrollbar { display: none; }
-
-/* Card slot */
-.rakhi-card {
-  flex-shrink: 0;
-  width: 65vw;                   /* ~1.3 cards visible on mobile */
 }
 
 /* Card chrome */
@@ -135,34 +123,101 @@
 /* ── sm ≥640 ── */
 @media (min-width: 640px) {
   .rakhi-banner   { height: 215px; }
-  .rakhi-card     { width: 220px; }
-  .rakhi-carousel { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .rakhi-carousel-wrapper { padding-left: 1.5rem; padding-right: 1.5rem; }
 }
 
 /* ── md / tablet ≥768 ── */
 @media (min-width: 768px) {
   .rakhi-banner   { height: 270px; }
-  .rakhi-card     { width: 250px; }
-  .rakhi-carousel { margin-top: -16px; gap: 1.25rem; }
+  .rakhi-carousel-wrapper { margin-top: -16px; }
 }
 
 /* ── lg / laptop ≥1024 ── */
 @media (min-width: 1024px) {
   .rakhi-banner   { height: 380px; }
-  .rakhi-card     { width: 270px; }
-  .rakhi-carousel { margin-top: -20px; padding-left: 2rem; padding-right: 2rem; gap: 1.5rem; }
+  .rakhi-carousel-wrapper { margin-top: -20px; padding-left: 2rem; padding-right: 2rem; }
 }
 
 /* ── xl / desktop ≥1280 ── */
 @media (min-width: 1280px) {
   .rakhi-banner   { height: 420px; }
-  .rakhi-card     { width: 290px; }
-  .rakhi-carousel { margin-top: -24px; }
+  .rakhi-carousel-wrapper { margin-top: -24px; }
 }
 
 /* ── 2xl ≥1536 ── */
 @media (min-width: 1536px) {
   .rakhi-banner   { height: 420px; }
-  .rakhi-carousel { max-width: 1400px; margin-left: auto; margin-right: auto; }
+  .rakhi-carousel-wrapper { max-width: 1400px; margin-left: auto; margin-right: auto; }
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Universal Home Carousel
+   ───────────────────────────────────────────────────────────── */
+.home-carousel-track {
+  scroll-snap-type: x mandatory;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+}
+.home-carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+.home-carousel-slide {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+  width: 80vw; /* default mobile */
+}
+
+/* Base responsive card widths based on standard desktop sizes (e.g. Featured, 4/5 items) */
+@media (min-width: 640px) {
+  .home-carousel-slide { width: 45vw; }
+}
+@media (min-width: 768px) {
+  .home-carousel-slide { width: 35vw; }
+}
+@media (min-width: 1024px) {
+  .home-carousel-slide { width: calc(25% - 1.125rem); } /* 4 visible */
+}
+@media (min-width: 1280px) {
+  .home-carousel-slide { width: calc(20% - 1.2rem); } /* 5 visible */
+}
+
+/* Modifier class for 4 items max (e.g. Reels, Featured) */
+.slides-4 .home-carousel-slide { }
+@media (min-width: 1024px) {
+  .slides-4 .home-carousel-slide { width: calc(33.333% - 1rem); } /* 3 visible on laptop */
+}
+@media (min-width: 1280px) {
+  .slides-4 .home-carousel-slide { width: calc(25% - 1.125rem); } /* 4 visible on desktop */
+}
+
+/* Modifier class for 3 items max (e.g. Blogs) */
+.slides-3 .home-carousel-slide { }
+@media (min-width: 768px) {
+  .slides-3 .home-carousel-slide { width: calc(50% - 0.75rem); } /* 2 visible */
+}
+@media (min-width: 1024px) {
+  .slides-3 .home-carousel-slide { width: calc(33.333% - 1rem); } /* 3 visible */
+}
+
+/* Modifier class for 2 items max (e.g. Bundles) */
+.slides-2 .home-carousel-slide { }
+@media (min-width: 768px) {
+  .slides-2 .home-carousel-slide { width: calc(50% - 0.75rem); } /* 2 visible */
+}
+
+/* Modifier class for Rakhi Collection (Coming Soon) */
+.slides-rakhi .home-carousel-slide { width: 65vw; }
+@media (min-width: 640px) {
+  .slides-rakhi .home-carousel-slide { width: 220px; }
+}
+@media (min-width: 768px) {
+  .slides-rakhi .home-carousel-slide { width: 250px; }
+}
+@media (min-width: 1024px) {
+  .slides-rakhi .home-carousel-slide { width: 270px; }
+}
+@media (min-width: 1280px) {
+  .slides-rakhi .home-carousel-slide { width: 290px; }
+}

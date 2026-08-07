@@ -21,7 +21,7 @@ const SpecialisedCrystals = () => {
         </div>
 
         {activeItems.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 mb-24">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-8 md:gap-y-16 mb-24">
             {activeItems.map(product => (
               <ProductCard key={product.id} {...product} />
             ))}
@@ -35,7 +35,7 @@ const SpecialisedCrystals = () => {
               <h2 className="text-3xl md:text-4xl font-display font-medium text-primary/60 mb-4">Past Drops</h2>
               <p className="text-muted/70 text-sm max-w-md mx-auto">Limited collections that have sold out. Follow us for restocks.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16 opacity-60">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-8 md:gap-y-16 opacity-60">
               {pastDrops.map(product => (
                 <ProductCard key={product.id} {...product} />
               ))}

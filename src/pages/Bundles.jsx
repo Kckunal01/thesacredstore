@@ -14,7 +14,7 @@ const Bundles = () => {
   }, [products]);
 
   return (
-    <div className="w-full bg-background min-h-screen py-12">
+    <div className="w-full bg-background min-h-screen py-12 pt-32">
       <Container>
         {/* Header styling matching standard collections */}
         <div className="text-center max-w-2xl mx-auto mb-16">

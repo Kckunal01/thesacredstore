@@ -58,7 +58,7 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
     <div className="group flex flex-col h-full justify-between cursor-pointer block relative">
       <Link to={`/product/${id}`} className="block flex-grow flex flex-col justify-between">
         {/* Image Container */}
-        <div className="relative aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-4 border border-border">
+        <div className="relative aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-2 sm:mb-4 border border-border">
           {mainImage ? (
             <img
               src={mainImage}
@@ -77,25 +77,29 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
 
           {/* Stamps */}
           {stamp === 'Fresh' ? (
-            <div className="absolute top-4 left-4 bg-accent text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-accent text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
             FRESH
           </div>
+          ) : stamp === 'Sale' ? (
+            <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-accent text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            SALE
+          </div>
           ) : discountPercentage > 0 ? (
-            <div className="absolute top-4 right-4 bg-primary text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-primary text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
             {discountPercentage}% OFF
           </div>
           ) : null}
         </div>
 
         {/* Product Info */}
-        <div className="flex flex-col text-center mb-4 flex-grow justify-end">
-          <span className="text-[10px] uppercase tracking-[0.2em] text-muted font-bold mb-1">{category}</span>
-          <h3 className="font-display text-[15px] sm:text-lg text-primary mb-1 transition-colors group-hover:text-accent line-clamp-2 min-h-[2.5rem] flex items-center justify-center px-1 leading-snug">{name}</h3>
-          <div className="flex items-center justify-center space-x-2">
+        <div className="flex flex-col text-center mb-2 sm:mb-4 flex-grow justify-end">
+          <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] text-muted font-bold mb-0.5 sm:mb-1">{category}</span>
+          <h3 className="font-display text-[12px] sm:text-[15px] md:text-lg text-primary mb-0.5 sm:mb-1 transition-colors group-hover:text-accent line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem] flex items-center justify-center px-1 leading-tight sm:leading-snug">{name}</h3>
+          <div className="flex items-center justify-center space-x-1 sm:space-x-2">
             {originalPrice && (
-              <span className="text-xs font-light tracking-wider text-muted line-through">₹{originalPrice}</span>
+              <span className="text-[10px] sm:text-xs font-light tracking-wider text-muted line-through">₹{originalPrice}</span>
             )}
-            <span className="text-sm font-semibold tracking-wider text-primary">₹{price}</span>
+            <span className="text-xs sm:text-sm font-semibold tracking-wider text-primary">₹{price}</span>
           </div>
         </div>
       </Link>
@@ -109,41 +113,41 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
           if (stock !== null && stock > 0 && active) {
             return (
               <>
-                <div className="flex items-center justify-between border border-border bg-surface mb-2">
+                <div className="flex items-center justify-between border border-border bg-surface mb-1 sm:mb-2">
                   <button
                     onClick={handleDecrement}
-                    className="p-2 text-primary hover:text-accent transition-colors"
+                    className="p-1 sm:p-2 text-primary hover:text-accent transition-colors"
                     disabled={isCartFull}
                   >
-                    <Minus className="w-3 h-3" />
+                    <Minus className="w-2 h-2 sm:w-3 sm:h-3" />
                   </button>
-                  <span className="text-xs font-semibold">{isCartFull ? 'Max' : quantity}</span>
+                  <span className="text-[10px] sm:text-xs font-semibold">{isCartFull ? 'Max' : quantity}</span>
                   <button
                     onClick={handleIncrement}
-                    className="p-2 text-primary hover:text-accent transition-colors"
+                    className="p-1 sm:p-2 text-primary hover:text-accent transition-colors"
                     disabled={isCartFull}
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-2 h-2 sm:w-3 sm:h-3" />
                   </button>
                 </div>
                 <button
                   onClick={handleQuickAdd}
                   disabled={isCartFull}
-                  className={`w-full bg-[#000000] hover:bg-[#FFBD59] text-[#FEFBF1] hover:text-[#000000] text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300 ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full bg-[#000000] hover:bg-[#FFBD59] text-[#FEFBF1] hover:text-[#000000] text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-bold py-2 sm:py-3 flex items-center justify-center gap-1 sm:gap-2 transition-colors duration-300 ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <ShoppingBag className="w-3 h-3" /> {isCartFull ? 'Limit Reached' : 'Add to Cart'}
+                  <ShoppingBag className="w-2 h-2 sm:w-3 sm:h-3" /> {isCartFull ? 'Limit Reached' : 'Add to Cart'}
                 </button>
               </>
             );
           } else {
             return (
               <>
-                <div className="text-center text-xs font-bold text-red-500 uppercase py-2">
+                <div className="text-center text-[10px] sm:text-xs font-bold text-red-500 uppercase py-1 sm:py-2">
                   Out of Stock
                 </div>
                 <button
                   onClick={handleNotifyMeClick}
-                  className="w-full bg-[#000000] hover:bg-[#FFBD59] text-[#FEFBF1] hover:text-[#000000] text-[10px] uppercase tracking-[0.2em] font-bold py-3 flex items-center justify-center gap-2 transition-colors duration-300"
+                  className="w-full bg-[#000000] hover:bg-[#FFBD59] text-[#FEFBF1] hover:text-[#000000] text-[8px] sm:text-[10px] uppercase tracking-[0.2em] font-bold py-2 sm:py-3 flex items-center justify-center gap-1 sm:gap-2 transition-colors duration-300"
                 >
                   Notify Me
                 </button>

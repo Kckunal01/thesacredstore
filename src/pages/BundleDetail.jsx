@@ -5,6 +5,7 @@ import { CartContext } from '../context/CartContext';
 import { getDynamicBundles } from '../data/bundles';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
+import { resolveProductImage } from '../utils/productImageResolver';
 
 const BundleDetail = () => {
   const { slug } = useParams();
@@ -30,7 +31,7 @@ const BundleDetail = () => {
     return { subtotal, finalPrice, savings, percent };
   }, [bundle]);
 
-  const coverImage = bundle?.imageUrl || bundle?.image_url || includedProducts[0]?.images?.[0] || '';
+  const coverImage = bundle?.imageUrl || bundle?.image_url || (includedProducts[0] ? resolveProductImage(includedProducts[0]) : '');
 
   // Loading state
   if (loading) {
@@ -123,7 +124,7 @@ const BundleDetail = () => {
                       <div key={p.db_id || p.id} className="flex flex-col bg-surface border border-border p-3 rounded space-y-2">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 bg-background flex-shrink-0 rounded overflow-hidden">
-                            <img src={p.images?.[0] || p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                            <img src={resolveProductImage(p)} alt={p.name} className="w-full h-full object-cover" />
                           </div>
                           <div className="flex-grow min-w-0">
                             <h4 className="text-xs font-semibold text-primary truncate">{p.name}</h4>

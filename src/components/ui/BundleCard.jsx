@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { resolveProductImage } from '../../utils/productImageResolver';
 
 const BundleCard = ({ bundle }) => {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ const BundleCard = ({ bundle }) => {
   const discountPercent = originalTotal > 0 ? (discountAmount / originalTotal) : 0;
 
   // Cover image from DB or first included product
-  const coverImage = bundle.imageUrl || bundle.image_url || productsToRender[0]?.images?.[0] || productsToRender[0]?.image_url;
+  const coverImage = bundle.imageUrl || bundle.image_url || (productsToRender[0] ? resolveProductImage(productsToRender[0]) : null);
 
   const handleCardClick = () => {
     navigate(`/bundles/${bundle.slug}`);
@@ -66,7 +67,7 @@ const BundleCard = ({ bundle }) => {
               {productsToRender.map((p, idx) => (
                 <div key={idx} className="w-8 h-8 rounded-sm overflow-hidden border border-border/60 bg-background flex-shrink-0" title={p.name}>
                   <img 
-                    src={p.images?.[0] || p.image_url} 
+                    src={resolveProductImage(p)}
                     alt={p.name} 
                     loading="lazy"
                     decoding="async"

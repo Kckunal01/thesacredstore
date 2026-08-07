@@ -22,7 +22,7 @@ const ShopPendants = () => {
     <Section className="bg-background pt-32 min-h-screen">
       <Container>
         <div className="text-center mb-12">
-          <span className="text-[10px] uppercase tracking-[0.3em] text-[#000000] font-bold block mb-4">Worn With Intention</span>
+          <span className="text-[10px] uppercase tracking-[0.3em] text-[#000000] font-bold block mb-4">Wearable Intention</span>
           <h1 className="text-5xl md:text-6xl font-display font-medium text-primary mb-8">
             <span className="text-primary">Crystal</span> <span className="half-gold">Pendants</span>
           </h1>
@@ -39,7 +39,7 @@ const ShopPendants = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-8 md:gap-y-16">
           {displayedProducts.length > 0 ? (
             displayedProducts.map(product => (
               <ProductCard key={product.id} {...product} />
@@ -50,7 +50,6 @@ const ShopPendants = () => {
             </div>
           )}
         </div>
-
 
       </Container>
     </Section>

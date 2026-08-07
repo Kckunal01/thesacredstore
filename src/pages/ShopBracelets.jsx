@@ -39,7 +39,7 @@ const ShopBracelets = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-6 md:gap-x-8 md:gap-y-16">
           {displayedProducts.length > 0 ? (
             displayedProducts.map(product => (
               <ProductCard key={product.id} {...product} />
@@ -50,7 +50,6 @@ const ShopBracelets = () => {
             </div>
           )}
         </div>
-
 
       </Container>
     </Section>

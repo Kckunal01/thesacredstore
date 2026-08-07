@@ -4,7 +4,8 @@ import { fetchProducts } from '../lib/productsService';
 import Button from '../components/ui/Button';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
-import { Search, Plus, Filter, Edit, Package, DollarSign, ShoppingCart, LogOut, Check, X, ArrowUp, ArrowDown, Percent, Image, Trash2, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { Trash2, Edit, Plus, Image as ImageIcon, Search, ChevronDown, Check, X, ArrowUpCircle, ArrowDownCircle, AlertCircle, ShoppingBag, Truck, CheckCircle2, RotateCcw, Clock, MoreVertical, SearchIcon, Tag, LayoutDashboard, Package, ShoppingCart, Menu, Sparkles, Home, LogOut, Filter } from 'lucide-react';
+import { getTaxonomyFlatList } from '../data/taxonomy';
 
 const Admin = () => {
   // Auth states
@@ -690,9 +691,8 @@ const Admin = () => {
   };
 
   const uniqueCategories = useMemo(() => {
-    const cats = new Set(adminProducts.map(p => p.category).filter(Boolean));
-    return ['All', ...Array.from(cats).sort()];
-  }, [adminProducts]);
+    return ['All', ...getTaxonomyFlatList()];
+  }, []);
 
   // Filtered actual products (category !== 'Bundles')
   const filteredProducts = useMemo(() => {

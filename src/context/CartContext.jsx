@@ -19,29 +19,30 @@ export const CartProvider = ({ children }) => {
   // Add product/bundle to cart, respecting stock limits and max 9 per product
   const addToCart = (product, quantity = 1) => {
     setCart(prev => {
-      const existing = prev.find(item => item.id === product.id);
+      const cartItemId = product.cartItemId || `${product.id}${product.certification ? '-certified' : ''}`;
+      const existing = prev.find(item => (item.cartItemId || item.id) === cartItemId);
       if (existing) {
         const newQty = Math.min(9, existing.quantity + quantity);
         // Merge latest product fields (price, images, etc.) while preserving quantity
         return prev.map(item =>
-          item.id === product.id ? { ...item, ...product, quantity: newQty } : item
+          (item.cartItemId || item.id) === cartItemId ? { ...item, ...product, cartItemId, quantity: newQty } : item
         );
       }
       const allowedQty = Math.min(9, quantity, product.stock ?? 9);
       // Store fresh product data
-      return [...prev, { ...product, quantity: allowedQty }];
+      return [...prev, { ...product, cartItemId, quantity: allowedQty }];
     });
   };
 
-  const removeFromCart = (id) => {
-    setCart(prev => prev.filter(item => item.id !== id));
+  const removeFromCart = (idOrCartItemId) => {
+    setCart(prev => prev.filter(item => (item.cartItemId || item.id) !== idOrCartItemId));
   };
 
-  const updateQuantity = (id, quantity) => {
+  const updateQuantity = (idOrCartItemId, quantity) => {
     if (quantity < 1) return;
     setCart(prev => {
       return prev.map(item => {
-        if (item.id === id) {
+        if ((item.cartItemId || item.id) === idOrCartItemId) {
           const maxQty = Math.min(item.stock ?? 9, 9);
           const boundedQty = Math.min(maxQty, quantity);
           return { ...item, quantity: boundedQty };
@@ -58,7 +59,7 @@ export const CartProvider = ({ children }) => {
   };
 
   const getCartTotal = () =>
-    cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    cart.reduce((total, item) => total + (item.price + (item.certification ? 100 : 0)) * item.quantity, 0);
 
   const getCartCount = () =>
     cart.reduce((count, item) => count + item.quantity, 0);

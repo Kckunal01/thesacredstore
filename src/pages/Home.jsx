@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import Button from '../components/ui/Button';
@@ -12,6 +11,7 @@ import BundleCard from '../components/ui/BundleCard';
 import HeroCarousel from '../components/ui/HeroCarousel';
 import ReelsSection from '../components/ui/ReelsSection';
 import RakhiCollectionSection from '../components/home/RakhiCollectionSection';
+import HomeCarousel from '../components/common/HomeCarousel';
 
 import { getPageSEO } from '../seo/seoHelpers';
 import { SITE_URL } from '../config';
@@ -50,15 +50,6 @@ const combinedJsonLd = { ...organizationJsonLd, ...websiteJsonLd };
 
 const Home = () => {
   const { products } = useContext(ProductsContext);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   const bestSellersBase = products.filter(p => p && p.id && p.name && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle && p.active !== false && p.visible !== false);
   const featured = bestSellersBase.filter(p => p.featured === true);
@@ -82,10 +73,6 @@ const Home = () => {
     { quote: "The packaging, the quality of the stones, the philosophy. Everything about Ritualist screams intentionality.", author: "Kunal M." },
     { quote: "My space feels completely different after placing the amethyst clusters as recommended. A brilliant service.", author: "Neha V." }
   ];
-
-  const maxSlide = isMobile ? testimonials.length - 1 : testimonials.length - 3;
-  const nextTestimonial = () => setCurrentTestimonial((prev) => (prev + 1) % (maxSlide + 1));
-  const prevTestimonial = () => setCurrentTestimonial((prev) => (prev - 1 + (maxSlide + 1)) % (maxSlide + 1));
 
   return ( <> <Seo {...homeSEO} jsonLd={combinedJsonLd} />
 
@@ -146,11 +133,13 @@ const Home = () => {
               Handpicked reiki-charged raw crystals and intentional jewelry.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8 mb-8">
-            {bestSellers.map(product => (
+          <HomeCarousel
+            items={bestSellers}
+            trackClassName="slides-4"
+            renderItem={(product) => (
               <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
+            )}
+          />
           <div className="flex justify-center mt-8">
             <Button to="/shop-crystals" variant="gold" className="text-[10px] px-6 py-3">View Complete Collection</Button>
           </div>
@@ -187,12 +176,13 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl mx-auto mb-10">
-            {/* Display first 2 bundle cards */}
-            {homeBundles.map(bundle => (
+          <HomeCarousel
+            items={homeBundles}
+            trackClassName="slides-2"
+            renderItem={(bundle) => (
               <BundleCard key={bundle.id} bundle={bundle} />
-            ))}
-          </div>
+            )}
+          />
 
           <div className="flex justify-center">
             <Button to="/bundles" variant="dark" className="text-xs font-semibold">View All Bundles</Button>
@@ -203,7 +193,7 @@ const Home = () => {
       {/* Reels Section */}
       <ReelsSection />
 
-      {/* 6. Testimonials (Reduced height, 3 visible, slider out of 5) */}
+      {/* 6. Testimonials — uses shared HomeCarousel, no nav buttons */}
       <Section className="bg-surface border-b border-border py-16">
         <Container>
           <div className="text-center mb-10">
@@ -215,36 +205,26 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="relative flex items-center max-w-7xl mx-auto group">
-            <button onClick={prevTestimonial} className="absolute left-0 z-10 w-8 h-8 flex items-center justify-center text-white bg-[#ffbd59] rounded-none opacity-0 group-hover:opacity-100 transition-opacity -ml-4 shadow-md cursor-pointer">&#x2190;</button>
-
-            <div className="w-full overflow-hidden">
-              <motion.div
-                className="flex transition-transform duration-500 ease-out"
-                style={{ transform: `translateX(-${currentTestimonial * (isMobile ? 100 : (100 / 3))}%)` }}
-              >
-                {testimonials.map((test, idx) => (
-                  <div key={idx} className="w-full md:w-1/3 flex-shrink-0 px-4">
-                    <div className="bg-background border border-border p-6 h-full flex flex-col justify-between rounded-lg shadow-lg hover:shadow-xl transition-shadow">
-                      <div>
-                        <div className="flex text-accent mb-4 text-xs">
-                          ★★★★★
-                        </div>
-                        <p className="text-sm font-light font-body leading-relaxed mb-6 text-primary">
-                          "{test.quote}"
-                        </p>
-                      </div>
-                      <span className="text-[10px] uppercase tracking-[0.1em] text-muted font-bold block">
-                        — {test.author}
-                      </span>
-                    </div>
+          <HomeCarousel
+            items={testimonials}
+            hideNav
+            trackClassName="slides-3"
+            renderItem={(test) => (
+              <div className="bg-background border border-border p-6 h-full flex flex-col justify-between rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                <div>
+                  <div className="flex text-accent mb-4 text-xs">
+                    ★★★★★
                   </div>
-                ))}
-              </motion.div>
-            </div>
-
-            <button onClick={nextTestimonial} className="absolute right-0 z-10 w-8 h-8 flex items-center justify-center text-white bg-[#ffbd59] rounded-none opacity-0 group-hover:opacity-100 transition-opacity -mr-4 shadow-md cursor-pointer">&#x2192;</button>
-          </div>
+                  <p className="text-sm font-light font-body leading-relaxed mb-6 text-primary">
+                    "{test.quote}"
+                  </p>
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.1em] text-muted font-bold block">
+                  — {test.author}
+                </span>
+              </div>
+            )}
+          />
         </Container>
       </Section>
 
@@ -260,26 +240,41 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-10">
-            {/* Sample Blog 1 */}
-            <Link to="/blogs?id=1" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-              <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Deep Dive</span>
-              <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">Which Crystal for Anxiety — The Honest Guide</h4>
-              <p className="text-xs text-muted font-light leading-relaxed">We break down the minerals that actually ground your nervous system, free of pseudo-science.</p>
-            </Link>
-            {/* Sample Blog 2 */}
-            <Link to="/blogs?id=3" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-              <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Practices</span>
-              <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">The 7-Day Root Reset: Grounding Guide</h4>
-              <p className="text-xs text-muted font-light leading-relaxed">A simple, actionable guide to building stability from the ground up using Red Jasper.</p>
-            </Link>
-            {/* Sample Blog 3 */}
-            <Link to="/blogs?id=4" className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-              <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">Lifestyle</span>
-              <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">Creating Your Sacred Space</h4>
-              <p className="text-xs text-muted font-light leading-relaxed">How to arrange your crystals for maximum energetic flow and aesthetic balance in any room.</p>
-            </Link>
-          </div>
+          <HomeCarousel
+            items={[
+              {
+                id: 1,
+                tag: 'Deep Dive',
+                title: 'Which Crystal for Anxiety — The Honest Guide',
+                desc: 'We break down the minerals that actually ground your nervous system, free of pseudo-science.',
+                link: '/blogs?id=1'
+              },
+              {
+                id: 3,
+                tag: 'Practices',
+                title: 'The 7-Day Root Reset: Grounding Guide',
+                desc: 'A simple, actionable guide to building stability from the ground up using Red Jasper.',
+                link: '/blogs?id=3'
+              },
+              {
+                id: 4,
+                tag: 'Lifestyle',
+                title: 'Creating Your Sacred Space',
+                desc: 'How to arrange your crystals for maximum energetic flow and aesthetic balance in any room.',
+                link: '/blogs?id=4'
+              }
+            ]}
+            trackClassName="slides-3"
+            renderItem={(blog) => (
+              <Link to={blog.link} className="group cursor-pointer block border border-border bg-surface p-6 rounded-lg shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300 h-full flex flex-col justify-between">
+                <div>
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-accent font-bold">{blog.tag}</span>
+                  <h4 className="text-xl font-display text-primary mt-2 mb-3 group-hover:text-accent transition-colors">{blog.title}</h4>
+                </div>
+                <p className="text-xs text-muted font-light leading-relaxed">{blog.desc}</p>
+              </Link>
+            )}
+          />
 
           <div className="flex justify-center">
             <Button to="/blogs" variant="gold" className="text-[10px] px-6 py-3">Discover more</Button>

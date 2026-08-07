@@ -1,37 +1,7 @@
 import { supabase } from './supabase.js';
+import { resolveProductImages, resolveProductImage } from '../utils/productImageResolver.js';
 
 let cachedProducts = null;
-
-// Dynamically discover all images in the public folder at build time
-const rawImages = import.meta.glob('../../public/assets/images/**/*.{png,jpg,jpeg,webp,JPG}', { eager: true, import: 'default' });
-
-// Build a structured image manifest: { "ProductName": ["/assets/images/ProductName/1.jpg", ...] }
-const imageManifest = {};
-Object.keys(rawImages).forEach(path => {
-  // path is like '../../public/assets/images/7 Chakra Bracelet/7 Chakra Bracelet 1.webp'
-  // Remove '../../public' to get the web-accessible URL
-  const webPath = path.replace('../../public', '');
-  
-  // Extract folder name as the product name identifier
-  const parts = path.split('/');
-  // Assumes structure: ../../public/assets/images/ProductName/image.jpg
-  if (parts.length >= 6) {
-    const folderName = parts[parts.length - 2];
-    
-    // Ignore top-level images or known non-product folders if they aren't product names
-    if (folderName !== 'images') {
-      if (!imageManifest[folderName]) {
-        imageManifest[folderName] = [];
-      }
-      imageManifest[folderName].push(webPath);
-    }
-  }
-});
-
-// Sort images so primary images (like '... 1.png') come first
-Object.values(imageManifest).forEach(images => {
-  images.sort((a, b) => a.localeCompare(b));
-});
 
 function getChakraColor(chakra) {
   const colors = {
@@ -56,47 +26,9 @@ function cleanDbRows(rows) {
   }));
 }
 
-function resolveImages(item) {
-  const productName = item.name;
-  let images = [];
-  
-  // 1. Try to find images in the manifest matching the product name exactly
-  if (productName && imageManifest[productName] && imageManifest[productName].length > 0) {
-    images = [...imageManifest[productName]];
-  }
-  
-  // 2. If no exact match, try case-insensitive match
-  if (images.length === 0 && productName) {
-    const lowerName = productName.toLowerCase();
-    const match = Object.keys(imageManifest).find(k => k.toLowerCase() === lowerName);
-    if (match) {
-      images = [...imageManifest[match]];
-    }
-  }
-
-  // 3. Fallback to DB images
-  if (images.length === 0) {
-    if (item.image_url) images.push(item.image_url);
-    if (item.gallery_images) {
-      if (Array.isArray(item.gallery_images)) {
-        images.push(...item.gallery_images);
-      } else {
-        try {
-          const parsed = JSON.parse(item.gallery_images);
-          if (Array.isArray(parsed)) images.push(...parsed);
-        } catch (e) {
-          images.push(item.gallery_images);
-        }
-      }
-    }
-  }
-  
-  return [...new Set(images)];
-}
-
 function mergeRow(item) {
-  const images = resolveImages(item);
-  const image = images.length > 0 ? images[0] : '/assets/images/placeholder.png';
+  const images = resolveProductImages(item);
+  const image = resolveProductImage(item);
 
   return {
     id: item.id,

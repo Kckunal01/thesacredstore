@@ -1,4 +1,5 @@
 import React from 'react';
+import HomeCarousel from '../common/HomeCarousel';
 
 /**
  * RakhiCollectionSection
@@ -20,6 +21,7 @@ import React from 'react';
  */
 
 const CARD_COUNT = 5;
+const dummyCards = [...Array(CARD_COUNT)].map((_, i) => ({ id: i }));
 
 const RakhiCollectionSection = () => (
   <section className="rakhi-section">
@@ -33,8 +35,10 @@ const RakhiCollectionSection = () => (
 
     {/* Carousel — overlaps the banner's bottom edge */}
     <div className="rakhi-carousel">
-      {[...Array(CARD_COUNT)].map((_, i) => (
-        <div key={i} className="rakhi-card">
+      <HomeCarousel
+        items={dummyCards}
+        trackClassName="slides-rakhi"
+        renderItem={() => (
           <div className="rakhi-card-inner">
             <img
               src="/assets/images/Coming Soon.png"
@@ -43,8 +47,8 @@ const RakhiCollectionSection = () => (
               draggable={false}
             />
           </div>
-        </div>
-      ))}
+        )}
+      />
     </div>
   </section>
 );

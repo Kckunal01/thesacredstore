@@ -9,6 +9,7 @@ import { ProductsContext } from '../context/ProductsContext';
 import { getCartRecommendations } from '../lib/recommendations';
 import ProductCard from '../components/ui/ProductCard';
 import { getProductStockMap } from '../lib/supabaseProducts';
+import { resolveProductImage } from '../utils/productImageResolver';
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -290,13 +291,14 @@ const Checkout = () => {
                 <div className="w-full lg:w-2/3">
                   {step === 1 ? (
                     <div className="space-y-6">
-                      {cart.map((item) => (
-                        <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-surface border border-border gap-6">
+                      {cart.map((item) => {
+                        const cartKey = item.cartItemId || item.id;
+                        return (
+                        <div key={cartKey} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-surface border border-border gap-6">
                           <div className="flex items-center space-x-6">
                             <div style={getPlaceholderStyle(item.name)} className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display">
-                              {item.images && item.images.length > 0 ? (
                                 <img
-                                  src={item.images[0]}
+                                  src={resolveProductImage(item)}
                                   alt={item.name}
                                   loading="lazy"
                                   decoding="async"
@@ -304,29 +306,33 @@ const Checkout = () => {
                                   height="96"
                                   className="w-full h-full object-contain"
                                 />
-                              ) : (
-                                item.name.charAt(0)
-                              )}
                             </div>
                             <div>
                               <span className="text-[10px] uppercase tracking-widest text-[#000000] mb-1 block font-bold font-body">{item.category}</span>
                               <h4 className="font-display text-xl text-primary font-medium">{item.name}</h4>
-                              <span className="text-sm text-muted font-light font-body">₹{item.price.toLocaleString('en-IN')}</span>
+                              {item.certification && (
+                                <p className="text-[10px] uppercase tracking-widest text-accent font-bold mt-1">
+                                  + Authenticity Certification (₹100)
+                                </p>
+                              )}
+                              <span className="text-sm text-muted font-light font-body mt-1 block">
+                                ₹{(item.price + (item.certification ? 100 : 0)).toLocaleString('en-IN')}
+                              </span>
                             </div>
                           </div>
 
                           <div className="flex items-center justify-between w-full sm:w-auto space-x-6 sm:space-x-12 border-t sm:border-t-0 pt-4 sm:pt-0 border-border">
                             <div className="flex items-center border border-border bg-background">
-                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(cartKey, item.quantity - 1)}>-</button>
                               <span className="px-4 py-2 text-xs font-semibold text-primary">{item.quantity}</span>
-                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(cartKey, item.quantity + 1)}>+</button>
                             </div>
                             <div className="text-right">
-                              <button onClick={() => removeFromCart(item.id)} className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-bold font-body">Remove</button>
+                              <button onClick={() => removeFromCart(cartKey)} className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-bold font-body">Remove</button>
                             </div>
                           </div>
                         </div>
-                      ))}
+                      )})}
 
                       {recommendations && recommendations.length > 0 && (
                         <div className="pt-12 border-t border-border mt-12">
@@ -431,14 +437,18 @@ const Checkout = () => {
                     <h3 className="font-display text-3xl text-primary font-semibold border-b border-border/80 pb-4 tracking-wide">Order Summary</h3>
                     
                     <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
-                      {cart.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center text-sm font-body text-primary">
-                          <span className="truncate max-w-[180px] font-medium">
-                            {item.name} <strong className="text-accent ml-1">x{item.quantity}</strong>
+                      {cart.map((item) => {
+                        const cartKey = item.cartItemId || item.id;
+                        const itemPrice = item.price + (item.certification ? 100 : 0);
+                        return (
+                        <div key={cartKey} className="flex justify-between items-center text-sm font-body text-primary">
+                          <span className="truncate max-w-[180px] font-medium flex flex-col">
+                            <span>{item.name} <strong className="text-accent ml-1">x{item.quantity}</strong></span>
+                            {item.certification && <span className="text-[10px] text-muted">w/ Certification</span>}
                           </span>
-                          <span className="font-semibold">₹{(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                          <span className="font-semibold">₹{(itemPrice * item.quantity).toLocaleString('en-IN')}</span>
                         </div>
-                      ))}
+                      )})}
                     </div>
 
                     <div className="space-y-4 pt-6 border-t border-border/80">

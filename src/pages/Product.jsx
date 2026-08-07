@@ -10,6 +10,7 @@ import ProductRecommendations from '../components/ProductRecommendations';
 // Import necessary Supabase helpers
 // Supabase helpers are no longer needed for stock; keep only waitlist helpers
 import { checkStockRequestExists, createStockRequest } from '../lib/supabase';
+import { resolveProductImages, resolveProductImage } from '../utils/productImageResolver';
 
 // Helper to generate slug from product name
 function slugify(text) {
@@ -35,6 +36,7 @@ const Product = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
+  const [addCertification, setAddCertification] = useState(false);
   const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [estimatedRange, setEstimatedRange] = useState('');
   const [loading, setLoading] = useState(false);
@@ -128,13 +130,18 @@ const Product = () => {
     );
   }
 
-  const cartItem = cart.find(item => item.id === product.id);
+  const cartItem = cart.find(item => item.id === product.id && item.certification === addCertification);
   const cartQty = cartItem ? cartItem.quantity : 0;
   const isCartFull = cartQty >= 9;
 
   const handleAddToCart = () => {
     if (isCartFull) return;
-    addToCart(product, quantity);
+    const itemToAdd = {
+      ...product,
+      certification: addCertification,
+      certificationPrice: 100
+    };
+    addToCart(itemToAdd, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -181,7 +188,7 @@ const Product = () => {
     };
   };
 
-  const images = product.images && product.images.length > 0 ? product.images : [];
+  const images = resolveProductImages(product);
   const mainImage = images[selectedImageIndex] || null;
 
   return (
@@ -216,11 +223,19 @@ const Product = () => {
                   </>
                 )}
 
-                {product.stamp && (
-                  <div className="absolute top-6 left-6 bg-primary text-background px-4 py-1.5 text-[10px] uppercase tracking-[0.2em] font-bold z-10">
+                {product.stamp === 'Fresh' ? (
+                  <div className="absolute top-4 left-4 bg-accent text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+                    FRESH
+                  </div>
+                ) : product.stamp === 'Sale' ? (
+                  <div className="absolute top-4 left-4 bg-accent text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+                    SALE
+                  </div>
+                ) : product.stamp ? (
+                  <div className="absolute top-4 left-4 bg-primary text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
                     {product.stamp}
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* Thumbnail Row — real images, clickable */}
@@ -268,39 +283,62 @@ const Product = () => {
             </p>
 
             {stock !== null && stock > 0 && active ? (
-              <div className="flex items-center gap-6 mb-8">
-                {/* Quantity Selector */}
-                <div className="flex items-center border border-border bg-surface px-4 py-3">
-                  <button
-                    onClick={handleDecrement}
-                    className="text-primary hover:text-accent transition-colors"
-                    disabled={isCartFull}
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="w-12 text-center text-sm font-semibold">{isCartFull ? 'Max' : quantity}</span>
-                  <button
-                    onClick={handleIncrement}
-                    className="text-primary hover:text-accent transition-colors"
-                    disabled={isCartFull}
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
+              <>
+                <div className="mb-6 bg-surface p-4 border border-border">
+                  <label className="flex items-start cursor-pointer group">
+                    <div className="flex-shrink-0 mt-1">
+                      <input 
+                        type="checkbox" 
+                        checked={addCertification}
+                        onChange={(e) => setAddCertification(e.target.checked)}
+                        className="w-4 h-4 text-accent bg-background border-border rounded focus:ring-accent focus:ring-2 cursor-pointer"
+                      />
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm font-bold text-primary mb-1">
+                        Add Authenticity Certification (+₹100)
+                      </p>
+                      <p className="text-xs text-muted leading-relaxed font-light">
+                        Includes a premium printed authenticity certificate for your crystal.
+                      </p>
+                    </div>
+                  </label>
                 </div>
-                {stock !== null && stock > 0 && stock <= 3 && (
-                  <p className="text-xs font-bold text-red-500 uppercase tracking-widest ml-2 font-body">
-                    Only {stock} left!
-                  </p>
-                )}
-                <Button
-                  onClick={handleAddToCart}
-                  variant="primary"
-                  disabled={isCartFull}
-                  className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#FFBD59]' : ''} ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {added ? 'Added to Cart' : isCartFull ? 'Limit Reached' : 'Add to Collection'}
-                </Button>
-              </div>
+
+                <div className="flex items-center gap-6 mb-8">
+                  {/* Quantity Selector */}
+                  <div className="flex items-center border border-border bg-surface px-4 py-3">
+                    <button
+                      onClick={handleDecrement}
+                      className="text-primary hover:text-accent transition-colors"
+                      disabled={isCartFull}
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="w-12 text-center text-sm font-semibold">{isCartFull ? 'Max' : quantity}</span>
+                    <button
+                      onClick={handleIncrement}
+                      className="text-primary hover:text-accent transition-colors"
+                      disabled={isCartFull}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {stock !== null && stock > 0 && stock <= 3 && (
+                    <p className="text-xs font-bold text-red-500 uppercase tracking-widest ml-2 font-body">
+                      Only {stock} left!
+                    </p>
+                  )}
+                  <Button
+                    onClick={handleAddToCart}
+                    variant="primary"
+                    disabled={isCartFull}
+                    className={`flex-grow py-4 uppercase tracking-[0.2em] font-semibold text-xs transition-all duration-300 ${added ? 'bg-[#FFBD59]' : ''} ${isCartFull ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {added ? 'Added to Cart' : isCartFull ? 'Limit Reached' : 'Add to Collection'}
+                  </Button>
+                </div>
+              </>
             ) : (
               <div className="flex flex-col gap-4 mb-8">
                 <div className="text-sm font-bold tracking-widest text-red-500 uppercase py-2">

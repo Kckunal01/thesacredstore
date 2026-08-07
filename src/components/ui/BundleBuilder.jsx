@@ -2,6 +2,8 @@ import React, { useState, useMemo, useContext } from 'react';
 import { ProductsContext } from '../../context/ProductsContext';
 import { CartContext } from '../../context/CartContext';
 import Button from './Button';
+import { resolveProductImage } from '../../utils/productImageResolver';
+import { getTaxonomyFlatList } from '../../data/taxonomy';
 
 const BundleBuilder = () => {
   const { products } = useContext(ProductsContext);
@@ -12,7 +14,7 @@ const BundleBuilder = () => {
   const availableProducts = useMemo(() => {
     return products.filter(p => {
       if (!p || !p.id || !p.name || p.price == null) return false;
-      const hasRequired = (p.images && p.images.length > 0) || p.image || p.image_url;
+      const hasRequired = true; // Handled by centralized resolver
       const isBundle = p.category === 'Bundles' || p.isBundle === true || p.isCustomBundle === true || p.slug?.includes('bundle');
       return (
         hasRequired &&
@@ -31,9 +33,8 @@ const BundleBuilder = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = useMemo(() => {
-    const cats = new Set(availableProducts.map(p => p.category).filter(Boolean));
-    return ['All', ...Array.from(cats).sort()];
-  }, [availableProducts]);  const filteredProducts = useMemo(() => {
+    return ['All', ...getTaxonomyFlatList()];
+  }, []);  const filteredProducts = useMemo(() => {
     return availableProducts.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = searchQuery || selectedCategory === 'All' || p.category === selectedCategory;
@@ -112,7 +113,7 @@ const BundleBuilder = () => {
       name: `Custom Crystal Set (${selectedProducts.map(p => `${p.name} x${p.quantity}`).join(', ')})`,
       price: discountInfo.finalTotal,
       originalPrice: subtotal,
-      images: [selectedProducts[0]?.images?.[0] || selectedProducts[0]?.image_url || '/assets/images/placeholder.png'],
+      images: [resolveProductImage(selectedProducts[0])],
       stock: 1,
       category: 'Bundles',
       description: 'Your tailored curation of sacred healing crystals.',
@@ -167,7 +168,7 @@ const BundleBuilder = () => {
                 <div>
                   <div className="aspect-square bg-background overflow-hidden mb-3 rounded-md">
                     <img 
-                      src={p.images?.[0] || p.image_url || '/assets/images/placeholder.png'} 
+                      src={resolveProductImage(p)}
                       alt={p.name} 
                       loading="lazy"
                       decoding="async"
