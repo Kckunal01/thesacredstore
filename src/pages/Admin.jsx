@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
+import { fetchProducts } from '../lib/productsService';
 import Button from '../components/ui/Button';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
@@ -247,12 +248,8 @@ const Admin = () => {
   const loadAllProducts = async () => {
     setAdminProductsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('name', { ascending: true });
-      if (error) throw error;
-      setAdminProducts((data || []).map(item => ({ ...item, db_id: item.id })));
+      const data = await fetchProducts(true);
+      setAdminProducts(data || []);
     } catch (err) {
       console.error('Failed to load products:', err);
     } finally {
@@ -692,6 +689,11 @@ const Admin = () => {
     }
   };
 
+  const uniqueCategories = useMemo(() => {
+    const cats = new Set(adminProducts.map(p => p.category).filter(Boolean));
+    return ['All', ...Array.from(cats).sort()];
+  }, [adminProducts]);
+
   // Filtered actual products (category !== 'Bundles')
   const filteredProducts = useMemo(() => {
     return adminProducts.filter(p => {
@@ -927,17 +929,11 @@ const Admin = () => {
                   onChange={(e) => setCategoryFilter(e.target.value)}
                   className="bg-white border border-border px-4 py-2.5 text-xs focus:outline-none focus:border-accent text-primary"
                 >
-                  <option value="All">All Categories</option>
-                  <option value="Bracelets">Bracelets</option>
-                  <option value="Raw Crystals">Raw Crystals</option>
-                  <option value="Towers">Towers</option>
-                  <option value="Pyramids">Pyramids</option>
-                  <option value="Crystal Trees">Crystal Trees</option>
-                  <option value="Utility & Decor">Utility & Decor</option>
-                  <option value="Pendants">Pendants</option>
-                  <option value="Crystals">Crystals</option>
-                  <option value="Gemstones">Gemstones</option>
-                  <option value="Bundles">Bundles</option>
+                  {uniqueCategories.map(cat => (
+                    <option key={cat} value={cat}>
+                      {cat === 'All' ? 'All Categories' : cat}
+                    </option>
+                  ))}
                 </select>
               </div>
               <button
@@ -1258,14 +1254,10 @@ const Admin = () => {
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   >
                     <option value="Bracelets">Bracelets</option>
-                    <option value="Raw Crystals">Raw Crystals</option>
-                    <option value="Towers">Towers</option>
-                    <option value="Pyramids">Pyramids</option>
-                    <option value="Crystal Trees">Crystal Trees</option>
+                    <option value="Crystals">Crystals</option>
+                    <option value="Specialised Crystals">Specialised Crystals</option>
                     <option value="Utility & Decor">Utility & Decor</option>
                     <option value="Pendants">Pendants</option>
-                    <option value="Crystals">Crystals</option>
-                    <option value="Gemstones">Gemstones</option>
                     <option value="Bundles">Bundles</option>
                   </select>
                 </div>
@@ -1290,7 +1282,7 @@ const Admin = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Chakra Alignment</label>
+                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Chakra Alignment / Crystal Composition</label>
                   <input
                     type="text"
                     value={prodForm.chakra}

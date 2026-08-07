@@ -12,7 +12,10 @@ const ShopPendants = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const displayedProducts = searchQuery.trim() !== ''
-    ? products.filter(p => p.category === 'Pendants' && (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase())))
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : products.filter(p => p.category === 'Pendants');
 
   return (

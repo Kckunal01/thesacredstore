@@ -337,14 +337,25 @@ const Product = () => {
                 <p className="italic text-primary border-l-2 border-accent pl-4">{product.philosophy}</p>
                 <p>{product.details}</p>
                 <div className="p-4 bg-surface mt-4 text-xs"><strong>Ritual recommendation:</strong> {product.usage}</div>
-                {product.chakraColor && (
-                  <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
-                    <div className="w-4 h-4 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: product.chakraColor }}></div>
-                    <div>
-                      <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">{product.chakra} Alignment</p>
-                      <p className="text-xs text-muted/80 leading-relaxed">{product.effect}</p>
-                    </div>
+                {product.category === 'Specialised Crystals' ? (
+                  <div className="mt-6 flex flex-col bg-surface p-4 border border-border">
+                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-2">Crystal Composition</p>
+                    <ul className="list-disc list-inside text-xs text-muted/80 space-y-1">
+                      {["Green Aventurine", "Citrine", "Tiger's Eye", "Pyrite"].map((comp, idx) => (
+                        <li key={idx} className="font-body">{comp}</li>
+                      ))}
+                    </ul>
                   </div>
+                ) : (
+                  product.chakraColor && (
+                    <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
+                      <div className="w-4 h-4 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: product.chakraColor }}></div>
+                      <div>
+                        <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">{product.chakra} Alignment</p>
+                        <p className="text-xs text-muted/80 leading-relaxed">{product.effect}</p>
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
             </div>

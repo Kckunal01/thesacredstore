@@ -6,11 +6,21 @@ import Button from './Button';
 const BundleBuilder = () => {
   const { products } = useContext(ProductsContext);
   const { cart, addToCart } = useContext(CartContext);
-  
-  // Rules: Hide out-of-stock products, inactive products, invisible products.
-  // Active check, check if stock > 0
+
+  // Rules: Hide out-of-stock, inactive, invisible, and malformed products.
+  // A product is considered valid if it has id, name, price, and at least one image.
   const availableProducts = useMemo(() => {
-    return products.filter(p => p.active !== false && (p.stock ?? 0) > 0);
+    return products.filter(p => {
+      if (!p || !p.id || !p.name || p.price == null) return false;
+      const hasRequired = (p.images && p.images.length > 0) || p.image || p.image_url;
+      const isBundle = p.category === 'Bundles' || p.isBundle === true || p.isCustomBundle === true || p.slug?.includes('bundle');
+      return (
+        hasRequired &&
+        p.active !== false &&
+        (p.stock ?? 0) > 0 &&
+        !isBundle
+      );
+    });
   }, [products]);
 
   // Selected products state: Map of { productId: quantityChosen }
@@ -20,12 +30,12 @@ const BundleBuilder = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  const categories = ['All', 'Crystals', 'Gemstones', 'Bracelets', 'Pendants', 'Utility & Decor'];
-
-  const filteredProducts = useMemo(() => {
+  const categories = useMemo(() => {
+    const cats = new Set(availableProducts.map(p => p.category).filter(Boolean));
+    return ['All', ...Array.from(cats).sort()];
+  }, [availableProducts]);  const filteredProducts = useMemo(() => {
     return availableProducts.filter(p => {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      // Search bar matches across all categories: if searchQuery exists, bypass selectedCategory
       const matchesCategory = searchQuery || selectedCategory === 'All' || p.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
@@ -45,7 +55,7 @@ const BundleBuilder = () => {
     if (currentSelected < maxSelect) {
       setSelectedQuantities(prev => ({
         ...prev,
-        [product.id]: currentSelected + 1
+        [product.id]: currentSelected + 1,
       }));
     }
   };
@@ -71,7 +81,7 @@ const BundleBuilder = () => {
       .filter(p => (selectedQuantities[p.id] || 0) > 0)
       .map(p => ({
         ...p,
-        quantity: selectedQuantities[p.id]
+        quantity: selectedQuantities[p.id],
       }));
   }, [availableProducts, selectedQuantities]);
 
@@ -97,18 +107,17 @@ const BundleBuilder = () => {
   const handleAddBundle = () => {
     if (selectedProducts.length === 0) return;
 
-    // Create a unique composite bundle product item
     const customBundleProduct = {
       id: `custom_bundle_${Date.now()}`,
       name: `Custom Crystal Set (${selectedProducts.map(p => `${p.name} x${p.quantity}`).join(', ')})`,
       price: discountInfo.finalTotal,
       originalPrice: subtotal,
-      images: [selectedProducts[0]?.images?.[0] || selectedProducts[0]?.image_url],
+      images: [selectedProducts[0]?.images?.[0] || selectedProducts[0]?.image_url || '/assets/images/placeholder.png'],
       stock: 1,
       category: 'Bundles',
       description: 'Your tailored curation of sacred healing crystals.',
       isCustomBundle: true,
-      quantity: 1
+      quantity: 1,
     };
 
     addToCart(customBundleProduct, 1);
@@ -148,7 +157,6 @@ const BundleBuilder = () => {
           {filteredProducts.map(p => {
             const qtySelected = selectedQuantities[p.id] || 0;
             const maxSelect = getMaxAllowedSelect(p);
-
             return (
               <div 
                 key={p.id}
@@ -159,7 +167,7 @@ const BundleBuilder = () => {
                 <div>
                   <div className="aspect-square bg-background overflow-hidden mb-3 rounded-md">
                     <img 
-                      src={p.images?.[0] || p.image_url} 
+                      src={p.images?.[0] || p.image_url || '/assets/images/placeholder.png'} 
                       alt={p.name} 
                       loading="lazy"
                       decoding="async"

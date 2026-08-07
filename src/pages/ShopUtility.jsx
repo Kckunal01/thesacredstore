@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import ProductCard from '../components/ui/ProductCard';
@@ -20,17 +19,17 @@ const ShopUtility = () => {
     if (filter === 'Pendants') return p.category === 'Pendants' || name.includes('pendant');
     if (filter === 'Crystal Trees') return name.includes('tree');
     if (filter === 'Crystal Pyramids') return name.includes('pyramid');
-    if (filter === 'Charging Items') return name.includes('charging') || name.includes('bowl');
+    if (filter === 'Charging Items') return name.includes('charging') || name.includes('bowl') || name.includes('plate');
+    if (filter === 'Lamps') return name.includes('lamp');
     return true;
   };
 
-  const displayedProducts = utilityItems.filter(p => {
-    const matchesSearch = searchQuery.trim() === '' ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterMatches(p, activeFilter);
-    return matchesSearch && matchesCategory;
-  });
+  const displayedProducts = searchQuery.trim() !== ''
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : utilityItems.filter(p => filterMatches(p, activeFilter));
 
   const filterOptions = [
     { label: 'All', value: 'All' },
@@ -38,6 +37,7 @@ const ShopUtility = () => {
     { label: 'Crystal Trees', value: 'Crystal Trees' },
     { label: 'Crystal Pyramids', value: 'Crystal Pyramids' },
     { label: 'Charging Items', value: 'Charging Items' },
+    { label: 'Lamps', value: 'Lamps' },
   ];
 
   return (
@@ -61,21 +61,23 @@ const ShopUtility = () => {
           </div>
 
           {/* Sub-category Filter Tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-2 border border-border/80 p-1.5 inline-flex mx-auto bg-surface/50 rounded-sm">
-            {filterOptions.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setActiveFilter(opt.value)}
-                className={`px-4 py-2 text-[10px] uppercase tracking-[0.15em] font-bold transition-all duration-200 ${
-                  activeFilter === opt.value
-                    ? 'bg-primary text-background shadow-sm'
-                    : 'text-muted hover:text-primary'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {searchQuery.trim() === '' && (
+            <div className="flex flex-wrap items-center justify-center gap-2 border border-border/80 p-1.5 inline-flex mx-auto bg-surface/50 rounded-sm">
+              {filterOptions.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setActiveFilter(opt.value)}
+                  className={`px-4 py-2 text-[10px] uppercase tracking-[0.15em] font-bold transition-all duration-200 ${
+                    activeFilter === opt.value
+                      ? 'bg-primary text-background shadow-sm'
+                      : 'text-muted hover:text-primary'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
@@ -89,12 +91,9 @@ const ShopUtility = () => {
             </div>
           )}
         </div>
-
-
       </Container>
     </Section>
   );
 };
 
 export default ShopUtility;
-

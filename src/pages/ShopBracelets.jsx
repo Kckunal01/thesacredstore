@@ -12,7 +12,10 @@ const ShopBracelets = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const displayedProducts = searchQuery.trim() !== ''
-    ? products.filter(p => p.category === 'Bracelets' && (p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.category.toLowerCase().includes(searchQuery.toLowerCase())))
+    ? products.filter(p =>
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : products.filter(p => p.category === 'Bracelets');
 
   return (

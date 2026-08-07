@@ -71,7 +71,7 @@ const ReelCard = ({ reel, isPlaying, onPlay, onPause }) => {
 
         <video
           ref={videoRef}
-          src={reel.video}
+          src={`${reel.video}#t=0.1`}
           preload="metadata"
           className="w-full h-full object-cover"
           onPlay={() => onPlay(reel.id)}

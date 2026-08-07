@@ -11,6 +11,7 @@ import { getDynamicBundles } from '../data/bundles';
 import BundleCard from '../components/ui/BundleCard';
 import HeroCarousel from '../components/ui/HeroCarousel';
 import ReelsSection from '../components/ui/ReelsSection';
+import RakhiCollectionSection from '../components/home/RakhiCollectionSection';
 
 import { getPageSEO } from '../seo/seoHelpers';
 import { SITE_URL } from '../config';
@@ -59,9 +60,9 @@ const Home = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const bestSellers = products
-    .filter(p => p.featured === true && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle)
-    .slice(0, 4);
+  const bestSellersBase = products.filter(p => p && p.id && p.name && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle && p.active !== false && p.visible !== false);
+  const featured = bestSellersBase.filter(p => p.featured === true);
+  const bestSellers = featured.length >= 4 ? featured.slice(0, 4) : [...featured, ...bestSellersBase.filter(p => !p.featured).slice(0, 4 - featured.length)];
   const dynamicBundles = getDynamicBundles(products);
   const homeBundles = React.useMemo(() => {
     return [...dynamicBundles]
@@ -112,6 +113,9 @@ const Home = () => {
           <img src="/assets/images/HeroImage.png" alt="The Sacred Store Healing Crystals" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
         </div>
       </section>
+
+      {/* Rakhi Collection Section */}
+      <RakhiCollectionSection />
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
       <div className="py-4 overflow-hidden flex whitespace-nowrap" style={{ backgroundColor: '#ffbd59' }}>

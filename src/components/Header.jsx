@@ -5,10 +5,11 @@ import { CartContext } from '../context/CartContext';
 import { motion } from 'framer-motion';
 
 const Header = () => {
-  const { getCartCount } = useContext(CartContext);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { getCartCount } = useContext(CartContext);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -58,7 +59,7 @@ const Header = () => {
           {/* Center: Navigation - Sequence: Home, Shop, Book Now, Blogs */}
           <nav className="hidden md:flex items-center space-x-10 font-medium text-[11px] tracking-[0.15em] uppercase">
             <NavLink to="/">Home</NavLink>
-            <div className="relative group py-2 cursor-pointer flex flex-col items-center">
+            <div className="relative group py-2 flex flex-col items-center" onMouseEnter={() => setIsShopDropdownOpen(true)} onMouseLeave={() => setIsShopDropdownOpen(false)}>
               <span className={`text-primary flex items-center transition-colors duration-300 ${isShopActive ? 'text-accent' : 'group-hover:text-accent'}`}>
                 Shop 
               </span>
@@ -74,14 +75,16 @@ const Header = () => {
                 <span className="absolute bottom-0 left-0 w-full h-[1px] bg-accent transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out" />
               )}
               {/* Dropdown */}
-              <div className="absolute top-[100%] left-0 mt-2 w-52 bg-surface border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 shadow-lg translate-y-2 group-hover:translate-y-0">
+              <div className={`absolute top-[100%] left-0 mt-2 w-64 bg-surface border border-border shadow-lg transition-all duration-300 ${isShopDropdownOpen ? 'opacity-100 visible translate-y-0 z-20' : 'opacity-0 invisible translate-y-2'}`}>
                 <nav className="flex flex-col space-y-4 text-sm font-medium text-[11px] tracking-[0.15em] uppercase text-muted p-4">
                   <Link to="/shop-crystals" className="text-primary hover:text-primary transition-colors cursor-pointer">Crystals</Link>
-                  <Link to="/shop-gems" className="text-primary hover:text-primary transition-colors cursor-pointer">Gemstones</Link>
                   <Link to="/shop-bracelets" className="text-primary hover:text-primary transition-colors cursor-pointer">Bracelets</Link>
                   <Link to="/shop-utility" className="text-primary hover:text-primary transition-colors cursor-pointer whitespace-nowrap">Utility &amp; Decor</Link>
                   <Link to="/bundles" className="font-bold text-accent hover:text-accent transition-colors cursor-pointer flex items-center gap-1 border-t border-border/50 pt-2 mt-2 whitespace-nowrap">
                     ✨ Curated Bundles
+                  </Link>
+                  <Link to="/specialised-crystals" className="font-bold text-accent hover:text-accent transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap">
+                    💎 Specialised Crystals
                   </Link>
                 </nav>
               </div>
@@ -127,8 +130,8 @@ const Header = () => {
       <div className={`md:hidden absolute top-full left-0 w-full bg-surface border-b border-border py-6 px-6 flex flex-col space-y-6 text-[11px] tracking-[0.15em] uppercase font-medium transition-all duration-300 transform origin-top ${isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0 pointer-events-none'}`}>
         <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Home</Link>
         <Link to="/bundles" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-accent hover:text-accent flex items-center gap-1">✨ Curated Bundles</Link>
+        <Link to="/specialised-crystals" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-accent hover:text-accent flex items-center gap-1">💎 Specialised Crystals</Link>
         <Link to="/shop-crystals" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Crystals</Link>
-        <Link to="/shop-gems" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Gemstones</Link>
         <Link to="/shop-bracelets" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Bracelets</Link>
         <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility &amp; Decor</Link>
         <Link to="/book-a-call" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Book Now</Link>

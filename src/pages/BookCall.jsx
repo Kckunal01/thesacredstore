@@ -32,7 +32,7 @@ const BookCall = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const sessionPrice = 799;
+  const sessionPrice = 99;
   const navigate = useNavigate();
 
   const tomorrow = new Date();
@@ -43,8 +43,8 @@ const BookCall = () => {
   const [selectedTime, setSelectedTime] = useState('');
 
   const allTimeSlots = [
-    '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00'
+    '20:00', '20:10', '20:20', '20:30', '20:40', '20:50',
+    '21:00', '21:10', '21:20', '21:30', '21:40', '21:50'
   ];
 
   const [availableSlots, setAvailableSlots] = useState(allTimeSlots);
@@ -170,7 +170,7 @@ const BookCall = () => {
                 Align Your Space & Energy.
               </h1>
               <p className="text-muted font-light leading-relaxed mb-12">
-                A 30-minute private session to analyze your current energetic needs and curate a tailored selection of minerals and practices. No pseudo-spirituality, just clear guidance.
+                A 10-minute private session to analyze your current energetic needs and curate a tailored selection of minerals and practices. No pseudo-spirituality, just clear guidance.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t border-border">
