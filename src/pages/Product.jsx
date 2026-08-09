@@ -284,26 +284,28 @@ const Product = () => {
 
             {stock !== null && stock > 0 && active ? (
               <>
-                <div className="mb-6 bg-surface p-4 border border-border">
-                  <label className="flex items-start cursor-pointer group">
-                    <div className="flex-shrink-0 mt-1">
-                      <input 
-                        type="checkbox" 
-                        checked={addCertification}
-                        onChange={(e) => setAddCertification(e.target.checked)}
-                        className="w-4 h-4 text-accent bg-background border-border rounded focus:ring-accent focus:ring-2 cursor-pointer"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <p className="text-sm font-bold text-primary mb-1">
-                        Add Authenticity Certification (+₹100)
-                      </p>
-                      <p className="text-xs text-muted leading-relaxed font-light">
-                        Includes a premium printed authenticity certificate for your crystal.
-                      </p>
-                    </div>
-                  </label>
-                </div>
+                {product.collection !== "Rakhi'26" && (
+                  <div className="mb-6 bg-surface p-4 border border-border">
+                    <label className="flex items-start cursor-pointer group">
+                      <div className="flex-shrink-0 mt-1">
+                        <input 
+                          type="checkbox" 
+                          checked={addCertification}
+                          onChange={(e) => setAddCertification(e.target.checked)}
+                          className="w-4 h-4 text-accent bg-background border-border rounded focus:ring-accent focus:ring-2 cursor-pointer"
+                        />
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-bold text-primary mb-1">
+                          Add Authenticity Certification (+₹100)
+                        </p>
+                        <p className="text-xs text-muted leading-relaxed font-light">
+                          Includes a premium printed authenticity certificate for your crystal.
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                )}
 
                 <div className="flex items-center gap-6 mb-8">
                   {/* Quantity Selector */}
@@ -371,31 +373,60 @@ const Product = () => {
             </div>
 
             <div className="text-muted font-light leading-relaxed text-sm font-body min-h-[120px]">
-              <div className="space-y-4">
-                <p className="italic text-primary border-l-2 border-accent pl-4">{product.philosophy}</p>
-                <p>{product.details}</p>
-                <div className="p-4 bg-surface mt-4 text-xs"><strong>Ritual recommendation:</strong> {product.usage}</div>
-                {product.category === 'Specialised Crystals' ? (
-                  <div className="mt-6 flex flex-col bg-surface p-4 border border-border">
-                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-2">Crystal Composition</p>
-                    <ul className="list-disc list-inside text-xs text-muted/80 space-y-1">
-                      {["Green Aventurine", "Citrine", "Tiger's Eye", "Pyrite"].map((comp, idx) => (
-                        <li key={idx} className="font-body">{comp}</li>
+              {product.collection === "Rakhi'26" ? (
+                <div className="space-y-6">
+                  <div>
+                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">Crystal Constituents</p>
+                    <p>{product.crystal_constituents}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">Charm</p>
+                    <p>{product.charm}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">Feeling</p>
+                    <p>{product.feeling}</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">Reason to Gift</p>
+                    <p>{product.reason_to_gift}</p>
+                  </div>
+                  <div className="p-4 bg-surface mt-4 text-xs">
+                    <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-2">Crystal & Charm Qualities</p>
+                    <ul className="list-disc list-inside text-xs text-muted/80 space-y-2">
+                      {product.crystal_charm_qualities?.split('\n').map((quality, idx) => (
+                        <li key={idx} className="font-body">{quality}</li>
                       ))}
                     </ul>
                   </div>
-                ) : (
-                  product.chakraColor && (
-                    <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
-                      <div className="w-4 h-4 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: product.chakraColor }}></div>
-                      <div>
-                        <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">{product.chakra} Alignment</p>
-                        <p className="text-xs text-muted/80 leading-relaxed">{product.effect}</p>
-                      </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="italic text-primary border-l-2 border-accent pl-4">{product.philosophy}</p>
+                  <p>{product.details}</p>
+                  <div className="p-4 bg-surface mt-4 text-xs"><strong>Ritual recommendation:</strong> {product.usage}</div>
+                  {product.category === 'Specialised Crystals' ? (
+                    <div className="mt-6 flex flex-col bg-surface p-4 border border-border">
+                      <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-2">Crystal Composition</p>
+                      <ul className="list-disc list-inside text-xs text-muted/80 space-y-1">
+                        {["Green Aventurine", "Citrine", "Tiger's Eye", "Pyrite"].map((comp, idx) => (
+                          <li key={idx} className="font-body">{comp}</li>
+                        ))}
+                      </ul>
                     </div>
-                  )
-                )}
-              </div>
+                  ) : (
+                    product.chakraColor && (
+                      <div className="mt-6 flex items-start space-x-4 bg-surface p-4 border border-border">
+                        <div className="w-4 h-4 rounded-full mt-0.5 shrink-0" style={{ backgroundColor: product.chakraColor }}></div>
+                        <div>
+                          <p className="font-bold text-primary uppercase tracking-widest text-[10px] mb-1">{product.chakra} Alignment</p>
+                          <p className="text-xs text-muted/80 leading-relaxed">{product.effect}</p>
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
             </div>
 
 

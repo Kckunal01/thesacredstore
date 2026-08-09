@@ -148,12 +148,19 @@ export default async function handler(req, res) {
 
     // ---------- Stock deduction ----------
     for (const item of cart) {
+      // Rakhi'26 products are frontend-only and have no row in the products table.
+      // Skip stock deduction for them to avoid a DB exception.
+      if (
+        item.collection === "Rakhi'26" ||
+        (item.slug && item.slug.startsWith('rakhi-')) ||
+        (item.id && String(item.id).startsWith('rakhi-'))
+      ) {
+        continue;
+      }
       const slug = item.slug || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       const { error: rpcError } = await supabase.rpc('deduct_stock', { p_slug: slug, p_quantity: item.quantity });
       if (rpcError) {
         console.error('Stock deduction failed via RPC', rpcError);
-        // Note: As per instruction, if stock deduction fails, we can log it. Or does it fail the order? 
-        // "Deduct Stock (RPC)" is after "Insert Payment". If payment succeeds, we do stock.
       }
     }
 

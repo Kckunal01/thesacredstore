@@ -27,8 +27,12 @@ function entry(folder, filePrefix, ext = 'png') {
 function e(folder, ext = 'png') {
   return entry(folder, folder, ext);
 }
-
 const productImageManifest = {
+  // ── Rakhi Products ────────────────────────────────────────
+  "Nazar — The Rakhi of Protection": entry("Rakhi'26/Nazar", "Nazar"),
+  "Saanjh — The Rakhi of Affection": entry("Rakhi'26/Saanjh", "Saanjh"),
+  "Ananta — The Rakhi of Forever": entry("Rakhi'26/Ananta", "Ananta"),
+  "Vriddhi — The Rakhi of Growth": entry("Rakhi'26/Vriddhi", "Vriddhi"),
   // ── Bracelets ──────────────────────────────────────────────
   '7 Chakra Bracelet':              e('7 Chakra Bracelet'),
   'Amethyst Bracelet':              e('Amethyst Bracelet'),

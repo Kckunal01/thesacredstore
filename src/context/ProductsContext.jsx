@@ -20,6 +20,7 @@ export const ProductsProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    // Force reload on mount to pick up Rakhi products during HMR
     loadData();
   }, []);
 

@@ -207,7 +207,7 @@
   .slides-2 .home-carousel-slide { width: calc(50% - 0.75rem); } /* 2 visible */
 }
 
-/* Modifier class for Rakhi Collection (Coming Soon) */
+/* Modifier class for Rakhi Collection */
 .slides-rakhi .home-carousel-slide { width: 65vw; }
 @media (min-width: 640px) {
   .slides-rakhi .home-carousel-slide { width: 220px; }
@@ -216,8 +216,6 @@
   .slides-rakhi .home-carousel-slide { width: 250px; }
 }
 @media (min-width: 1024px) {
-  .slides-rakhi .home-carousel-slide { width: 270px; }
-}
-@media (min-width: 1280px) {
-  .slides-rakhi .home-carousel-slide { width: 290px; }
+  .slides-rakhi { justify-content: center; overflow-x: hidden; }
+  .slides-rakhi .home-carousel-slide { width: calc(25% - 1.125rem); } /* 4 visible exactly */
 }

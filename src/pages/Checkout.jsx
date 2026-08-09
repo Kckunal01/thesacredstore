@@ -110,6 +110,10 @@ const Checkout = () => {
     const stockMap = await getProductStockMap();
     const issues = [];
     for (const item of cart) {
+      if (item.collection === "Rakhi'26" || (item.id && item.id.startsWith('rakhi-'))) {
+        // Treat Rakhi'26 products as available/in stock
+        continue;
+      }
       const slug = item.slug || slugify(item.name);
       const info = stockMap[slug];
       if (!info || !info.active) {

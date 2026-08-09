@@ -90,6 +90,15 @@ export function getSmartRecommendations({ currentProduct, cartItems = [], allPro
     ).slice(0, 4);
   }
 
+  if (currentProduct && currentProduct.collection === "Rakhi'26") {
+    return allProducts.filter(p => 
+      (p.collection === "Rakhi'26" || p.name.toLowerCase().includes('selenite plate') || p.name.toLowerCase().includes('selenite bowl')) &&
+      p.id?.toString() !== currentId &&
+      p.active !== false &&
+      p.visible !== false
+    ).slice(0, 4);
+  }
+
   // Slot 1: Exactly 1 Specialised Crystal (Category = 'Specialised Crystals')
   const specialisedPool = pool.filter(p => p.category === 'Specialised Crystals');
   const specSelection = specialisedPool[0] || allProducts.find(p => p.category === 'Specialised Crystals');
