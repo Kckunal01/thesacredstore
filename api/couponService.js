@@ -91,6 +91,18 @@ export async function validateCoupon({ couponCode, phone, email, cart }) {
     return { success: false, message: "Invalid cart products" };
   }
 
+  // Reject coupons for limited/Rakhi products (they are not in the products table)
+  const hasLimitedProduct = cart.some(
+    (item) =>
+      item.collection === "Rakhi'26" ||
+      item.category === 'Limited' ||
+      (item.slug && item.slug.startsWith('rakhi-')) ||
+      (item.id && String(item.id).startsWith('rakhi-'))
+  );
+  if (hasLimitedProduct) {
+    return { success: false, message: "Coupon invalid for limited products" };
+  }
+
   const { data: dbProducts, error: dbProductsError } = await supabase
     .from("products")
     .select("slug, price, active")
