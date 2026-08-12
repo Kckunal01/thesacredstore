@@ -143,6 +143,16 @@ export async function sendOrderEmails(supabase, order, customer, emailLogs) {
               </thead>
               <tbody>
                 ${itemsHtml}
+                ${order.payment_method === 'cod' ? `
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666;">
+                    <span>Cash on Delivery Fee</span>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #222222; font-weight: 500;">
+                    ₹100
+                  </td>
+                </tr>
+                ` : ''}
                 <tr>
                   <td style="padding: 16px 0 0 0; font-family: Georgia, serif; font-size: 16px; color: #222222;">Total Amount</td>
                   <td style="padding: 16px 0 0 0; text-align: right; font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #B89968;">₹${Number(order.amount).toLocaleString('en-IN')}</td>
