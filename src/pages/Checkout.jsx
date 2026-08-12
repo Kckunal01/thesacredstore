@@ -55,6 +55,8 @@ const Checkout = () => {
     city: '', state: '', pinCode: '', phone: '',
   });
 
+  const [paymentMethod, setPaymentMethod] = useState('prepaid');
+
   // Coupon UI Local states
   const [couponInput, setCouponInput] = useState(couponState || '');
   const [couponMessage, setCouponMessage] = useState('');
@@ -65,7 +67,8 @@ const Checkout = () => {
   // Pricing calculations
   const subtotalAfterOriginalDiscount = getCartTotal();
   const couponDiscountAmount = Math.round((subtotalAfterOriginalDiscount * discountPercent) / 100);
-  const finalTotalAmount = subtotalAfterOriginalDiscount - couponDiscountAmount;
+  const codFee = paymentMethod === 'cod' ? 100 : 0;
+  const finalTotalAmount = subtotalAfterOriginalDiscount - couponDiscountAmount + codFee;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -78,10 +81,11 @@ const Checkout = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          razorpayResponse,
+          razorpayResponse: razorpayResponse || undefined,
           formData,
           cart,
           couponCode: couponState || undefined,
+          paymentMethod,
         }),
       });
 
@@ -96,7 +100,7 @@ const Checkout = () => {
       clearCart();
     } catch (err) {
       console.error('Backend order completion error:', err);
-      alert('Your payment succeeded but we could not finalize the order. Please contact support.');
+      alert(paymentMethod === 'cod' ? 'Failed to place COD order: ' + err.message : 'Your payment succeeded but we could not finalize the order. Please contact support.');
     } finally {
       setIsProcessing(false);
     }
@@ -125,6 +129,11 @@ const Checkout = () => {
     if (issues.length > 0) {
       alert('Some items in your cart are no longer available:\n\n' + issues.map(i => `• ${i}`).join('\n') + '\n\nPlease update your cart and try again.');
       setIsProcessing(false);
+      return;
+    }
+
+    if (paymentMethod === 'cod') {
+      await completeOrderOnServer(null);
       return;
     }
 
@@ -257,12 +266,7 @@ const Checkout = () => {
             <p className="text-muted leading-relaxed mb-6 font-light font-body">
               Thank you for making space for meaning. Order <strong className="text-primary font-semibold font-display">{orderId}</strong> has been created.
             </p>
-            <div className="bg-surface border border-border p-6 mb-8 text-left space-y-2">
-              <span className="text-[10px] uppercase tracking-widest text-[#000000] font-bold">Important logistics information</span>
-              <p className="text-xs text-muted leading-relaxed font-body">
-                Your energy tool is being packaged carefully and cleansed with incense before shipping. You can track its shipment status directly.
-              </p>
-            </div>
+
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
               <Button to={`/track-order?id=${orderId}`} variant="primary">Track Package</Button>
               <Button to="/" variant="secondary">Return Home</Button>
@@ -403,6 +407,24 @@ const Checkout = () => {
                             <label className="block text-xs uppercase tracking-widest text-muted mb-2 font-bold font-body">Postal PIN Code</label>
                             <input type="text" name="pinCode" value={formData.pinCode} onChange={handleInputChange} className="w-full bg-background border border-border p-4 text-primary focus:outline-none focus:border-accent font-body text-sm" required />
                           </div>
+
+                          <div className="col-span-2 border-t border-border pt-6 mt-4">
+                            <label className="block text-xs uppercase tracking-widest text-muted mb-4 font-bold font-body">Payment Method</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <label className={`flex items-center justify-between p-4 border cursor-pointer transition-colors ${paymentMethod === 'prepaid' ? 'border-accent bg-accent/5' : 'border-border bg-background'}`}>
+                                <div className="flex items-center space-x-3">
+                                  <input type="radio" name="paymentMethod" value="prepaid" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="text-accent focus:ring-accent" />
+                                  <span className="text-sm font-semibold text-primary font-body">Prepaid (UPI / Cards / Netbanking)</span>
+                                </div>
+                              </label>
+                              <label className={`flex items-center justify-between p-4 border cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-accent bg-accent/5' : 'border-border bg-background'}`}>
+                                <div className="flex items-center space-x-3">
+                                  <input type="radio" name="paymentMethod" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="text-accent focus:ring-accent" />
+                                  <span className="text-sm font-semibold text-primary font-body">Cash on Delivery (+₹100)</span>
+                                </div>
+                              </label>
+                            </div>
+                          </div>
                         </div>
                       </form>
 
@@ -476,6 +498,12 @@ const Checkout = () => {
                         <span>Shipping</span>
                         <span className="text-accent uppercase tracking-widest font-bold text-xs">Free</span>
                       </div>
+                      {paymentMethod === 'cod' && (
+                        <div className="flex justify-between text-sm font-body text-muted">
+                          <span>COD Fee</span>
+                          <span className="font-semibold text-primary">₹100</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-baseline text-2xl font-display text-primary border-t-2 border-accent/30 pt-6">
@@ -490,7 +518,7 @@ const Checkout = () => {
                     )}
                     {step === 2 && (
                       <Button type="submit" form="checkout-form" variant="primary" className="w-full py-4 text-xs font-semibold uppercase tracking-[0.2em]" disabled={isProcessing}>
-                        {isProcessing ? 'Processing...' : 'Pay'}
+                        {isProcessing ? 'Processing...' : (paymentMethod === 'cod' ? 'Place Order' : 'Pay')}
                       </Button>
                     )}
                   </div>

@@ -15,18 +15,24 @@ export default async function handler(req, res) {
   console.log("SUPABASE_URL:", !!process.env.SUPABASE_URL);
   console.log("SERVICE_ROLE:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
   try {
-    const { razorpayResponse, formData, cart, couponCode } = req.body;
+    const { razorpayResponse, formData, cart, couponCode, paymentMethod } = req.body;
+    const isCod = paymentMethod === 'cod';
 
     // ---------- Idempotency check ----------
-    const { data: existingPayment } = await supabase
-      .from("payments")
-      .select("order_id")
-      .eq("razorpay_payment_id", razorpayResponse.razorpay_payment_id)
-      .maybeSingle();
+    if (!isCod) {
+      if (!razorpayResponse || !razorpayResponse.razorpay_payment_id) {
+        return res.status(400).json({ success: false, message: "Missing Razorpay details for prepaid order" });
+      }
+      const { data: existingPayment } = await supabase
+        .from("payments")
+        .select("order_id")
+        .eq("razorpay_payment_id", razorpayResponse.razorpay_payment_id)
+        .maybeSingle();
 
-    if (existingPayment) {
-      // Order already processed – return existing order ID
-      return res.status(200).json({ success: true, orderId: existingPayment.order_id });
+      if (existingPayment) {
+        // Order already processed – return existing order ID
+        return res.status(200).json({ success: true, orderId: existingPayment.order_id });
+      }
     }
 
     // ---------- Customer handling ----------
@@ -72,6 +78,7 @@ export default async function handler(req, res) {
       couponId = validation.couponId;
     }
 
+    const codFee = isCod ? 100 : 0;
     const orderPayload = {
       customer_id: customer.id,
       products: cart.map((item) => ({
@@ -80,10 +87,10 @@ export default async function handler(req, res) {
         quantity: item.quantity,
         price: item.price,
       })),
-      // Apply coupon discount if any
-      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0) - discountAmount,
-      payment_status: "paid",
-      payment_method: "razorpay",
+      // Apply coupon discount and COD fee if any
+      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0) - discountAmount + codFee,
+      payment_status: isCod ? "pending" : "paid",
+      payment_method: isCod ? "cod" : "razorpay",
     };
 
     const { data: order, error: orderError } = await supabase
@@ -98,28 +105,53 @@ export default async function handler(req, res) {
     }
 
     // ---------- Payment insertion ----------
-    const { error: paymentError } = await supabase.from("payments").insert({
-      order_id: order.id,
-      customer_id: customer.id,
-      gateway: "razorpay",
-      razorpay_order_id: razorpayResponse.razorpay_order_id,
-      razorpay_payment_id: razorpayResponse.razorpay_payment_id,
-      amount: orderPayload.amount,
-      currency: "INR",
-      status: "captured",
-      method: null,
-      signature_verified: true,
-      raw_response: razorpayResponse,
-    });
+    if (isCod) {
+        const { error: paymentError } = await supabase.from("payments").insert({
+          order_id: order.id,
+          customer_id: customer.id,
+          gateway: "cod",
+          razorpay_order_id: `cod_order_${order.id}`,
+          razorpay_payment_id: `cod_${order.id}`,
+          amount: orderPayload.amount,
+          currency: "INR",
+          status: "pending",
+          method: "cod",
+          signature_verified: false,
+          raw_response: { method: 'cod' },
+        });
 
-    if (paymentError) {
-      // Rollback order creation
-      const { error: rollbackError } = await supabase.from("orders").delete().eq("id", order.id);
-      if (rollbackError) {
-        console.error("CRITICAL: payment insert failed and rollback failed", rollbackError);
+        if (paymentError) {
+          // Log full error details for debugging
+          console.error('Payment insertion failed details:', paymentError);
+          // Rollback order creation
+          await supabase.from("orders").delete().eq("id", order.id);
+          console.error('Payment insertion failed for COD', paymentError);
+          return res.status(500).json({ success: false, message: "Payment insertion failed" });
+        }
+    } else {
+      const { error: paymentError } = await supabase.from("payments").insert({
+        order_id: order.id,
+        customer_id: customer.id,
+        gateway: "razorpay",
+        razorpay_order_id: razorpayResponse.razorpay_order_id,
+        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+        amount: orderPayload.amount,
+        currency: "INR",
+        status: "captured",
+        method: null,
+        signature_verified: true,
+        raw_response: razorpayResponse,
+      });
+
+      if (paymentError) {
+        // Rollback order creation
+        const { error: rollbackError } = await supabase.from("orders").delete().eq("id", order.id);
+        if (rollbackError) {
+          console.error("CRITICAL: payment insert failed and rollback failed", rollbackError);
+        }
+        console.error("Payment insertion failed", paymentError);
+        return res.status(500).json({ success: false, message: "Payment insertion failed" });
       }
-      console.error("Payment insertion failed", paymentError);
-      return res.status(500).json({ success: false, message: "Payment insertion failed" });
     }
 
     // ---------- Coupon Redemption insertion (post‑payment) ----------
@@ -175,14 +207,11 @@ export default async function handler(req, res) {
 
     // Try immediate order confirmation email delivery (isolated to not break order success)
     if (emailLogsData && emailLogsData.length > 0) {
-      try {
-        await sendOrderEmails(supabase, order, customer, emailLogsData);
-      } catch (emailSendErr) {
-        console.error("Immediate order email failed:", emailSendErr);
-      }
+      // Send order confirmation emails asynchronously (do not await to avoid delaying response)
+      sendOrderEmails(supabase, order, customer, emailLogsData).catch(err => console.error('Background order email failed:', err));
     }
 
-    console.log('ORDER_SUCCESS', { order_id: order.id, razorpay_payment_id: razorpayResponse.razorpay_payment_id });
+    console.log('ORDER_SUCCESS', { order_id: order.id, razorpay_payment_id: razorpayResponse ? razorpayResponse.razorpay_payment_id : `cod_${order.id}` });
 
     return res.status(200).json({ success: true, orderId: order.order_id });
   } catch (error) {
