@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { fetchProducts } from '../lib/productsService';
+import { resolveProductImage } from '../utils/productImageResolver';
 import Button from '../components/ui/Button';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
@@ -233,10 +234,14 @@ const Admin = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, customers(*)')
+        .select('*, customers:customer_id(*)')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        setToast({ message: `Error fetching orders: ${error.message}`, type: 'error' });
+        console.error('Supabase error fetching orders:', error);
+        throw error;
+      }
       setOrders(data || []);
     } catch (err) {
       console.error('Failed to fetch orders:', err);
@@ -442,10 +447,20 @@ const Admin = () => {
       };
 
       if (editingProduct) {
-        const { error } = await supabase
+        console.log('--- ACTUAL WRITE OPERATION TRACE ---');
+        console.log('Payload image_url:', payload.image_url);
+        console.log('Payload gallery_images:', payload.gallery_images);
+        console.log('Full payload:', payload);
+
+        const { error, data } = await supabase
           .from('products')
           .update(payload)
-          .eq('id', editingProduct.db_id);
+          .eq('id', editingProduct.db_id)
+          .select();
+          
+        console.log('Supabase Response Data:', data);
+        console.log('Supabase Response Error:', error);
+
         if (error) throw error;
         setToast({ message: 'Product updated successfully.', type: 'success' });
       } else {
@@ -556,6 +571,19 @@ const Admin = () => {
       refreshProducts();
     } catch (err) {
       alert('Failed to save bundle: ' + err.message);
+    }
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (window.confirm("Are you sure you want to delete this product? Historical orders will retain their data, but the product will be removed from the store.")) {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) {
+        console.error('Error deleting product:', error);
+        setToast({ message: 'Failed to delete product.', type: 'error' });
+      } else {
+        setToast({ message: 'Product deleted successfully!', type: 'success' });
+        refreshProducts();
+      }
     }
   };
 
@@ -1041,12 +1069,20 @@ const Admin = () => {
                         </button>
                       </td>
                       <td className="p-4 text-center">
-                        <button
-                          onClick={() => openEditModal(p)}
-                          className="p-1 hover:text-accent text-primary transition-all inline-block"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => openEditModal(p)}
+                            className="p-1 hover:text-accent text-primary transition-all inline-block"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(p.id)}
+                            className="p-1 hover:text-red-500 text-muted transition-all inline-block"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -1147,6 +1183,9 @@ const Admin = () => {
         {/* -------------------- TAB: ORDERS -------------------- */}
         {activeTab === 'orders' && (
           <div className="space-y-6">
+            <div className="flex justify-end">
+              <Button onClick={fetchOrders} variant="secondary" className="mb-4">Refresh Orders</Button>
+            </div>
             <div className="bg-white border border-border overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs font-body">
                 <thead>
@@ -1281,15 +1320,7 @@ const Admin = () => {
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   />
                 </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Chakra Alignment / Crystal Composition</label>
-                  <input
-                    type="text"
-                    value={prodForm.chakra}
-                    onChange={(e) => setProdForm({...prodForm, chakra: e.target.value})}
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
+
 
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Stamp (Ribbon)</label>
@@ -1337,48 +1368,7 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Specs & Info */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-surface p-4 border border-border/40">
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Intention</label>
-                  <input
-                    type="text"
-                    value={prodForm.intention}
-                    onChange={(e) => setProdForm({ ...prodForm, intention: e.target.value })}
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Dimensions (cm)</label>
-                  <input
-                    type="text"
-                    value={prodForm.dimensions}
-                    onChange={(e) => setProdForm({ ...prodForm, dimensions: e.target.value })}
-                    placeholder="e.g., 10×12×5"
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Origin</label>
-                  <input
-                    type="text"
-                    value={prodForm.origin}
-                    onChange={(e) => setProdForm({ ...prodForm, origin: e.target.value })}
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Certification Number</label>
-                  <input
-                    type="text"
-                    value={prodForm.certificationNumber}
-                    onChange={(e) => setProdForm({ ...prodForm, certificationNumber: e.target.value })}
-                    placeholder="10‑digit number"
-                    maxLength={10}
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
-              </div>
+
 
               <div>
                 <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Description</label>
@@ -1390,17 +1380,7 @@ const Admin = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Cleansing & Charging</label>
-                  <textarea
-                    rows="2"
-                    value={prodForm.cleansing_charging}
-                    onChange={(e) => setProdForm({ ...prodForm, cleansing_charging: e.target.value })}
-                    placeholder="e.g., Moonlight or Selenite Plate"
-                    className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
-                  />
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-[10px] uppercase tracking-wider text-muted font-bold mb-2">Philosophy</label>
                   <textarea
@@ -1433,7 +1413,7 @@ const Admin = () => {
                       className="text-xs text-muted"
                     />
                     {prodForm.image_url && (
-                      <img src={prodForm.image_url} alt="Cover Preview" className="w-16 h-16 object-contain border border-border bg-white" />
+                      <img src={resolveProductImage({ slug: prodForm.slug, name: prodForm.name, image_url: prodForm.image_url, images: prodForm.gallery_images })} alt="Cover Preview" className="w-16 h-16 object-contain border border-border bg-white" />
                     )}
                   </div>
                 </div>
@@ -1450,7 +1430,7 @@ const Admin = () => {
                     <div className="flex gap-2 overflow-x-auto py-1">
                       {prodForm.gallery_images?.map((url, idx) => (
                         <div key={idx} className="relative group">
-                          <img src={url} alt="Gallery Preview" className="w-14 h-14 object-contain border border-border bg-white" />
+                          <img src={url.startsWith('http') || url.startsWith('/') ? url : `/assets/images/${url}`} alt="Gallery Preview" className="w-14 h-14 object-contain border border-border bg-white" />
                           <button
                             type="button"
                             onClick={() => setProdForm({...prodForm, gallery_images: prodForm.gallery_images.filter(x => x !== url)})}

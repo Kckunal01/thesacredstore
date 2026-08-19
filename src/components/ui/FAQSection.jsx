@@ -13,7 +13,7 @@ const faqs = [
   { q: "Can I wear my crystal every day?", a: "Absolutely—just avoid harsh chemicals, prolonged water, or rough handling." },
   { q: "Is this a good gift?", a: "Definitely—our premium signature packaging is ready to gift without extra wrapping." },
   { q: "What if my order arrives damaged?", a: "Contact us within 48 hours with photos; we'll arrange a replacement or suitable resolution." },
-  { q: "Can I return my order?", a: "We don't accept returns for change of mind, but will make it right for wrong or damaged items." },
+  { q: "Can I return my order?", a: "We offer a 48-hour return/replacement policy for damaged, wrong, or defective items. We don't accept returns for change of mind." },
   { q: "Do you offer Cash on Delivery?", a: "Yes, COD is available for most serviceable PIN codes and appears at checkout when eligible." },
   { q: "Why should I trust The Sacred Store?", a: "We earn trust through natural crystals, honest info, secure payments, premium packaging, and responsive support." },
 ];

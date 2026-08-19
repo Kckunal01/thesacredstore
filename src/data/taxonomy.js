@@ -1,29 +1,16 @@
 export const taxonomy = {
   categories: [
-    {
-      name: 'Bracelets',
-      subcategories: [],
-    },
-    {
-      name: 'Crystals',
-      subcategories: [
-        'Tumbles',
-        'Sphere',
-        'Mala',
-        'Cluster',
-        'Points',
-      ],
-    },
-    {
-      name: 'Utility & Decor',
-      subcategories: [
-        'Pendants',
-        'Crystal Trees',
-        'Crystal Pyramids',
-        'Charging Items',
-        'Lamps',
-      ],
-    },
+    { name: 'Bracelets', subcategories: [] },
+    { name: 'Tumbles', subcategories: [] },
+    { name: 'Sphere', subcategories: [] },
+    { name: 'Mala', subcategories: [] },
+    { name: 'Cluster', subcategories: [] },
+    { name: 'Points', subcategories: [] },
+    { name: 'Pendants', subcategories: [] },
+    { name: 'Crystal Trees', subcategories: [] },
+    { name: 'Crystal Pyramids', subcategories: [] },
+    { name: 'Charging Items', subcategories: [] },
+    { name: 'Lamps', subcategories: [] },
   ],
 };
 

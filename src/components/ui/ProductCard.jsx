@@ -13,7 +13,7 @@ const slugify = (text) => {
     .replace(/(^-|-)$/g, '');
 };
 
-const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }) => {
+const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, images }) => {
   const { products } = useContext(ProductsContext);
   const { cart, addToCart } = useContext(CartContext);
   const [quantity, setQuantity] = useState(1);
@@ -51,12 +51,12 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
     e.preventDefault();
     e.stopPropagation();
     // Redirect to the product detail page where waitlist modal is fully integrated
-    navigate(`/product/${id}`);
+    navigate(`/product/${slug || id}`);
   };
 
   return (
     <div className="group flex flex-col h-full justify-between cursor-pointer block relative">
-      <Link to={`/product/${id}`} className="block flex-grow flex flex-col justify-between">
+      <Link to={`/product/${slug || id}`} className="block flex-grow flex flex-col justify-between">
         {/* Image Container */}
         <div className="relative aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-2 sm:mb-4 border border-border">
           {mainImage ? (
@@ -65,9 +65,11 @@ const ProductCard = ({ id, name, price, originalPrice, category, stamp, images }
               alt={name}
               loading="lazy"
               decoding="async"
+              fetchpriority="low"
               width="240"
               height="300"
               className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-1"
+              onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/placeholder.png'; }}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted text-xs uppercase tracking-widest font-semibold">

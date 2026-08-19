@@ -18,12 +18,12 @@ const RefundPolicy = () => {
             <li>The wrong item is delivered</li>
             <li>The product is defective upon arrival</li>
           </ul>
-          <p className="mt-4 text-primary font-medium">Requests must be submitted within <strong>7 days of delivery</strong> along with clear photographs.</p>
+          <p className="mt-4 text-primary font-medium">Requests must be submitted within <strong>48 hours of delivery</strong> along with clear photographs.</p>
 
           <h2 className="text-2xl font-display text-primary mt-12 mb-4">Non-Returnable Items</h2>
           <p>We do not accept returns or refunds for:</p>
           <ul className="list-disc pl-5 space-y-2">
-            <li>Used products</li>
+            <li>Limited Collection products</li>
             <li>Opened products</li>
             <li>Customized products</li>
             <li>Digital products</li>

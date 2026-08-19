@@ -11,23 +11,24 @@ const ShopCrystals = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const filterMatches = (p, filter) => {
-    if (filter === 'All') return true;
-    const name = p.name.toLowerCase();
-    if (filter === 'Clusters') return name.includes('cluster');
-    if (filter === 'Points') return name.includes('point');
-    if (filter === 'Tumbles') return name.includes('tumble');
-    if (filter === 'Spheres (Balls)') return name.includes('ball') || name.includes('sphere');
-    if (filter === 'Malas') return name.includes('mala');
-    return true;
-  };
+  const crystalCategories = ['Cluster', 'Points', 'Tumbles', 'Sphere', 'Mala'];
 
   const displayedProducts = searchQuery.trim() !== ''
     ? products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : products.filter(p => p.category === 'Crystals' && filterMatches(p, activeFilter));
+    : products.filter(p => {
+        const isCrystal = crystalCategories.includes(p.category) || p.category === 'Crystals'; // fallback
+        if (!isCrystal) return false;
+        if (activeFilter === 'All') return true;
+        if (activeFilter === 'Clusters') return p.category === 'Cluster';
+        if (activeFilter === 'Points') return p.category === 'Points';
+        if (activeFilter === 'Tumbles') return p.category === 'Tumbles';
+        if (activeFilter === 'Spheres (Balls)') return p.category === 'Sphere';
+        if (activeFilter === 'Malas') return p.category === 'Mala';
+        return true;
+      });
 
   const filterOptions = [
     { label: 'All', value: 'All' },

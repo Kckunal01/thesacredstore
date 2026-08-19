@@ -102,7 +102,7 @@ export async function sendBookingEmails(supabase, booking, customer, emailLogs) 
   }
 }
 
-export async function sendOrderEmails(supabase, order, customer, emailLogs) {
+export async function sendOrderEmails(supabase, order, customer, emailLogs, formData) {
   const itemsHtml = (order.products || []).map(item => `
     <tr>
       <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #222222;">
@@ -114,6 +114,12 @@ export async function sendOrderEmails(supabase, order, customer, emailLogs) {
       </td>
     </tr>
   `).join('');
+
+  const emailItemsTotal = (order.products || []).reduce((s, i) => s + i.price * i.quantity, 0);
+  const emailCodFee = order.payment_method === 'cod' ? 100 : 0;
+  // NOTE: For emails, we skip discount in this simple recalculation of platform fee
+  const emailPrePlatform = emailItemsTotal + emailCodFee;
+  const emailPlatformFee = Math.min(99, Math.round(emailPrePlatform * 0.025));
 
   for (const log of emailLogs) {
     try {
@@ -154,6 +160,14 @@ export async function sendOrderEmails(supabase, order, customer, emailLogs) {
                 </tr>
                 ` : ''}
                 <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666;">
+                    <span>Platform Fee</span>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #222222; font-weight: 500;">
+                    ₹${emailPlatformFee.toLocaleString('en-IN')}
+                  </td>
+                </tr>
+                <tr>
                   <td style="padding: 16px 0 0 0; font-family: Georgia, serif; font-size: 16px; color: #222222;">Total Amount</td>
                   <td style="padding: 16px 0 0 0; text-align: right; font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #B89968;">₹${Number(order.amount).toLocaleString('en-IN')}</td>
                 </tr>
@@ -182,11 +196,22 @@ export async function sendOrderEmails(supabase, order, customer, emailLogs) {
               <p style="font-size: 12px; text-transform: uppercase; tracking: 0.15em; color: #999999; margin: 0;">Admin Portal Alert</p>
             </div>
             
-            <div style="background-color: #fafafa; border: 1px solid #eaeaea; padding: 20px; margin-bottom: 30px;">
+            <div style="background-color: #fafafa; border: 1px solid #eaeaea; padding: 20px; margin-bottom: 20px;">
               <h4 style="margin: 0 0 10px 0; font-family: Georgia, serif; color: #222222; font-size: 16px;">Customer Information</h4>
               <p style="font-size: 14px; margin: 0 0 5px 0;"><strong>Name:</strong> ${customer.full_name}</p>
               <p style="font-size: 14px; margin: 0 0 5px 0;"><strong>Email:</strong> ${customer.email}</p>
               <p style="font-size: 14px; margin: 0;"><strong>Phone:</strong> ${customer.phone}</p>
+            </div>
+
+            <div style="background-color: #ffffff; border: 1px solid #eaeaea; padding: 20px; margin-bottom: 30px;">
+              <h4 style="margin: 0 0 10px 0; font-family: Georgia, serif; color: #222222; font-size: 16px;">Payment & Shipping</h4>
+              <p style="font-size: 14px; margin: 0 0 5px 0;"><strong>Payment Method:</strong> ${order.payment_method === 'cod' ? 'Cash on Delivery' : 'Prepaid (Razorpay)'}</p>
+              <p style="font-size: 14px; margin: 0 0 5px 0;"><strong>Payment Status:</strong> ${order.payment_status}</p>
+              ${formData ? `
+              <p style="font-size: 14px; margin: 0 0 5px 0;"><strong>Address:</strong> ${formData.address || ''}</p>
+              <p style="font-size: 14px; margin: 0 0 5px 0;"><strong>City:</strong> ${formData.city || ''}, ${formData.state || ''}</p>
+              <p style="font-size: 14px; margin: 0;"><strong>PIN Code:</strong> ${formData.pinCode || ''}</p>
+              ` : ''}
             </div>
 
             <h3 style="font-family: Georgia, serif; font-size: 18px; font-weight: normal; border-bottom: 1px solid #B89968; padding-bottom: 8px; margin: 0 0 15px 0; color: #222222;">Order Details (${order.order_id})</h3>
@@ -199,6 +224,24 @@ export async function sendOrderEmails(supabase, order, customer, emailLogs) {
               </thead>
               <tbody>
                 ${itemsHtml}
+                ${order.payment_method === 'cod' ? `
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666;">
+                    <span>Cash on Delivery Fee</span>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #222222; font-weight: 500;">
+                    ₹100
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #666666;">
+                    <span>Platform Fee</span>
+                  </td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #eaeaea; text-align: right; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; color: #222222; font-weight: 500;">
+                    ₹${emailPlatformFee.toLocaleString('en-IN')}
+                  </td>
+                </tr>
                 <tr>
                   <td style="padding: 16px 0 0 0; font-family: Georgia, serif; font-size: 16px; color: #222222;">Total Collected</td>
                   <td style="padding: 16px 0 0 0; text-align: right; font-family: Georgia, serif; font-size: 18px; font-weight: bold; color: #B89968;">₹${Number(order.amount).toLocaleString('en-IN')}</td>

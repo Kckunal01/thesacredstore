@@ -3,7 +3,7 @@ import { ProductsContext } from '../../context/ProductsContext';
 import { CartContext } from '../../context/CartContext';
 import Button from './Button';
 import { resolveProductImage } from '../../utils/productImageResolver';
-import { getTaxonomyFlatList } from '../../data/taxonomy';
+import { getTaxonomyFlatList, taxonomy } from '../../data/taxonomy';
 
 const BundleBuilder = () => {
   const { products } = useContext(ProductsContext);
@@ -33,12 +33,16 @@ const BundleBuilder = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = useMemo(() => {
-    return ['All', ...getTaxonomyFlatList()];
-  }, []);  const filteredProducts = useMemo(() => {
+    return ['All', ...taxonomy.categories.map(c => c.name)];
+  }, []);
+
+  const filteredProducts = useMemo(() => {
     return availableProducts.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = searchQuery || selectedCategory === 'All' || p.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+      
+      if (selectedCategory === 'All') return true;
+      return p.category && p.category.toLowerCase() === selectedCategory.toLowerCase();
     });
   }, [availableProducts, searchQuery, selectedCategory]);
 
@@ -172,9 +176,11 @@ const BundleBuilder = () => {
                       alt={p.name} 
                       loading="lazy"
                       decoding="async"
+                      fetchpriority="low"
                       width="180"
                       height="180"
                       className="w-full h-full object-cover"
+                      onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/placeholder.png'; }}
                     />
                   </div>
                   <h5 className="font-display font-medium text-sm text-primary mb-1 line-clamp-1">{p.name}</h5>

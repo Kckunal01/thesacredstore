@@ -79,6 +79,9 @@ export default async function handler(req, res) {
     }
 
     const codFee = isCod ? 100 : 0;
+    const subtotal = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const prePlatformAmount = subtotal - discountAmount + codFee;
+    const platformFee = Math.min(99, Math.round(prePlatformAmount * 0.025));
     const orderPayload = {
       customer_id: customer.id,
       products: cart.map((item) => ({
@@ -87,8 +90,8 @@ export default async function handler(req, res) {
         quantity: item.quantity,
         price: item.price,
       })),
-      // Apply coupon discount and COD fee if any
-      amount: cart.reduce((sum, i) => sum + i.price * i.quantity, 0) - discountAmount + codFee,
+      // Apply coupon discount, COD fee, and Platform Fee
+      amount: prePlatformAmount + platformFee,
       payment_status: isCod ? "pending" : "paid",
       payment_method: isCod ? "cod" : "razorpay",
     };
@@ -208,7 +211,7 @@ export default async function handler(req, res) {
     // Try immediate order confirmation email delivery (isolated to not break order success)
     if (emailLogsData && emailLogsData.length > 0) {
       // Send order confirmation emails asynchronously (do not await to avoid delaying response)
-      sendOrderEmails(supabase, order, customer, emailLogsData).catch(err => console.error('Background order email failed:', err));
+      sendOrderEmails(supabase, order, customer, emailLogsData, formData).catch(err => console.error('Background order email failed:', err));
     }
 
     console.log('ORDER_SUCCESS', { order_id: order.id, razorpay_payment_id: razorpayResponse ? razorpayResponse.razorpay_payment_id : `cod_${order.id}` });

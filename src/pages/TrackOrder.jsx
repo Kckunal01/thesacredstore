@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import SectionHeader from '../components/ui/SectionHeader';
@@ -106,9 +107,19 @@ function OrderCard({ order, onReset }) {
         <p className="text-sm text-muted font-body">
           <strong>Amount:</strong> ₹{order.amount?.toLocaleString('en-IN') ?? '0'}
         </p>
+        {order.payment_method === 'cod' && order.payment_status === 'pending' && (
+          <p className="text-sm text-amber-600 font-body font-medium">
+            <strong>Payment:</strong> Cash on Delivery — payment pending
+          </p>
+        )}
         {order.tracking_id && (
           <p className="text-sm text-muted font-body">
             <strong>Tracking ID:</strong> {order.tracking_id}
+          </p>
+        )}
+        {!order.tracking_id && order.status !== 'delivered' && (
+          <p className="text-sm text-accent font-body font-medium mt-2">
+            Tracking information will appear once your shipment is dispatched.
           </p>
         )}
       </div>
@@ -155,10 +166,32 @@ function OrderCard({ order, onReset }) {
 // ─── Page component ───────────────────────────────────────────────────────────
 
 const TrackOrder = () => {
+  const [searchParams] = useSearchParams();
   const [input, setInput] = useState('');
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const idParam = searchParams.get('id');
+    if (idParam && !order && !loading) {
+      setInput(idParam);
+      // trigger search
+      (async () => {
+        setLoading(true);
+        setError(null);
+        const result = await getOrder(idParam);
+        if (!result.success) {
+          setError('We were unable to retrieve your order. Please try again later.');
+        } else if (!result.order) {
+          setError('No order found with that reference. Please check your Order ID or Tracking ID and try again.');
+        } else {
+          setOrder(result.order);
+        }
+        setLoading(false);
+      })();
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

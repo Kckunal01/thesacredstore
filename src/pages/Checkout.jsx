@@ -68,7 +68,9 @@ const Checkout = () => {
   const subtotalAfterOriginalDiscount = getCartTotal();
   const couponDiscountAmount = Math.round((subtotalAfterOriginalDiscount * discountPercent) / 100);
   const codFee = paymentMethod === 'cod' ? 100 : 0;
-  const finalTotalAmount = subtotalAfterOriginalDiscount - couponDiscountAmount + codFee;
+  const prePlatformAmount = subtotalAfterOriginalDiscount - couponDiscountAmount + codFee;
+  const platformFee = Math.min(99, Math.round(prePlatformAmount * 0.025));
+  const finalTotalAmount = prePlatformAmount + platformFee;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -310,6 +312,7 @@ const Checkout = () => {
                                   alt={item.name}
                                   loading="lazy"
                                   decoding="async"
+                                  fetchpriority="low"
                                   width="80"
                                   height="96"
                                   className="w-full h-full object-contain"
@@ -504,6 +507,10 @@ const Checkout = () => {
                           <span className="font-semibold text-primary">₹100</span>
                         </div>
                       )}
+                      <div className="flex justify-between text-sm font-body text-muted">
+                        <span>Platform Fee</span>
+                        <span className="font-semibold text-primary">₹{platformFee.toLocaleString('en-IN')}</span>
+                      </div>
                     </div>
 
                     <div className="flex justify-between items-baseline text-2xl font-display text-primary border-t-2 border-accent/30 pt-6">

@@ -25,7 +25,7 @@ const ProductRecommendations = ({ currentProduct, products }) => {
           return (
             <Link
               key={product.id}
-              to={`/product/${product.id}`}
+              to={`/product/${product.slug || product.id}`}
               className="group flex flex-col bg-[#FEFBF1]/10 p-5 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300 rounded-md snap-start shrink-0 w-[260px] xs:w-[290px] md:w-auto"
             >
               <div className="relative w-full aspect-[4/5] overflow-hidden bg-[#FEFBF1] mb-5 rounded-sm">

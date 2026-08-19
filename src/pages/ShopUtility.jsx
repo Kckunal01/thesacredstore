@@ -11,25 +11,24 @@ const ShopUtility = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
 
-  const utilityItems = products.filter(p => (p.category === 'Utility & Decor' || p.category === 'Pendants'));
-
-  const filterMatches = (p, filter) => {
-    if (filter === 'All') return true;
-    const name = p.name.toLowerCase();
-    if (filter === 'Pendants') return p.category === 'Pendants' || name.includes('pendant');
-    if (filter === 'Crystal Trees') return name.includes('tree');
-    if (filter === 'Crystal Pyramids') return name.includes('pyramid');
-    if (filter === 'Charging Items') return name.includes('charging') || name.includes('bowl') || name.includes('plate');
-    if (filter === 'Lamps') return name.includes('lamp');
-    return true;
-  };
+  const utilityCategories = ['Pendants', 'Crystal Trees', 'Crystal Pyramids', 'Charging Items', 'Lamps'];
 
   const displayedProducts = searchQuery.trim() !== ''
     ? products.filter(p =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : utilityItems.filter(p => filterMatches(p, activeFilter));
+    : products.filter(p => {
+        const isUtility = utilityCategories.includes(p.category) || p.category === 'Utility & Decor'; // fallback
+        if (!isUtility) return false;
+        if (activeFilter === 'All') return true;
+        if (activeFilter === 'Pendants') return p.category === 'Pendants';
+        if (activeFilter === 'Crystal Trees') return p.category === 'Crystal Trees';
+        if (activeFilter === 'Crystal Pyramids') return p.category === 'Crystal Pyramids';
+        if (activeFilter === 'Charging Items') return p.category === 'Charging Items';
+        if (activeFilter === 'Lamps') return p.category === 'Lamps';
+        return true;
+      });
 
   const filterOptions = [
     { label: 'All', value: 'All' },
