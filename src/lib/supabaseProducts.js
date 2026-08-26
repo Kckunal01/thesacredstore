@@ -21,8 +21,12 @@ export async function getProductStockMap() {
     const map = {};
     if (Array.isArray(data)) {
       for (const { id, slug, stock, active } of data) {
+        const entry = { id, stock, active: active !== undefined ? active : true };
         if (slug) {
-          map[slug] = { id, stock, active: active !== undefined ? active : true };
+          map[slug] = entry;
+        }
+        if (id) {
+          map[id] = entry;
         }
       }
     }

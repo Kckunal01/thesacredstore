@@ -37,6 +37,7 @@ function mergeRow(item) {
     title: item.name || '',
     name: item.name || '',
     category: item.category || '',
+    collection: item.collection || '',
     price: Number(item.price) || 0,
     originalPrice: item.original_price ? Number(item.original_price) : null,
     stamp: item.stamp === 'none' ? null : item.stamp,

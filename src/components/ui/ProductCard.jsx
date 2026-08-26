@@ -19,7 +19,7 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const mainImage = images && images.length > 0 ? images[0] : null;
-  const discountPercentage = originalPrice && stamp !== 'Fresh' ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+  const discountPercentage = originalPrice && price < originalPrice ? Math.ceil(((originalPrice - price) / originalPrice) * 100) : 0;
 
   // Find if item is already in cart to check the 9-limit
   const cartItem = cart.find(item => item.id === id);
@@ -30,7 +30,7 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
     e.preventDefault();
     e.stopPropagation();
     if (isCartFull) return;
-    addToCart({ id, name, price, originalPrice, images, category }, quantity);
+    addToCart({ id, slug, name, price, originalPrice, images, category }, quantity);
   };
 
   const handleIncrement = (e) => {
@@ -63,9 +63,9 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
             <img
               src={mainImage}
               alt={name}
-              loading="lazy"
+              loading="eager"
               decoding="async"
-              fetchpriority="low"
+              fetchpriority="high"
               width="240"
               height="300"
               className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-1"
@@ -82,13 +82,13 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
             <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-accent text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
             FRESH
           </div>
-          ) : stamp === 'Sale' ? (
-            <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-accent text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
-            SALE
-          </div>
           ) : discountPercentage > 0 ? (
-            <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-primary text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-primary text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
             {discountPercentage}% OFF
+          </div>
+          ) : stamp && stamp !== 'none' && stamp !== 'Sale' ? (
+            <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-primary text-background px-2 py-1 sm:px-4 sm:py-2 text-[8px] sm:text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+            {stamp}
           </div>
           ) : null}
         </div>

@@ -208,7 +208,7 @@ const Product = () => {
                   <img
                     src={mainImage}
                     alt={product.name}
-                    loading="lazy" decoding="async" width="100%" height="auto"
+                    loading="eager" decoding="async" fetchpriority="high" width="100%" height="auto"
                     className="w-full h-full object-contain p-2 transition-all duration-500"
                   />
                 ) : (
@@ -227,11 +227,11 @@ const Product = () => {
                   <div className="absolute top-4 left-4 bg-accent text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
                     FRESH
                   </div>
-                ) : product.stamp === 'Sale' ? (
-                  <div className="absolute top-4 left-4 bg-accent text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
-                    SALE
+                ) : product.originalPrice && product.price < product.originalPrice ? (
+                  <div className="absolute top-4 left-4 bg-primary text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
+                    {Math.ceil(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                   </div>
-                ) : product.stamp ? (
+                ) : product.stamp && product.stamp !== 'none' && product.stamp !== 'Sale' ? (
                   <div className="absolute top-4 left-4 bg-primary text-background px-4 py-2 text-[12px] uppercase tracking-widest font-bold rounded-md z-10">
                     {product.stamp}
                   </div>

@@ -21,7 +21,7 @@ import { ProductsContext } from '../../context/ProductsContext';
 
 const RakhiCollectionSection = () => {
   const { products } = useContext(ProductsContext);
-  const rakhiProducts = products.filter(p => p.collection === "Rakhi'26");
+  const rakhiProducts = products.filter(p => p.name && p.name.includes('Rakhi'));
 
   console.log("ALL PRODUCTS", products);
   console.log(

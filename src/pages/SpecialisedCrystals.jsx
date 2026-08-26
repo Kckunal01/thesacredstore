@@ -7,7 +7,7 @@ import { ProductsContext } from '../context/ProductsContext';
 const SpecialisedCrystals = () => {
   const { products } = useContext(ProductsContext);
 
-  const specialised = products.filter(p => p.category === 'Specialised Crystals');
+  const specialised = products.filter(p => p.category === 'Specialised Crystals' || p.name === 'Money Magnet Pyramid');
   const activeItems = specialised.filter(p => (p.stock ?? 0) > 0 && p.active !== false);
   const pastDrops = specialised.filter(p => (p.stock ?? 0) === 0 || p.active === false);
 

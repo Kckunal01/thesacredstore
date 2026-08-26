@@ -264,10 +264,21 @@ const Admin = () => {
   };
 
   useEffect(() => {
+    let subscription;
     if (session && isAdmin) {
       fetchOrders();
       loadAllProducts();
+      
+      subscription = supabase
+        .channel('admin-orders')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+          fetchOrders();
+        })
+        .subscribe();
     }
+    return () => {
+      if (subscription) supabase.removeChannel(subscription);
+    };
   }, [session, isAdmin]);
 
   const refreshProducts = async () => {
@@ -575,15 +586,16 @@ const Admin = () => {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (window.confirm("Are you sure you want to delete this product? Historical orders will retain their data, but the product will be removed from the store.")) {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) {
-        console.error('Error deleting product:', error);
-        setToast({ message: 'Failed to delete product.', type: 'error' });
-      } else {
-        setToast({ message: 'Product deleted successfully!', type: 'success' });
-        refreshProducts();
-      }
+    if (!window.confirm("Are you sure you want to delete this product? Historical orders will retain their data, but the product will be removed from the store.")) return;
+    if (!window.confirm("WARNING: This action is irreversible. Are you ABSOLUTELY sure you want to delete this product?")) return;
+    
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    if (error) {
+      console.error('Error deleting product:', error);
+      setToast({ message: 'Failed to delete product.', type: 'error' });
+    } else {
+      setToast({ message: 'Product deleted successfully!', type: 'success' });
+      refreshProducts();
     }
   };
 
@@ -1069,16 +1081,18 @@ const Admin = () => {
                         </button>
                       </td>
                       <td className="p-4 text-center">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-8">
                           <button
                             onClick={() => openEditModal(p)}
                             className="p-1 hover:text-accent text-primary transition-all inline-block"
+                            title="Edit Product"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
-                            className="p-1 hover:text-red-500 text-muted transition-all inline-block"
+                            className="p-1 hover:text-red-500 text-muted transition-all inline-block ml-4"
+                            title="Delete Product"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1211,12 +1225,12 @@ const Admin = () => {
                       <td className="p-4 font-semibold text-primary">₹{o.amount.toLocaleString('en-IN')}</td>
                       <td className="p-4">
                         <span className={`px-2.5 py-1 text-[9px] uppercase tracking-wider font-bold rounded-sm ${
-                          o.status === 'Delivered' ? 'bg-green-50 text-green-700 border border-green-200' :
-                          o.status === 'Cancelled' ? 'bg-red-50 text-red-600 border border-red-200' :
-                          o.status === 'Shipped' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                          (o.status === 'Delivered' || o.status === 'delivered') ? 'bg-green-50 text-green-700 border border-green-200' :
+                          (o.status === 'Cancelled' || o.status === 'cancelled') ? 'bg-red-50 text-red-600 border border-red-200' :
+                          (o.status === 'Shipped' || o.status === 'shipped') ? 'bg-blue-50 text-blue-700 border border-blue-200' :
                           'bg-amber-50 text-amber-700 border border-amber-200'
                         }`}>
-                          {o.status || 'Pending'}
+                          {o.status ? o.status.charAt(0).toUpperCase() + o.status.slice(1) : 'Pending'}
                         </span>
                       </td>
                       <td className="p-4 text-muted font-mono">{o.tracking_id || '-'}</td>
@@ -1823,29 +1837,52 @@ const Admin = () => {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-muted font-bold block mb-2">Order Status</span>
-                  <select
-                    value={selectedOrder.status || 'Pending'}
-                    disabled={updatingOrderStatus}
-                    onChange={(e) => handleUpdateOrderStatus(selectedOrder.id, e.target.value)}
-                    className="bg-white border border-border p-2 focus:outline-none text-primary font-semibold"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Preparing">Preparing</option>
-                    <option value="Shipped">Shipped</option>
-                    <option value="Delivered">Delivered</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
+                  <div className="flex items-center gap-2">
+                    <select
+                      id={`status-select-${selectedOrder.id}`}
+                      value={selectedOrder.status ? selectedOrder.status.charAt(0).toUpperCase() + selectedOrder.status.slice(1) : 'Pending'}
+                      onChange={(e) => setSelectedOrder(prev => ({ ...prev, status: e.target.value }))}
+                      disabled={updatingOrderStatus}
+                      className="bg-white border border-border p-2 focus:outline-none text-primary font-semibold"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Preparing">Preparing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                    <button
+                      onClick={() => {
+                        const selectEl = document.getElementById(`status-select-${selectedOrder.id}`);
+                        if (selectEl) handleUpdateOrderStatus(selectedOrder.id, selectEl.value);
+                      }}
+                      disabled={updatingOrderStatus}
+                      className="bg-accent text-background px-4 py-2 uppercase tracking-widest text-[10px] font-bold hover:opacity-90 disabled:opacity-50"
+                    >
+                      {updatingOrderStatus ? 'Saving...' : 'Update'}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-muted font-bold block mb-2">Logistics Tracking Code</span>
                   <div className="flex gap-2">
                     <input
+                      id={`tracking-input-${selectedOrder.id}`}
                       type="text"
                       placeholder="Enter carrier & ID (e.g. Bluedart 12345)"
-                      defaultValue={selectedOrder.tracking_id || ''}
-                      onBlur={(e) => handleUpdateOrderTracking(selectedOrder.id, e.target.value)}
+                      value={selectedOrder.tracking_id || ''}
+                      onChange={(e) => setSelectedOrder(prev => ({ ...prev, tracking_id: e.target.value }))}
                       className="bg-white border border-border p-2 focus:outline-none text-primary"
                     />
+                    <button
+                      onClick={() => {
+                        const inputEl = document.getElementById(`tracking-input-${selectedOrder.id}`);
+                        if (inputEl) handleUpdateOrderTracking(selectedOrder.id, inputEl.value);
+                      }}
+                      className="bg-primary text-background px-4 py-2 uppercase tracking-widest text-[10px] font-bold hover:opacity-90"
+                    >
+                      Save
+                    </button>
                   </div>
                 </div>
               </div>
