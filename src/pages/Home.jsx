@@ -10,7 +10,7 @@ import { getDynamicBundles } from '../data/bundles';
 import BundleCard from '../components/ui/BundleCard';
 import HeroCarousel from '../components/ui/HeroCarousel';
 import ReelsSection from '../components/ui/ReelsSection';
-import RakhiCollectionSection from '../components/home/RakhiCollectionSection';
+
 import HomeCarousel from '../components/common/HomeCarousel';
 
 import { getPageSEO } from '../seo/seoHelpers';
@@ -100,9 +100,6 @@ const Home = () => {
           <img src="/assets/images/HeroImage.png" alt="The Sacred Store Healing Crystals" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
         </div>
       </section>
-
-      {/* Rakhi Collection Section */}
-      <RakhiCollectionSection />
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
       <div className="py-4 overflow-hidden flex whitespace-nowrap" style={{ backgroundColor: '#ffbd59' }}>
