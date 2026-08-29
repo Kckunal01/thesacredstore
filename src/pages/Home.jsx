@@ -102,7 +102,7 @@ const Home = () => {
       </section>
 
       {/* 2. Rolling Text Marquee - Seamless infinite loop */}
-      <div className="py-4 overflow-hidden flex whitespace-nowrap" style={{ backgroundColor: '#ffbd59' }}>
+      <div className="py-3 overflow-hidden flex whitespace-nowrap" style={{ backgroundColor: '#ffbd59' }}>
         <div className="animate-marquee inline-flex flex-shrink-0" aria-hidden="true">
           {[...Array(8)].map((_, i) => (
             <span key={i} className="text-sm font-semibold tracking-widest text-primary mx-8 uppercase flex-shrink-0 font-allura">

@@ -7,14 +7,14 @@ const slides = [
     desktop: '/assets/images/Carousel/Desktop/carousel 1.png',
     mobile: '/assets/images/Carousel/Mobile/Carosuel 1.png',
     objectPositionDesktop: 'center',
-    objectPositionMobile: 'center',
+    objectPositionMobile: 'center 15%',
   },
   {
     id: 2,
     desktop: '/assets/images/Carousel/Desktop/carousel 2.png',
     mobile: '/assets/images/Carousel/Mobile/Carosuel 2.png',
     objectPositionDesktop: 'center',
-    objectPositionMobile: 'center',
+    objectPositionMobile: 'center 15%',
   },
 ];
 
@@ -38,7 +38,7 @@ const HeroCarousel = () => {
     if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, 5500);
+    }, 7000);
     return () => clearInterval(interval);
   }, [isPaused]);
 
@@ -71,7 +71,7 @@ const HeroCarousel = () => {
       aria-label="Hero Carousel"
     >
       {/* Slide */}
-      <div className="relative w-full h-[55dvh] sm:h-[65dvh] md:h-[75dvh] lg:h-[80dvh]">
+      <div className="relative w-full h-[30dvh] sm:h-[40dvh] md:h-[48dvh] lg:h-[52dvh]">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}

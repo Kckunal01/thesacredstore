@@ -23,6 +23,8 @@ const Admin = () => {
   const [adminProductsLoading, setAdminProductsLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
+  const [consultations, setConsultations] = useState([]);
+  const [consultationsLoading, setConsultationsLoading] = useState(true);
 
   // Navigation state: 'dashboard' | 'products' | 'bundles' | 'orders'
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -250,6 +252,28 @@ const Admin = () => {
     }
   };
 
+  // Fetch consultations
+  const fetchConsultations = async () => {
+    setConsultationsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*, customers:customer_id(*)')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        setToast({ message: `Error fetching consultations: ${error.message}`, type: 'error' });
+        console.error('Supabase error fetching consultations:', error);
+      } else {
+        setConsultations(data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch consultations:', err);
+    } finally {
+      setConsultationsLoading(false);
+    }
+  };
+
   // Fetch products
   const loadAllProducts = async () => {
     setAdminProductsLoading(true);
@@ -265,9 +289,11 @@ const Admin = () => {
 
   useEffect(() => {
     let subscription;
+    let consultationsSub;
     if (session && isAdmin) {
       fetchOrders();
       loadAllProducts();
+      fetchConsultations();
       
       subscription = supabase
         .channel('admin-orders')
@@ -275,9 +301,17 @@ const Admin = () => {
           fetchOrders();
         })
         .subscribe();
+
+      consultationsSub = supabase
+        .channel('admin-consultations')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, (payload) => {
+          fetchConsultations();
+        })
+        .subscribe();
     }
     return () => {
       if (subscription) supabase.removeChannel(subscription);
+      if (consultationsSub) supabase.removeChannel(consultationsSub);
     };
   }, [session, isAdmin]);
 
@@ -875,7 +909,7 @@ const Admin = () => {
 
         {/* Tab Buttons */}
         <div className="flex border-b border-border mb-8 gap-6">
-          {['dashboard', 'products', 'bundles', 'orders'].map(tab => (
+          {['dashboard', 'products', 'bundles', 'orders', 'consultations'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1252,6 +1286,61 @@ const Admin = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* -------------------- TAB: CONSULTATIONS -------------------- */}
+        {activeTab === 'consultations' && (
+          <div className="bg-white border border-border/80 shadow-sm p-6 animate-fadeIn">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-display text-lg text-primary uppercase tracking-wider">Booked Consultations</h3>
+              <button
+                onClick={fetchConsultations}
+                className="bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 text-[9px] uppercase tracking-widest font-bold"
+              >
+                Refresh Consultations
+              </button>
+            </div>
+            
+            {consultationsLoading ? (
+              <div className="py-12 text-center text-muted font-light font-body">Loading consultations...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-border bg-[#FEFBF1] text-muted text-[10px] uppercase tracking-wider font-bold">
+                      <th className="p-4 uppercase tracking-wider font-bold">Booked On</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">Client</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">Session Slot</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">Focus Area</th>
+                      <th className="p-4 uppercase tracking-wider font-bold">Phone</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {consultations.map(c => (
+                      <tr key={c.id} className="border-b border-border/40 hover:bg-[#FEFBF1]/20">
+                        <td className="p-4 text-muted">{new Date(c.created_at).toLocaleDateString()}</td>
+                        <td className="p-4">
+                          <div className="font-semibold text-primary">{c.customers?.full_name || 'N/A'}</div>
+                          <div className="text-[10px] text-muted">{c.customers?.email || 'N/A'}</div>
+                        </td>
+                        <td className="p-4">
+                          <div className="font-semibold text-primary">{c.booking_date}</div>
+                          <div className="text-muted font-mono">{c.booking_time}</div>
+                        </td>
+                        <td className="p-4 text-muted">{c.service_name || 'N/A'}</td>
+                        <td className="p-4 text-muted font-mono">{c.phone || c.customers?.phone || 'N/A'}</td>
+                      </tr>
+                    ))}
+                    {consultations.length === 0 && (
+                      <tr>
+                        <td colSpan="5" className="p-12 text-center text-muted font-light font-body">No consultations found in database.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </Container>
