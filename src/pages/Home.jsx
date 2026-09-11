@@ -80,23 +80,23 @@ const Home = () => {
       <HeroCarousel />
 
       {/* Existing Homepage Hero restored exactly as it was in Git */}
-      <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[60vh] overflow-hidden mb-0">
-        <div className="w-full md:w-7/12 flex flex-col justify-center py-12 px-6 md:px-12 lg:px-20">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-2">
+      <section className="flex flex-col md:flex-row border-b border-border bg-background min-h-[50vh] md:min-h-[60vh] overflow-hidden mb-0">
+        <div className="w-full md:w-7/12 flex flex-col justify-center py-7 px-5 md:py-12 md:px-12 lg:px-20">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-display font-bold mb-1.5">
             THE <span className="font-allura" style={{ color: '#D4AF37' }}>SACRED</span> STORE
           </h1>
-          <h2 className="text-2xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-8 mb-2">
+          <h2 className="text-xl md:text-3xl lg:text-4xl leading-[1.1] font-display font-medium text-primary mt-5 md:mt-8 mb-1.5">
             <span className="text-primary block">Make Space</span> <span className="half-gold">for Meaning.</span>
           </h2>
-          <p className="text-base md:text-lg text-muted font-light mb-4 max-w-xl">
+          <p className="text-sm md:text-lg text-muted font-light mb-3 md:mb-4 max-w-xl">
             Reiki‑healing crystals, gems, and simple life‑changing rituals.
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 mt-4">
-            <Button to="/shop-crystals" variant="gold" className="text-sm px-5 py-2 w-full sm:w-auto text-center">Shop Collection</Button>
-            <Button to="/book-a-call" variant="ghost" className="text-sm px-5 py-2 w-full sm:w-auto text-center">Book Consultation</Button>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-3 md:mt-4">
+            <Button to="/shop-crystals" variant="gold" className="text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2 w-full sm:w-auto text-center">Shop Collection</Button>
+            <Button to="/book-a-call" variant="ghost" className="text-xs sm:text-sm px-4 py-2 sm:px-5 sm:py-2 w-full sm:w-auto text-center">Book Consultation</Button>
           </div>
         </div>
-        <div className="w-full md:w-5/12 min-h-[40vh] md:min-h-0 flex items-stretch bg-surface p-0 group overflow-hidden">
+        <div className="w-full md:w-5/12 min-h-[32vh] md:min-h-0 flex items-stretch bg-surface p-0 group overflow-hidden">
           <img src="/assets/images/HeroImage.png" alt="The Sacred Store Healing Crystals" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
         </div>
       </section>
@@ -120,13 +120,13 @@ const Home = () => {
       </div>
 
       {/* 3. Best Sellers: Featured Collection */}
-      <Section id="best-sellers" className="border-b border-border py-16">
+      <Section id="best-sellers" className="border-b border-border py-8 md:py-16">
         <Container>
-          <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
+          <div className="text-center mb-6 md:mb-10">
+            <h3 className="text-2xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Featured</span> <span className="half-gold">Collection</span>
             </h3>
-            <p className="text-xs text-muted font-light mt-2">
+            <p className="text-xs text-muted font-light mt-1.5">
               Handpicked reiki-charged raw crystals and intentional jewelry.
             </p>
           </div>
@@ -137,7 +137,7 @@ const Home = () => {
               <ProductCard key={product.id} {...product} />
             )}
           />
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-6 md:mt-8">
             <Button to="/shop-crystals" variant="gold" className="text-[10px] px-6 py-3">View Complete Collection</Button>
           </div>
         </Container>
@@ -146,29 +146,29 @@ const Home = () => {
       {/* 5. Consultation Section */}
       <section className="flex flex-col md:flex-row border-b border-border bg-background py-2">
         <div className="w-full md:w-1/2 p-4 md:p-8 lg:p-10 flex flex-col justify-center">
-          <h3 className="text-4xl md:text-5xl font-display font-medium text-primary mb-6">
+          <h3 className="text-2xl sm:text-3xl md:text-5xl font-display font-medium text-primary mb-3 md:mb-6">
             <span className="text-primary">Book your</span> <span className="half-gold">call</span>
           </h3>
-          <p className="text-base text-muted font-light mb-4 leading-relaxed max-w-md">
+          <p className="text-sm md:text-base text-muted font-light mb-3 md:mb-4 leading-relaxed max-w-md">
             Unsure which mineral aligns with your current focus? Book a private 1-on-1 reading to map your space and energy accurately.
           </p>
           <div>
             <Button to="/book-a-call" variant="primary" className="text-[10px] px-6 py-3">Book Your Session</Button>
           </div>
         </div>
-        <div className="w-full md:w-1/2 flex-1 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden">
+        <div className="w-full md:w-1/2 flex-1 flex items-stretch bg-surface border-l border-border p-0 group overflow-hidden min-h-[200px] md:min-h-0">
           <img src="/assets/images/Bookyourcall.JPG.jpeg" alt="Book Private Consultation" loading="lazy" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
         </div>
       </section>
 
       {/* Curated Bundles section directly ABOVE Testimonials */}
-      <Section className="border-b border-border bg-background py-16">
+      <Section className="border-b border-border bg-background py-8 md:py-16">
         <Container>
-          <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
+          <div className="text-center mb-6 md:mb-10">
+            <h3 className="text-2xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Curated</span> <span className="half-gold">Bundles</span>
             </h3>
-            <p className="text-xs text-muted font-light mt-2">
+            <p className="text-xs text-muted font-light mt-1.5">
               Thoughtfully paired crystals designed to complement each other.
             </p>
           </div>
@@ -191,13 +191,13 @@ const Home = () => {
       <ReelsSection />
 
       {/* 6. Testimonials — uses shared HomeCarousel, no nav buttons */}
-      <Section className="bg-surface border-b border-border py-16">
+      <Section className="bg-surface border-b border-border py-8 md:py-16">
         <Container>
-          <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary tracking-wider">
+          <div className="text-center mb-6 md:mb-10">
+            <h3 className="text-2xl md:text-4xl font-display font-medium text-primary tracking-wider">
               <span className="text-primary">Loved By the</span> <span className="half-gold">Community</span>
             </h3>
-            <p className="text-xs text-muted font-light mt-2">
+            <p className="text-xs text-muted font-light mt-1.5">
               Real stories and transformative shifts from our sacred circle.
             </p>
           </div>
@@ -205,6 +205,8 @@ const Home = () => {
           <HomeCarousel
             items={testimonials}
             hideNav
+            autoSlide={true}
+            autoSlideInterval={4500}
             trackClassName="slides-3"
             renderItem={(test) => (
               <div className="bg-background border border-border p-6 h-full flex flex-col justify-between rounded-lg shadow-lg hover:shadow-xl transition-shadow">
@@ -226,13 +228,13 @@ const Home = () => {
       </Section>
 
       {/* 7. Blog Section: Learn More */}
-      <Section className="border-b border-border py-16 bg-background">
+      <Section className="border-b border-border py-8 md:py-16 bg-background">
         <Container>
-          <div className="text-center mb-10">
-            <h3 className="text-3xl md:text-4xl font-display font-medium text-primary">
+          <div className="text-center mb-6 md:mb-10">
+            <h3 className="text-2xl md:text-4xl font-display font-medium text-primary">
               <span className="text-primary">Learn</span> <span className="half-gold">More</span>
             </h3>
-            <p className="text-xs text-muted font-light mt-2">
+            <p className="text-xs text-muted font-light mt-1.5">
               Explore deep dives, grounding rituals, and sacred space arrangement guides.
             </p>
           </div>

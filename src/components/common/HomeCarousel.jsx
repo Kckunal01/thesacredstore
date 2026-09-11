@@ -1,10 +1,34 @@
 import React, { useRef, useState, useEffect } from 'react';
 
-const HomeCarousel = ({ items, renderItem, className = '', trackClassName = '' }) => {
+const HomeCarousel = ({ items, renderItem, className = '', trackClassName = '', autoSlide = false, autoSlideInterval = 5000 }) => {
   const scrollRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+
+  // Auto sliding
+  useEffect(() => {
+    if (!autoSlide || isDragging || isHovered) return;
+
+    const timer = setInterval(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+
+      const { scrollLeft, scrollWidth, clientWidth } = el;
+      // Scroll by one slide width or clientWidth
+      const slide = el.querySelector('.home-carousel-slide');
+      const step = slide ? slide.offsetWidth + 16 : clientWidth * 0.8;
+
+      if (Math.ceil(scrollLeft + clientWidth) >= scrollWidth - 10) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ left: step, behavior: 'smooth' });
+      }
+    }, autoSlideInterval);
+
+    return () => clearInterval(timer);
+  }, [autoSlide, autoSlideInterval, isDragging, isHovered]);
 
   // Horizontal mouse wheel scrolling — only intercept when cursor is inside the carousel
   useEffect(() => {
@@ -74,6 +98,9 @@ const HomeCarousel = ({ items, renderItem, className = '', trackClassName = '' }
         onMouseLeave={handleMouseLeave}
         onMouseUp={handleMouseUp}
         onMouseMove={handleMouseMove}
+        onMouseEnter={() => setIsHovered(true)}
+        onTouchStart={() => setIsHovered(true)}
+        onTouchEnd={() => setIsHovered(false)}
         style={{
           scrollBehavior: isDragging ? 'auto' : 'smooth',
         }}

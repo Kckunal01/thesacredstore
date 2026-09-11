@@ -114,13 +114,13 @@ const ReelsSection = () => {
   };
 
   return (
-    <Section className="bg-surface border-b border-border py-16">
+    <Section className="bg-surface border-b border-border py-8 md:py-16">
       <Container>
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-display font-medium text-primary">
+        <div className="text-center mb-6 md:mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-display font-medium text-primary tracking-wide">
             <span className="text-primary">Watch Us</span> <span className="half-gold">More</span>
           </h2>
-          <p className="text-xs text-muted font-light mt-2">
+          <p className="text-xs sm:text-sm text-muted font-light mt-1.5 max-w-lg mx-auto">
             Step into our space and discover the energy behind our curation.
           </p>
         </div>
