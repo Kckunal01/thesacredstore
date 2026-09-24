@@ -6,6 +6,7 @@ import { getDynamicBundles } from '../data/bundles';
 import Container from '../components/ui/Container';
 import Button from '../components/ui/Button';
 import { resolveProductImage } from '../utils/productImageResolver';
+import { trackViewContent, trackAddToCart } from '../utils/metaPixel';
 
 const BundleDetail = () => {
   const { slug } = useParams();
@@ -52,6 +53,18 @@ const BundleDetail = () => {
     );
   }
 
+  // Track Meta Pixel ViewContent event
+  React.useEffect(() => {
+    if (bundle && bundle.id) {
+      trackViewContent({
+        id: `bundle_${bundle.id}`,
+        name: bundle.name,
+        price: pricing.finalPrice,
+        slug: bundle.slug,
+      });
+    }
+  }, [bundle?.id, pricing.finalPrice]);
+
   const handleAddEntireBundle = () => {
     if (includedProducts.length === 0) return;
     const bundleProduct = {
@@ -67,6 +80,7 @@ const BundleDetail = () => {
       quantity: 1
     };
     addToCart(bundleProduct, 1);
+    trackAddToCart(bundleProduct, 1);
     navigate('/checkout');
   };
 

@@ -10,6 +10,7 @@ import { getCartRecommendations } from '../lib/recommendations';
 import ProductCard from '../components/ui/ProductCard';
 import { getProductStockMap } from '../lib/supabaseProducts';
 import { resolveProductImage } from '../utils/productImageResolver';
+import { trackPurchase } from '../utils/metaPixel';
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -99,6 +100,15 @@ const Checkout = () => {
       const { orderId: returnedOrderId } = await res.json();
       setOrderId(returnedOrderId);
       setStep(3);
+
+      // Meta Pixel Purchase event (safely wrapped)
+      trackPurchase({
+        orderId: returnedOrderId,
+        value: finalTotalAmount,
+        currency: 'INR',
+        items: cart,
+      });
+
       clearCart();
     } catch (err) {
       console.error('Backend order completion error:', err);

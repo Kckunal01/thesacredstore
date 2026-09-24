@@ -11,6 +11,7 @@ import ProductRecommendations from '../components/ProductRecommendations';
 // Supabase helpers are no longer needed for stock; keep only waitlist helpers
 import { checkStockRequestExists, createStockRequest } from '../lib/supabase';
 import { resolveProductImages, resolveProductImage } from '../utils/productImageResolver';
+import { trackViewContent, trackAddToCart } from '../utils/metaPixel';
 
 // Helper to generate slug from product name
 function slugify(text) {
@@ -56,6 +57,13 @@ const Product = () => {
 
 
   const discountPercentage = product?.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : 0;
+
+  // Track Meta Pixel ViewContent event
+  useEffect(() => {
+    if (product && product.id) {
+      trackViewContent(product);
+    }
+  }, [product?.id]);
 
   // Delivery Estimator logic
   const handleCheckPin = async () => {
@@ -142,6 +150,7 @@ const Product = () => {
       certificationPrice: 100
     };
     addToCart(itemToAdd, quantity);
+    trackAddToCart(itemToAdd, quantity);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };

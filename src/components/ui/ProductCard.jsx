@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Plus, Minus } from 'lucide-react';
 import { CartContext } from '../../context/CartContext';
 import { ProductsContext } from '../../context/ProductsContext';
+import { trackAddToCart } from '../../utils/metaPixel';
 
 // Helper to generate slug from product name (matches server-side slug logic)
 const slugify = (text) => {
@@ -30,7 +31,9 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
     e.preventDefault();
     e.stopPropagation();
     if (isCartFull) return;
-    addToCart({ id, slug, name, price, originalPrice, images, category }, quantity);
+    const itemToAdd = { id, slug, name, price, originalPrice, images, category };
+    addToCart(itemToAdd, quantity);
+    trackAddToCart(itemToAdd, quantity);
   };
 
   const handleIncrement = (e) => {

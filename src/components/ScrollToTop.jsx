@@ -15,6 +15,15 @@ const ScrollToTop = () => {
     } else {
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
+
+    // Fire Meta Pixel PageView on client-side route navigation
+    if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
+      try {
+        window.fbq('track', 'PageView');
+      } catch (e) {
+        // non-fatal
+      }
+    }
   }, [pathname, hash]);
 
   return null;
