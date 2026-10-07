@@ -4,6 +4,7 @@ import { CartProvider } from './context/CartContext';
 import { ProductsProvider } from './context/ProductsContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import FloatingWhatsApp from './components/FloatingWhatsApp';
 import ScrollToTop from './components/ScrollToTop';
 
 // Pages
@@ -44,6 +45,11 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/shop" element={<Shop />} />
+              <Route path="/shop/accessories" element={<Shop initialCategory="Accessories" pageTitle="Accessories" description="Intentional bracelets, pendants, sacred malas, and ritual jube coins." />} />
+              <Route path="/shop/tumbles" element={<Shop initialCategory="Tumbles" pageTitle="Tumbles" description="Pocket-sized, polished gemstone tumbles for daily energetic alignment." />} />
+              <Route path="/shop/household" element={<Shop initialCategory="Household" pageTitle="Household" description="Handcrafted crystal trees, pyramids, and ambient lamps to anchor harmony in your home." />} />
+              <Route path="/shop/variety-crystals" element={<Shop initialCategory="Variety Crystals" pageTitle="Variety Crystals" description="Raw crystal clusters, sacred spheres, and energy generator points." />} />
+              <Route path="/shop/cleaning-charging" element={<Shop initialCategory="Cleaning / Charging" pageTitle="Cleaning / Charging" description="Selenite charging plates, cleansing bowls, and sound healing tools." />} />
               <Route path="/gift-shop" element={<Shop initialFilter="gift-shop" pageTitle="Gift Shop" />} />
               <Route path="/new-arrivals" element={<Shop initialFilter="new-arrivals" pageTitle="New Arrivals" />} />
               <Route path="/festive-offers" element={<Shop initialFilter="festive-offers" pageTitle="Festive Offers" />} />
@@ -54,11 +60,11 @@ function App() {
               <Route path="/book-a-call" element={<BookCall />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/product/:id" element={<Product />} />
-              <Route path="/shop-crystals" element={<ShopCrystals />} />
-              <Route path="/shop-jewellery" element={<ShopJewellery />} />
-              <Route path="/shop-bracelets" element={<ShopBracelets />} />
-              <Route path="/shop-pendants" element={<ShopPendants />} />
-              <Route path="/shop-utility" element={<ShopUtility />} />
+              <Route path="/shop-crystals" element={<Shop initialCategory="Variety Crystals" pageTitle="Variety Crystals" />} />
+              <Route path="/shop-jewellery" element={<Shop initialCategory="Accessories" pageTitle="Accessories" />} />
+              <Route path="/shop-bracelets" element={<Shop initialCategory="Accessories" pageTitle="Accessories" />} />
+              <Route path="/shop-pendants" element={<Shop initialCategory="Accessories" pageTitle="Accessories" />} />
+              <Route path="/shop-utility" element={<Shop initialCategory="Household" pageTitle="Household" />} />
               <Route path="/specialised-crystals" element={<SpecialisedCrystals />} />
               <Route path="/track-order" element={<TrackOrder />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -70,6 +76,7 @@ function App() {
               <Route path="/bundles/:slug" element={<BundleDetail />} />
             </Routes>
           </main>
+          <FloatingWhatsApp />
           <Footer />
         </div>
       </Router>

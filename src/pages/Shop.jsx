@@ -3,118 +3,131 @@ import { useSearchParams } from 'react-router-dom';
 import Container from '../components/ui/Container';
 import Section from '../components/ui/Section';
 import ProductCard from '../components/ui/ProductCard';
-import { Search, X } from 'lucide-react';
 import { ProductsContext } from '../context/ProductsContext';
 import { CANONICAL_TAXONOMY, matchesTaxonomy } from '../data/taxonomy';
 import Seo from '../components/Seo';
 import { getPageSEO } from '../seo/seoHelpers';
 
-const Shop = ({ initialFilter = null, pageTitle = null }) => {
+const SORT_OPTIONS = [
+  { value: 'default', label: 'All' },
+  { value: 'price-asc', label: 'Price: Low → High' },
+  { value: 'price-desc', label: 'Price: High → Low' },
+  { value: 'alpha', label: 'A → Z' },
+  { value: 'featured', label: 'Featured' },
+];
+
+const Shop = ({ initialCategory = null, initialFilter = null, pageTitle = null, description = null }) => {
   const { products } = useContext(ProductsContext);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const queryCategory = searchParams.get('category') || initialFilter || 'All';
+  // Route-based category (if on dedicated category page) or query-param category
+  const activeCategory = initialCategory || searchParams.get('category') || 'All';
   const querySub = searchParams.get('sub') || 'All';
   const querySearch = searchParams.get('search') || '';
   const filterType = searchParams.get('filter') || (initialFilter && ['gift-shop', 'new-arrivals', 'festive-offers'].includes(initialFilter) ? initialFilter : null);
 
-  const [activeCategory, setActiveCategory] = useState(queryCategory);
-  const [activeSubcategory, setActiveSubcategory] = useState(querySub);
-  const [searchQuery, setSearchQuery] = useState(querySearch);
+  const [activeSubcategory, setActiveSubcategory] = useState(querySub === 'All' ? null : querySub);
+  const [sortBy, setSortBy] = useState('default');
 
   useEffect(() => {
-    if (searchParams.get('category')) {
-      setActiveCategory(searchParams.get('category'));
-    } else if (initialFilter && !['gift-shop', 'new-arrivals', 'festive-offers'].includes(initialFilter)) {
-      setActiveCategory(initialFilter);
-    }
     if (searchParams.get('sub')) {
       setActiveSubcategory(searchParams.get('sub'));
+    } else {
+      setActiveSubcategory(null);
     }
-    if (searchParams.get('search')) {
-      setSearchQuery(searchParams.get('search'));
-    }
-  }, [searchParams, initialFilter]);
+  }, [searchParams, activeCategory]);
 
   const activeCategoryObj = useMemo(() => {
     return CANONICAL_TAXONOMY.find(c => c.name.toLowerCase() === activeCategory.toLowerCase());
   }, [activeCategory]);
 
-  const handleCategoryChange = (catName) => {
-    setActiveCategory(catName);
-    setActiveSubcategory('All');
-    const newParams = new URLSearchParams(searchParams);
-    if (catName === 'All') {
-      newParams.delete('category');
-    } else {
-      newParams.set('category', catName);
-    }
-    newParams.delete('sub');
-    newParams.delete('filter');
-    setSearchParams(newParams);
-  };
-
   const handleSubcategoryChange = (subName) => {
-    setActiveSubcategory(subName);
+    const newSub = activeSubcategory === subName ? null : subName;
+    setActiveSubcategory(newSub);
     const newParams = new URLSearchParams(searchParams);
-    if (subName === 'All') {
+    if (!newSub) {
       newParams.delete('sub');
     } else {
-      newParams.set('sub', subName);
+      newParams.set('sub', newSub);
     }
     setSearchParams(newParams);
-  };
-
-  const clearFilters = () => {
-    setActiveCategory('All');
-    setActiveSubcategory('All');
-    setSearchQuery('');
-    setSearchParams(new URLSearchParams());
   };
 
   const displayedProducts = useMemo(() => {
     let list = products.filter(p => p && p.id && p.name && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle && p.active !== false && p.visible !== false);
 
-    // Special preset filters
-    if (filterType === 'festive-offers') {
-      list = list.filter(p => (p.originalPrice && p.price < p.originalPrice) || p.stamp === 'Sale' || p.featured);
-    } else if (filterType === 'new-arrivals') {
-      list = list.filter(p => p.stamp === 'Fresh' || p.featured || true).slice(0, 24);
-    } else if (filterType === 'gift-shop') {
-      list = list.filter(p => p.featured || p.stamp || (p.price >= 499));
-    }
-
-    // Search query
-    if (searchQuery.trim() !== '') {
-      const q = searchQuery.toLowerCase().trim();
-      return list.filter(p =>
+    // Global search: searches across ALL products from all categories
+    if (querySearch.trim() !== '') {
+      const q = querySearch.toLowerCase().trim();
+      list = list.filter(p =>
         p.name.toLowerCase().includes(q) ||
         (p.category && p.category.toLowerCase().includes(q)) ||
         (p.description && p.description.toLowerCase().includes(q))
       );
+      return list;
     }
 
-    // Taxonomy filtering
+    // Special preset collection filters
+    if (filterType === 'festive-offers') {
+      // Show all festive offers, sorted by highest absolute discount
+      list = list
+        .filter(p => p.is_festive_offer)
+        .sort((a, b) => {
+          const discA = (a.originalPrice || a.price) - a.price;
+          const discB = (b.originalPrice || b.price) - b.price;
+          return discB - discA;
+        });
+      return list;
+    } else if (filterType === 'new-arrivals') {
+      // Show all new arrivals, latest first
+      list = list
+        .filter(p => p.is_new_arrival)
+        .sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        });
+      return list;
+    } else if (filterType === 'gift-shop') {
+      // Show all gift shop items
+      list = list.filter(p => p.is_gift_shop);
+      return list;
+    }
+
+    // Category & subcategory filtering
     if (activeCategory !== 'All' && !filterType) {
-      return list.filter(p => matchesTaxonomy(p, activeCategory, activeSubcategory));
+      list = list.filter(p => matchesTaxonomy(p, activeCategory, activeSubcategory));
+    }
+
+    // Apply sorting
+    if (sortBy === 'price-asc') {
+      list = [...list].sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price-desc') {
+      list = [...list].sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'alpha') {
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortBy === 'featured') {
+      list = [...list].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     }
 
     return list;
-  }, [products, searchQuery, activeCategory, activeSubcategory, filterType]);
+  }, [products, querySearch, activeCategory, activeSubcategory, filterType, sortBy]);
 
-  const computedTitle = pageTitle || (filterType === 'festive-offers'
+  const computedTitle = pageTitle || (querySearch
+    ? `Search Results for "${querySearch}"`
+    : filterType === 'festive-offers'
     ? 'Festive Offers — Up to 30% Off'
     : filterType === 'new-arrivals'
     ? 'New Arrivals'
     : filterType === 'gift-shop'
     ? 'Sacred Gift Shop'
     : activeCategory !== 'All'
-    ? `${activeCategory} Collection`
+    ? `${activeCategory}`
     : 'Shop Sacred Crystals & Jewelry');
 
   const shopSEO = getPageSEO({
     title: `${computedTitle} | The Sacred Store`,
-    description: 'Explore high-quality crystals, gemstones, jewelry, and sacred tools designed to elevate your energy.',
+    description: description || 'Explore high-quality crystals, gemstones, jewelry, and sacred tools designed to elevate your energy.',
     slug: '/shop',
   });
 
@@ -131,80 +144,20 @@ const Shop = ({ initialFilter = null, pageTitle = null }) => {
               {computedTitle}
             </h1>
             <p className="text-xs md:text-sm text-muted font-light max-w-lg mx-auto">
-              Authentic spiritual tools, intentional jewelry, and energised crystals crafted for your journey.
+              {description || 'Authentic spiritual tools, intentional jewelry, and energised crystals crafted for your journey.'}
             </p>
 
-            {/* Search Input */}
-            <div className="max-w-md mx-auto relative mt-6 mb-6">
-              <input
-                type="text"
-                placeholder="Search crystals, bracelets, pendants..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-surface border border-accent/40 rounded-full px-5 py-3 pl-12 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-accent transition-colors text-primary placeholder-muted/70 shadow-sm"
-              />
-              <Search className="w-4 h-4 absolute left-4 top-1/2 transform -translate-y-1/2 text-accent" />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted hover:text-primary"
-                  aria-label="Clear search"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {/* Category Filter Tabs */}
-            {!filterType && (
-              <div className="flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto pt-2">
-                <button
-                  onClick={() => handleCategoryChange('All')}
-                  className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-[0.12em] font-semibold transition-all duration-200 ${
-                    activeCategory === 'All'
-                      ? 'bg-primary text-background shadow-md'
-                      : 'bg-surface text-muted hover:text-primary border border-border/80'
-                  }`}
-                >
-                  All Products
-                </button>
-                {CANONICAL_TAXONOMY.map(cat => (
-                  <button
-                    key={cat.name}
-                    onClick={() => handleCategoryChange(cat.name)}
-                    className={`px-4 py-2 rounded-full text-[11px] uppercase tracking-[0.12em] font-semibold transition-all duration-200 ${
-                      activeCategory === cat.name
-                        ? 'bg-primary text-background shadow-md'
-                        : 'bg-surface text-muted hover:text-primary border border-border/80'
-                    }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Subcategory Chips if active category has subcategories */}
-            {!filterType && activeCategoryObj && activeCategoryObj.subcategories.length > 0 && (
-              <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-3 border-t border-border/40 max-w-2xl mx-auto">
-                <button
-                  onClick={() => handleSubcategoryChange('All')}
-                  className={`px-3 py-1 rounded-md text-[10px] uppercase tracking-wider font-medium transition-all ${
-                    activeSubcategory === 'All'
-                      ? 'bg-accent text-white font-bold'
-                      : 'text-muted hover:text-primary bg-surface/60'
-                  }`}
-                >
-                  All {activeCategory}
-                </button>
+            {/* Subcategory navigation — shown only if category has subcategories, and no search/collection filter */}
+            {!filterType && !querySearch && activeCategoryObj && activeCategoryObj.subcategories.length > 0 && (
+              <div className="flex overflow-x-auto scrollbar-none items-center justify-center gap-2 mt-6 pt-2 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 max-w-2xl sm:mx-auto">
                 {activeCategoryObj.subcategories.map(sub => (
                   <button
                     key={sub}
                     onClick={() => handleSubcategoryChange(sub)}
-                    className={`px-3 py-1 rounded-md text-[10px] uppercase tracking-wider font-medium transition-all ${
+                    className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] uppercase tracking-[0.12em] font-semibold transition-all duration-200 ${
                       activeSubcategory === sub
-                        ? 'bg-accent text-white font-bold'
-                        : 'text-muted hover:text-primary bg-surface/60'
+                        ? 'bg-primary text-background shadow-md'
+                        : 'bg-surface text-muted hover:text-primary border border-border/80'
                     }`}
                   >
                     {sub}
@@ -213,18 +166,24 @@ const Shop = ({ initialFilter = null, pageTitle = null }) => {
               </div>
             )}
 
-            {/* Active filter summary tag */}
-            {(activeCategory !== 'All' || filterType || searchQuery) && (
-              <div className="mt-4 flex items-center justify-center gap-2">
-                <span className="text-xs text-muted">
-                  Showing {displayedProducts.length} items
-                </span>
-                <button
-                  onClick={clearFilters}
-                  className="text-xs text-accent underline hover:text-primary transition-colors ml-2"
-                >
-                  Reset all filters
-                </button>
+            {/* Sort Controls — minimal dropdown */}
+            {!filterType && !querySearch && (
+              <div className="flex items-center justify-center mt-4">
+                <div className="relative flex items-center">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="bg-transparent border-none text-[10px] uppercase tracking-[0.1em] font-bold text-[#B89968] hover:text-primary cursor-pointer focus:outline-none focus:ring-0 appearance-none pr-4"
+                    style={{ WebkitAppearance: 'none', MozAppearance: 'none' }}
+                  >
+                    <option value="default">Sort Options</option>
+                    <option value="price-asc">Price: Low → High</option>
+                    <option value="price-desc">Price: High → Low</option>
+                    <option value="alpha">A → Z</option>
+                    <option value="featured">Featured</option>
+                  </select>
+                  <svg className="w-3 h-3 text-[#B89968] absolute right-0 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
+                </div>
               </div>
             )}
           </div>
@@ -238,13 +197,9 @@ const Shop = ({ initialFilter = null, pageTitle = null }) => {
             ) : (
               <div className="col-span-full text-center text-muted py-16 bg-surface/40 rounded-2xl border border-border/50">
                 <p className="text-base font-display text-primary mb-2">No products found</p>
-                <p className="text-xs text-muted mb-4">Try clearing your filters or searching for something else.</p>
-                <button
-                  onClick={clearFilters}
-                  className="px-5 py-2 bg-primary text-background text-xs uppercase tracking-wider font-bold rounded-full"
-                >
-                  View All Products
-                </button>
+                <p className="text-xs text-muted mb-4">
+                  {querySearch ? `We couldn't find anything matching "${querySearch}".` : 'No items currently in this section.'}
+                </p>
               </div>
             )}
           </div>

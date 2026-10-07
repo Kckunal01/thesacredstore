@@ -54,6 +54,7 @@ const Admin = () => {
   const [prodForm, setProdForm] = useState({
     name: '', slug: '', category: 'Crystals', description: '',
     price: '', original_price: '', stamp: 'none', featured: false,
+    is_gift_shop: false, is_new_arrival: false, is_festive_offer: false,
     stock: 10, active: true, philosophy: '', details: '',
     usage: '', chakra: '', effect: '', origin: '',
     intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
@@ -474,6 +475,9 @@ const Admin = () => {
         original_price: prodForm.original_price ? parseFloat(prodForm.original_price) : null,
         stamp: prodForm.stamp,
         featured: prodForm.featured,
+        is_gift_shop: prodForm.is_gift_shop,
+        is_new_arrival: prodForm.is_new_arrival,
+        is_festive_offer: prodForm.is_festive_offer,
         stock: parseInt(prodForm.stock) || 0,
         active: prodForm.active,
         philosophy: prodForm.philosophy,
@@ -644,6 +648,9 @@ const Admin = () => {
       original_price: prod.originalPrice || prod.original_price || '',
       stamp: prod.stamp || 'none',
       featured: !!prod.featured,
+      is_gift_shop: !!prod.is_gift_shop,
+      is_new_arrival: !!prod.is_new_arrival,
+      is_festive_offer: !!prod.is_festive_offer,
       stock: prod.stock !== undefined ? prod.stock : 10,
       active: prod.active !== undefined ? prod.active : true,
       philosophy: prod.philosophy || '',
@@ -667,6 +674,7 @@ const Admin = () => {
     setProdForm({
       name: '', slug: '', category: 'Crystals', description: '',
       price: '', original_price: '', stamp: 'none', featured: false,
+      is_gift_shop: false, is_new_arrival: false, is_festive_offer: false,
       stock: 10, active: true, philosophy: '', details: '',
       usage: '', chakra: '', effect: '', origin: '',
       intention: '', dimensions: '', cleansing_charging: '', certificationNumber: '',
@@ -1435,6 +1443,10 @@ const Admin = () => {
                     <option value="none">None</option>
                     <option value="Fresh">Fresh</option>
                     <option value="Sale">Sale</option>
+                    <option value="Best Seller">Best Seller</option>
+                    <option value="Hot">Hot</option>
+                    <option value="Popular">Popular</option>
+                    <option value="Rare">Rare</option>
                   </select>
                 </div>
                 <div>
@@ -1447,8 +1459,8 @@ const Admin = () => {
                     className="w-full bg-white border border-border p-3 focus:outline-none focus:border-accent text-primary"
                   />
                 </div>
-                <div>
-                  <div className="flex gap-6 mt-6">
+                <div className="col-span-full">
+                  <div className="flex flex-wrap gap-4 sm:gap-6 mt-4">
                     <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-muted text-[10px] cursor-pointer">
                       <input
                         type="checkbox"
@@ -1466,6 +1478,33 @@ const Admin = () => {
                         className="accent-accent"
                       />
                       Featured
+                    </label>
+                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-[#B89968] text-[10px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={prodForm.is_gift_shop}
+                        onChange={(e) => setProdForm({ ...prodForm, is_gift_shop: e.target.checked })}
+                        className="accent-[#B89968]"
+                      />
+                      Gift Shop
+                    </label>
+                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-[#B89968] text-[10px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={prodForm.is_new_arrival}
+                        onChange={(e) => setProdForm({ ...prodForm, is_new_arrival: e.target.checked })}
+                        className="accent-[#B89968]"
+                      />
+                      New Arrival
+                    </label>
+                    <label className="flex items-center gap-2 font-bold uppercase tracking-wider text-[#B89968] text-[10px] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={prodForm.is_festive_offer}
+                        onChange={(e) => setProdForm({ ...prodForm, is_festive_offer: e.target.checked })}
+                        className="accent-[#B89968]"
+                      />
+                      Festive Offer
                     </label>
                   </div>
                 </div>

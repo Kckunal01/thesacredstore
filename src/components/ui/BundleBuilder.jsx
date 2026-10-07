@@ -156,45 +156,46 @@ const BundleBuilder = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2.5 sm:gap-3.5 max-h-[600px] overflow-y-auto pr-1 sm:pr-2">
           {filteredProducts.map(p => {
             const qtySelected = selectedQuantities[p.id] || 0;
             const maxSelect = getMaxAllowedSelect(p);
             return (
               <div 
                 key={p.id}
-                className={`bg-surface border p-4 transition-all flex flex-col justify-between rounded-lg ${
-                  qtySelected > 0 ? 'border-accent ring-1 ring-accent' : 'border-border'
+                className={`bg-surface border p-2.5 sm:p-3 transition-all flex flex-col justify-between rounded-xl ${
+                  qtySelected > 0 ? 'border-accent ring-1 ring-accent' : 'border-border/80'
                 }`}
               >
                 <div>
-                  <div className="aspect-square bg-background overflow-hidden mb-3 rounded-md">
+                  <div className="aspect-square bg-background overflow-hidden mb-2 rounded-lg">
                     <img 
                       src={resolveProductImage(p)}
                       alt={p.name} 
                       loading="lazy"
                       decoding="async"
                       fetchpriority="low"
-                      width="180"
-                      height="180"
+                      width="140"
+                      height="140"
                       className="w-full h-full object-cover"
                       onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/placeholder.png'; }}
                     />
                   </div>
-                  <h5 className="font-display font-medium text-sm text-primary mb-1 line-clamp-1">{p.name}</h5>
-                  <span className="text-[10px] text-muted tracking-wider block mb-2">{p.category}</span>
+                  <h5 className="font-display font-medium text-xs sm:text-sm text-primary mb-0.5 line-clamp-1 leading-tight">{p.name}</h5>
+                  <span className="text-[9px] sm:text-[10px] text-muted tracking-wider block mb-1.5">{p.category}</span>
                 </div>
                 
-                <div className="flex flex-col gap-2 mt-2">
+                <div className="flex flex-col gap-1.5 mt-1">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-bold text-primary">₹{p.price}</span>
+                    <span className="text-xs sm:text-sm font-bold text-primary">₹{p.price}</span>
                   </div>
 
                   {qtySelected > 0 ? (
-                    <div className="flex items-center justify-between border border-accent/30 rounded px-1.5 py-1">
+                    <div className="flex items-center justify-between border border-accent/40 rounded-lg px-2 py-0.5 bg-background">
                       <button 
                         onClick={() => handleDecrement(p.id)} 
-                        className="text-accent font-bold px-2 py-0.5 text-xs hover:bg-background rounded"
+                        className="text-accent font-bold px-1.5 py-0.5 text-xs hover:bg-surface rounded transition-colors"
+                        aria-label="Decrease quantity"
                       >
                         -
                       </button>
@@ -202,7 +203,8 @@ const BundleBuilder = () => {
                       <button 
                         onClick={() => handleIncrement(p)} 
                         disabled={qtySelected >= maxSelect}
-                        className="text-accent font-bold px-2 py-0.5 text-xs hover:bg-background rounded disabled:opacity-30"
+                        className="text-accent font-bold px-1.5 py-0.5 text-xs hover:bg-surface rounded transition-colors disabled:opacity-30"
+                        aria-label="Increase quantity"
                       >
                         +
                       </button>
@@ -211,9 +213,9 @@ const BundleBuilder = () => {
                     <button
                       onClick={() => handleIncrement(p)}
                       disabled={maxSelect <= 0}
-                      className="w-full text-center text-[10px] uppercase font-bold tracking-wider py-1.5 border border-border hover:border-accent rounded text-primary transition-all disabled:opacity-40"
+                      className="w-full text-center text-[10px] uppercase font-bold tracking-wider py-1 sm:py-1.5 border border-border hover:border-accent hover:bg-[#B89968]/5 rounded-lg text-primary transition-all disabled:opacity-40"
                     >
-                      {maxSelect <= 0 ? 'Unavailable / Maxed' : 'Select'}
+                      {maxSelect <= 0 ? 'Maxed' : 'Select'}
                     </button>
                   )}
                 </div>

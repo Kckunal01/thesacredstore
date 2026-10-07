@@ -156,20 +156,21 @@ const Header = () => {
                 <div className="space-y-4">
                   <div>
                     <Link
-                      to="/shop?category=Accessories"
+                      to="/shop/accessories"
                       className="font-bold text-accent hover:underline block mb-2 text-xs"
                     >
                       Accessories
                     </Link>
                     <ul className="space-y-1.5 text-[10px] text-muted normal-case tracking-normal">
-                      <li><Link to="/shop?category=Accessories&sub=Bracelets" className="hover:text-primary transition-colors">Bracelets</Link></li>
-                      <li><Link to="/shop?category=Accessories&sub=Pendants" className="hover:text-primary transition-colors">Pendants</Link></li>
-                      <li><Link to="/shop?category=Accessories&sub=Malas" className="hover:text-primary transition-colors">Malas</Link></li>
+                      <li><Link to="/shop/accessories?sub=Bracelets" className="hover:text-primary transition-colors">Bracelets</Link></li>
+                      <li><Link to="/shop/accessories?sub=Pendants" className="hover:text-primary transition-colors">Pendants</Link></li>
+                      <li><Link to="/shop/accessories?sub=Malas" className="hover:text-primary transition-colors">Malas</Link></li>
+                      <li><Link to="/shop/accessories?sub=Jube+Coin" className="hover:text-primary transition-colors">Jube Coin</Link></li>
                     </ul>
                   </div>
                   <div>
                     <Link
-                      to="/shop?category=Tumbles"
+                      to="/shop/tumbles"
                       className="font-bold text-accent hover:underline block text-xs"
                     >
                       Tumbles
@@ -181,28 +182,28 @@ const Header = () => {
                 <div className="space-y-4">
                   <div>
                     <Link
-                      to="/shop?category=Household"
+                      to="/shop/household"
                       className="font-bold text-accent hover:underline block mb-2 text-xs"
                     >
                       Household
                     </Link>
                     <ul className="space-y-1.5 text-[10px] text-muted normal-case tracking-normal">
-                      <li><Link to="/shop?category=Household&sub=Trees" className="hover:text-primary transition-colors">Trees</Link></li>
-                      <li><Link to="/shop?category=Household&sub=Pyramids" className="hover:text-primary transition-colors">Pyramids</Link></li>
-                      <li><Link to="/shop?category=Household&sub=Lamps" className="hover:text-primary transition-colors">Lamps</Link></li>
+                      <li><Link to="/shop/household?sub=Trees" className="hover:text-primary transition-colors">Trees</Link></li>
+                      <li><Link to="/shop/household?sub=Pyramids" className="hover:text-primary transition-colors">Pyramids</Link></li>
+                      <li><Link to="/shop/household?sub=Lamps" className="hover:text-primary transition-colors">Lamps</Link></li>
                     </ul>
                   </div>
                   <div>
                     <Link
-                      to="/shop?category=Variety Crystals"
+                      to="/shop/variety-crystals"
                       className="font-bold text-accent hover:underline block mb-2 text-xs"
                     >
                       Variety Crystals
                     </Link>
                     <ul className="space-y-1.5 text-[10px] text-muted normal-case tracking-normal">
-                      <li><Link to="/shop?category=Variety Crystals&sub=Clusters" className="hover:text-primary transition-colors">Clusters</Link></li>
-                      <li><Link to="/shop?category=Variety Crystals&sub=Spheres" className="hover:text-primary transition-colors">Spheres</Link></li>
-                      <li><Link to="/shop?category=Variety Crystals&sub=Points" className="hover:text-primary transition-colors">Points</Link></li>
+                      <li><Link to="/shop/variety-crystals?sub=Clusters" className="hover:text-primary transition-colors">Clusters</Link></li>
+                      <li><Link to="/shop/variety-crystals?sub=Spheres" className="hover:text-primary transition-colors">Spheres</Link></li>
+                      <li><Link to="/shop/variety-crystals?sub=Points" className="hover:text-primary transition-colors">Points</Link></li>
                     </ul>
                   </div>
                 </div>
@@ -211,7 +212,7 @@ const Header = () => {
                 <div className="space-y-4">
                   <div>
                     <Link
-                      to="/shop?category=Cleaning / Charging"
+                      to="/shop/cleaning-charging"
                       className="font-bold text-accent hover:underline block mb-2 text-xs"
                     >
                       Cleaning / Charging
@@ -321,131 +322,93 @@ const Header = () => {
               <Link
                 to="/"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+                className="pb-2 hover:text-accent transition-colors"
               >
                 Home
               </Link>
 
-              {/* Shop Accordion */}
-              <div className="pb-2 border-b border-border/40">
-                <div className="flex items-center justify-between">
+              {/* Shop Page Headings in Drawer */}
+              <div className="pb-2">
+                <Link
+                  to="/shop"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="hover:text-accent transition-colors font-medium block mb-2"
+                >
+                  Shop
+                </Link>
+                <div className="pl-3 space-y-2 font-display text-sm tracking-wider uppercase text-muted border-l border-accent/40">
                   <Link
-                    to="/shop"
+                    to="/shop/accessories"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="hover:text-accent transition-colors font-medium"
+                    className="block hover:text-primary transition-colors"
                   >
-                    Shop All
+                    Accessories
                   </Link>
-                  <button
-                    onClick={() => setIsMobileShopOpen(!isMobileShopOpen)}
-                    className="p-1 text-accent"
-                    aria-label="Toggle Shop categories"
+                  <Link
+                    to="/shop/tumbles"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block hover:text-primary transition-colors"
                   >
-                    <ChevronDown className={`w-4 h-4 transition-transform ${isMobileShopOpen ? 'rotate-180' : ''}`} />
-                  </button>
+                    Tumbles
+                  </Link>
+                  <Link
+                    to="/shop/household"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block hover:text-primary transition-colors"
+                  >
+                    Household
+                  </Link>
+                  <Link
+                    to="/shop/variety-crystals"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block hover:text-primary transition-colors"
+                  >
+                    Variety Crystals
+                  </Link>
+                  <Link
+                    to="/shop/cleaning-charging"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block hover:text-primary transition-colors"
+                  >
+                    Cleaning / Charging
+                  </Link>
                 </div>
-
-                {isMobileShopOpen && (
-                  <div className="mt-3 pl-3 space-y-3 font-sans text-xs normal-case tracking-normal text-muted border-l border-accent/40">
-                    <div>
-                      <Link
-                        to="/shop?category=Accessories"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="font-bold text-primary block mb-1 uppercase tracking-wider text-[11px]"
-                      >
-                        Accessories
-                      </Link>
-                      <div className="pl-2 space-y-1 text-muted">
-                        <Link to="/shop?category=Accessories&sub=Bracelets" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Bracelets</Link>
-                        <Link to="/shop?category=Accessories&sub=Pendants" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Pendants</Link>
-                        <Link to="/shop?category=Accessories&sub=Malas" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Malas</Link>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Link
-                        to="/shop?category=Tumbles"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="font-bold text-primary block uppercase tracking-wider text-[11px]"
-                      >
-                        Tumbles
-                      </Link>
-                    </div>
-
-                    <div>
-                      <Link
-                        to="/shop?category=Household"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="font-bold text-primary block mb-1 uppercase tracking-wider text-[11px]"
-                      >
-                        Household
-                      </Link>
-                      <div className="pl-2 space-y-1 text-muted">
-                        <Link to="/shop?category=Household&sub=Trees" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Trees</Link>
-                        <Link to="/shop?category=Household&sub=Pyramids" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Pyramids</Link>
-                        <Link to="/shop?category=Household&sub=Lamps" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Lamps</Link>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Link
-                        to="/shop?category=Variety Crystals"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="font-bold text-primary block mb-1 uppercase tracking-wider text-[11px]"
-                      >
-                        Variety Crystals
-                      </Link>
-                      <div className="pl-2 space-y-1 text-muted">
-                        <Link to="/shop?category=Variety Crystals&sub=Clusters" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Clusters</Link>
-                        <Link to="/shop?category=Variety Crystals&sub=Spheres" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Spheres</Link>
-                        <Link to="/shop?category=Variety Crystals&sub=Points" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Points</Link>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Link
-                        to="/shop?category=Cleaning / Charging"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="font-bold text-primary block uppercase tracking-wider text-[11px]"
-                      >
-                        Cleaning / Charging
-                      </Link>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <Link
                 to="/bundles"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+                className="pb-2 hover:text-accent transition-colors"
               >
                 Bundles
               </Link>
               <Link
                 to="/book-a-call"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+                className="pb-2 hover:text-accent transition-colors"
               >
                 Book Now
               </Link>
               <Link
                 to="/aboutus"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+                className="pb-2 hover:text-accent transition-colors"
               >
                 About Us
               </Link>
             </nav>
 
-            <div className="mt-8 pt-4 border-t border-border/60 text-xs text-muted space-y-2 font-sans normal-case">
-              <p>✨ 100% Reiki Charged &amp; Cleansed</p>
-              <p>📦 Free Delivery across India</p>
-              <div className="pt-2 flex items-center gap-4 text-xs font-bold text-accent">
-                <Link to="/gift-shop" onClick={() => setIsMobileMenuOpen(false)}>Gift Shop</Link>
-                <span>•</span>
-                <Link to="/festive-offers" onClick={() => setIsMobileMenuOpen(false)}>Festive Offers</Link>
-              </div>
+            {/* Bottom Layer Links */}
+            <div className="mt-8 pt-8 flex justify-center gap-4 px-4 pb-4">
+              <Link to="/gift-shop" onClick={() => setIsMobileMenuOpen(false)} className="text-[10px] uppercase font-bold tracking-wider text-[#B89968] hover:text-primary">
+                Gift Shop
+              </Link>
+              <Link to="/festive-offers" onClick={() => setIsMobileMenuOpen(false)} className="text-[10px] uppercase font-bold tracking-wider text-[#B89968] hover:text-primary">
+                Festive Offers
+              </Link>
+              <Link to="/new-arrivals" onClick={() => setIsMobileMenuOpen(false)} className="text-[10px] uppercase font-bold tracking-wider text-[#B89968] hover:text-primary">
+                New Arrivals
+              </Link>
             </div>
           </motion.div>
         )}

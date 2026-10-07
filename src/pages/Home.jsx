@@ -8,7 +8,7 @@ import HeroCarousel from '../components/ui/HeroCarousel';
 import { getPageSEO } from '../seo/seoHelpers';
 import { SITE_URL } from '../config';
 import Seo from '../components/Seo';
-import { Play, Pause, ArrowRight, ShieldCheck, Truck, Sparkles, Gift } from 'lucide-react';
+import { Play, Pause, ArrowRight, ShieldCheck, Truck, Sparkles, Gift, Package, Flame, Volume2, VolumeX, Maximize } from 'lucide-react';
 
 const homeSEO = getPageSEO({
   title: 'The Sacred Store – Premium Crystals & Spiritual Accessories',
@@ -74,6 +74,7 @@ const reelsData = [
 
 const ReelCard = ({ reel, isPlaying, onTogglePlay }) => {
   const videoRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -84,6 +85,24 @@ const ReelCard = ({ reel, isPlaying, onTogglePlay }) => {
       }
     }
   }, [isPlaying]);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.muted = isMuted;
+  }, [isMuted]);
+
+  const handleFullscreen = (e) => {
+    e.stopPropagation();
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (vid.requestFullscreen) vid.requestFullscreen();
+    else if (vid.webkitEnterFullscreen) vid.webkitEnterFullscreen();
+    else if (vid.webkitRequestFullscreen) vid.webkitRequestFullscreen();
+  };
+
+  const handleMuteToggle = (e) => {
+    e.stopPropagation();
+    setIsMuted(m => !m);
+  };
 
   return (
     <div
@@ -109,7 +128,7 @@ const ReelCard = ({ reel, isPlaying, onTogglePlay }) => {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
 
-        {/* Play/Pause Button */}
+        {/* Centered Play/Pause Button */}
         <div className="absolute inset-0 flex items-center justify-center z-10 bg-black/20 group-hover:bg-black/10 transition-colors">
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/95 text-[#B89968] flex items-center justify-center shadow-lg transition-transform group-hover:scale-110">
             {isPlaying ? (
@@ -119,6 +138,30 @@ const ReelCard = ({ reel, isPlaying, onTogglePlay }) => {
             )}
           </div>
         </div>
+
+        {/* Bottom Controls Bar — visible when playing */}
+        {isPlaying && (
+          <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-center gap-3 py-2 bg-gradient-to-t from-black/60 to-transparent">
+            <button
+              onClick={handleMuteToggle}
+              className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow"
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? (
+                <VolumeX className="w-3.5 h-3.5 text-[#B89968]" />
+              ) : (
+                <Volume2 className="w-3.5 h-3.5 text-[#B89968]" />
+              )}
+            </button>
+            <button
+              onClick={handleFullscreen}
+              className="w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow"
+              aria-label="Fullscreen"
+            >
+              <Maximize className="w-3.5 h-3.5 text-[#B89968]" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -199,97 +242,61 @@ export default function Home() {
             (NO Buy Again, NO Shop by Category below)
         ────────────────────────────────────────────────────────── */}
         <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-4 gap-1.5 sm:gap-4">
             {/* Card 1: Gift Shop */}
             <Link
               to="/gift-shop"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:border-[#B89968] transition-all"
+              className="group relative bg-gradient-to-br from-[#FBF6EE] to-[#F4ECDC] border border-[#E8DFD3] rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col items-center justify-center hover:shadow-md hover:border-[#B89968] transition-all text-center min-h-[80px] sm:min-h-[120px]"
             >
-              <div>
-                <div className="w-12 h-12 mb-3 rounded-2xl bg-[#F7EFE3] flex items-center justify-center text-2xl shadow-inner">
-                  🎁
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-medium text-[#2B241C] group-hover:text-[#B89968] transition-colors">
-                  Gift Shop
-                </h3>
-                <p className="text-[11px] text-[#7A6B5D] mt-1 leading-tight font-sans">
-                  Meaningful gifts for every occasion
-                </p>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <span className="w-7 h-7 rounded-full border border-[#B89968]/30 flex items-center justify-center text-xs text-[#B89968] group-hover:bg-[#B89968] group-hover:text-white transition-colors">
-                  →
-                </span>
-              </div>
+              <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-rose-400 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+              <h3 className="font-display text-[13px] sm:text-lg font-bold text-[#2B241C] group-hover:text-[#B89968] transition-colors leading-tight tracking-wide">
+                Gift Shop
+              </h3>
+              <p className="hidden sm:block text-[11px] text-[#7A6B5D] mt-1.5 leading-tight font-sans">
+                Meaningful gifts for every occasion
+              </p>
             </Link>
 
             {/* Card 2: New Arrivals */}
             <Link
               to="/new-arrivals"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:border-[#B89968] transition-all"
+              className="group relative bg-gradient-to-br from-[#F9F4EC] to-[#EFE7D8] border border-[#E8DFD3] rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col items-center justify-center hover:shadow-md hover:border-[#B89968] transition-all text-center min-h-[80px] sm:min-h-[120px]"
             >
-              <div>
-                <div className="w-12 h-12 mb-3 rounded-2xl bg-[#F7EFE3] flex items-center justify-center text-2xl shadow-inner">
-                  🔮
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-medium text-[#2B241C] group-hover:text-[#B89968] transition-colors">
-                  New Arrivals
-                </h3>
-                <p className="text-[11px] text-[#7A6B5D] mt-1 leading-tight font-sans">
-                  Discover our latest additions
-                </p>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <span className="w-7 h-7 rounded-full border border-[#B89968]/30 flex items-center justify-center text-xs text-[#B89968] group-hover:bg-[#B89968] group-hover:text-white transition-colors">
-                  →
-                </span>
-              </div>
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+              <h3 className="font-display text-[13px] sm:text-lg font-bold text-[#2B241C] group-hover:text-[#B89968] transition-colors leading-tight tracking-wide">
+                New Arrivals
+              </h3>
+              <p className="hidden sm:block text-[11px] text-[#7A6B5D] mt-1.5 leading-tight font-sans">
+                Discover our latest additions
+              </p>
             </Link>
 
             {/* Card 3: Curated Bundles */}
             <Link
               to="/bundles"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:border-[#B89968] transition-all"
+              className="group relative bg-gradient-to-br from-[#F7F2E8] to-[#EDE4D2] border border-[#E8DFD3] rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col items-center justify-center hover:shadow-md hover:border-[#B89968] transition-all text-center min-h-[80px] sm:min-h-[120px]"
             >
-              <div>
-                <div className="w-12 h-12 mb-3 rounded-2xl bg-[#F7EFE3] flex items-center justify-center text-2xl shadow-inner">
-                  📿
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-medium text-[#2B241C] group-hover:text-[#B89968] transition-colors">
-                  Curated Bundles
-                </h3>
-                <p className="text-[11px] text-[#7A6B5D] mt-1 leading-tight font-sans">
-                  Thoughtfully paired for deeper balance
-                </p>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <span className="w-7 h-7 rounded-full border border-[#B89968]/30 flex items-center justify-center text-xs text-[#B89968] group-hover:bg-[#B89968] group-hover:text-white transition-colors">
-                  →
-                </span>
-              </div>
+              <Package className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+              <h3 className="font-display text-[13px] sm:text-lg font-bold text-[#2B241C] group-hover:text-[#B89968] transition-colors leading-tight tracking-wide">
+                Curated Bundles
+              </h3>
+              <p className="hidden sm:block text-[11px] text-[#7A6B5D] mt-1.5 leading-tight font-sans">
+                Thoughtfully paired for balance
+              </p>
             </Link>
 
             {/* Card 4: Festive Offers */}
             <Link
               to="/festive-offers"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-4 sm:p-5 flex flex-col justify-between hover:shadow-md hover:border-[#B89968] transition-all"
+              className="group relative bg-gradient-to-br from-[#FBF4E6] to-[#F6ECD5] border border-[#E8DFD3] rounded-xl sm:rounded-2xl p-3 sm:p-5 flex flex-col items-center justify-center hover:shadow-md hover:border-[#B89968] transition-all text-center min-h-[80px] sm:min-h-[120px]"
             >
-              <div>
-                <div className="w-12 h-12 mb-3 rounded-2xl bg-[#F7EFE3] flex items-center justify-center text-2xl shadow-inner">
-                  🛍️
-                </div>
-                <h3 className="font-display text-base sm:text-lg font-medium text-[#2B241C] group-hover:text-[#B89968] transition-colors">
-                  Festive Offers
-                </h3>
-                <p className="text-[11px] text-[#7A6B5D] mt-1 leading-tight font-sans">
-                  Special prices for a more meaningful celebration
-                </p>
-              </div>
-              <div className="mt-4 flex justify-end">
-                <span className="w-7 h-7 rounded-full border border-[#B89968]/30 flex items-center justify-center text-xs text-[#B89968] group-hover:bg-[#B89968] group-hover:text-white transition-colors">
-                  →
-                </span>
-              </div>
+              <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 mb-1 sm:mb-2 group-hover:scale-110 transition-transform" />
+              <h3 className="font-display text-[13px] sm:text-lg font-bold text-[#2B241C] group-hover:text-[#B89968] transition-colors leading-tight tracking-wide">
+                Festive Offers
+              </h3>
+              <p className="hidden sm:block text-[11px] text-[#7A6B5D] mt-1.5 leading-tight font-sans">
+                Special celebration pricing
+              </p>
             </Link>
           </div>
         </section>
@@ -327,9 +334,6 @@ export default function Home() {
                 loading="lazy"
                 onError={(e) => { e.target.onerror = null; e.target.src = '/assets/images/HeroImage.png'; }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end p-3">
-                <span className="text-white text-[11px] font-sans font-medium">Sacred Festive Picks</span>
-              </div>
             </div>
           </div>
         </section>
@@ -520,19 +524,6 @@ export default function Home() {
                 BOOK NOW →
               </Link>
             </div>
-
-            {/* Consultation Banner Image */}
-            <div className="relative w-full sm:w-80 h-44 sm:h-52 rounded-2xl overflow-hidden border border-[#D5BA93]/50 shadow-inner flex-shrink-0 bg-[#E8DCCB]">
-              <img
-                src="/assets/images/Bookyourcall.JPG.jpeg"
-                alt="Book Consultation Reading"
-                className="w-full h-full object-cover"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent flex items-end p-3">
-                <span className="text-white text-[11px] font-sans font-medium">1-on-1 Energy Mapping</span>
-              </div>
-            </div>
           </div>
         </section>
 
@@ -582,7 +573,7 @@ export default function Home() {
               <span className="font-display italic text-[#B89968]">Community</span>
             </h2>
             <span className="text-xs font-semibold text-[#B89968] uppercase tracking-wider">
-              ★★★★★ Verified
+              ★★★★★
             </span>
           </div>
 
@@ -629,10 +620,10 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
             <Link
               to="/blogs?id=1"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#B89968] transition-all flex flex-col justify-between"
+              className="w-[270px] sm:w-[320px] flex-shrink-0 snap-start group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#B89968] transition-all flex flex-col justify-between"
             >
               <div>
                 <span className="text-[9px] font-bold text-[#B89968] uppercase tracking-[0.2em] block mb-2">
@@ -652,7 +643,7 @@ export default function Home() {
 
             <Link
               to="/blogs?id=3"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#B89968] transition-all flex flex-col justify-between"
+              className="w-[270px] sm:w-[320px] flex-shrink-0 snap-start group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#B89968] transition-all flex flex-col justify-between"
             >
               <div>
                 <span className="text-[9px] font-bold text-[#B89968] uppercase tracking-[0.2em] block mb-2">
@@ -672,7 +663,7 @@ export default function Home() {
 
             <Link
               to="/blogs?id=4"
-              className="group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#B89968] transition-all flex flex-col justify-between"
+              className="w-[270px] sm:w-[320px] flex-shrink-0 snap-start group bg-[#FFF9F2] border border-[#E8DFD3] rounded-2xl p-5 sm:p-6 hover:shadow-md hover:border-[#B89968] transition-all flex flex-col justify-between"
             >
               <div>
                 <span className="text-[9px] font-bold text-[#B89968] uppercase tracking-[0.2em] block mb-2">

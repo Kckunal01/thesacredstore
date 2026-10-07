@@ -19,7 +19,7 @@ export default {
         body: ['Outfit', 'sans-serif'],
       },
       animation: {
-        'marquee': 'marquee 25s linear infinite',
+        'marquee': 'marquee 15s linear infinite',
       },
       keyframes: {
         marquee: {

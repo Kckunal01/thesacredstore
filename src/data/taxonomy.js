@@ -1,7 +1,7 @@
 export const CANONICAL_TAXONOMY = [
   {
     name: 'Accessories',
-    subcategories: ['Bracelets', 'Pendants', 'Malas'],
+    subcategories: ['Bracelets', 'Pendants', 'Malas', 'Jube Coin'],
   },
   {
     name: 'Tumbles',
@@ -52,21 +52,32 @@ export const getTaxonomyFlatList = () => {
 export function matchesTaxonomy(product, category, subcategory) {
   if (!product) return false;
   const cat = (product.category || '').trim();
+  const name = (product.name || '').trim();
 
   // If no category specified or 'All', matches all products
   if (!category || category === 'All') return true;
 
   if (category === 'Accessories') {
     if (!subcategory || subcategory === 'All') {
-      return cat === 'Bracelets' || cat === 'Pendants' || cat === 'Mala' || cat === 'Malas';
+      return (
+        cat === 'Bracelets' ||
+        cat === 'Pendants' ||
+        cat === 'Mala' ||
+        cat === 'Malas' ||
+        cat === 'Accessories' ||
+        name === 'Jube Coin'
+      );
     }
     if (subcategory === 'Bracelets') return cat === 'Bracelets';
     if (subcategory === 'Pendants') return cat === 'Pendants';
     if (subcategory === 'Malas' || subcategory === 'Mala') return cat === 'Mala' || cat === 'Malas';
+    if (subcategory === 'Jube Coin') return name === 'Jube Coin';
     return false;
   }
 
   if (category === 'Tumbles') {
+    // Ensure Black Tourmaline Raw is NOT in Tumbles
+    if (name === 'Black Tourmaline Raw') return false;
     return cat === 'Tumbles';
   }
 
@@ -94,16 +105,19 @@ export function matchesTaxonomy(product, category, subcategory) {
         cat === 'Sphere' ||
         cat === 'Spheres' ||
         cat === 'Points' ||
-        cat === 'Crystals'
+        cat === 'Crystals' ||
+        name === 'Black Tourmaline Raw'
       );
     }
-    if (subcategory === 'Clusters') return cat === 'Cluster' || cat === 'Clusters';
+    if (subcategory === 'Clusters') return cat === 'Cluster' || cat === 'Clusters' || name === 'Black Tourmaline Raw';
     if (subcategory === 'Spheres') return cat === 'Sphere' || cat === 'Spheres';
     if (subcategory === 'Points') return cat === 'Points';
     return false;
   }
 
   if (category === 'Cleaning / Charging') {
+    // Jube Coin has been moved to Accessories
+    if (name === 'Jube Coin') return false;
     return cat === 'Charging Items' || cat === 'Cleaning / Charging' || cat === 'Utility & Decor';
   }
 
