@@ -10,7 +10,7 @@ import { getCartRecommendations } from '../lib/recommendations';
 import ProductCard from '../components/ui/ProductCard';
 import { getProductStockMap } from '../lib/supabaseProducts';
 import { resolveProductImage } from '../utils/productImageResolver';
-import { trackPurchase } from '../utils/metaPixel';
+import { trackPurchase, trackAddToCart } from '../utils/metaPixel';
 
 const loadRazorpayScript = () =>
   new Promise((resolve) => {
@@ -40,7 +40,7 @@ function slugify(text) {
 }
 
 const Checkout = () => {
-  const { cart, getCartTotal, removeFromCart, updateQuantity, clearCart, couponState, setCouponState, discountPercent, setDiscountPercent } = useContext(CartContext);
+  const { cart, addToCart, getCartTotal, removeFromCart, updateQuantity, clearCart, couponState, setCouponState, discountPercent, setDiscountPercent } = useContext(CartContext);
   const { products } = useContext(ProductsContext);
   
   const recommendations = useMemo(
@@ -310,58 +310,102 @@ const Checkout = () => {
                       {cart.map((item) => {
                         const cartKey = item.cartItemId || item.id;
                         return (
-                        <div key={cartKey} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-6 bg-surface border border-border gap-6">
-                          <div className="flex items-center space-x-6">
-                            <div style={getPlaceholderStyle(item.name)} className="w-20 h-24 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display">
+                        <div key={cartKey} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 bg-surface border border-border gap-3 sm:gap-4">
+                          <div className="flex items-center space-x-3.5">
+                            <div style={getPlaceholderStyle(item.name)} className="w-12 h-14 border border-border flex items-center justify-center text-xs uppercase tracking-widest text-[#000000] font-semibold font-display flex-shrink-0">
                                 <img
                                   src={resolveProductImage(item)}
                                   alt={item.name}
                                   loading="lazy"
                                   decoding="async"
                                   fetchpriority="low"
-                                  width="80"
-                                  height="96"
+                                  width="48"
+                                  height="56"
                                   className="w-full h-full object-contain"
                                 />
                             </div>
                             <div>
-                              <span className="text-[10px] uppercase tracking-widest text-[#000000] mb-1 block font-bold font-body">{item.category}</span>
-                              <h4 className="font-display text-xl text-primary font-medium">{item.name}</h4>
+                              <span className="text-[9px] uppercase tracking-widest text-[#000000] block font-bold font-body">{item.category}</span>
+                              <h4 className="font-display text-base text-primary font-medium leading-snug">{item.name}</h4>
                               {item.certification && (
-                                <p className="text-[10px] uppercase tracking-widest text-accent font-bold mt-1">
+                                <p className="text-[9px] uppercase tracking-widest text-accent font-bold mt-0.5">
                                   + Authenticity Certification (₹100)
                                 </p>
                               )}
-                              <span className="text-sm text-muted font-light font-body mt-1 block">
+                              <span className="text-xs text-muted font-light font-body block mt-0.5">
                                 ₹{(item.price + (item.certification ? 100 : 0)).toLocaleString('en-IN')}
                               </span>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between w-full sm:w-auto space-x-6 sm:space-x-12 border-t sm:border-t-0 pt-4 sm:pt-0 border-border">
+                          <div className="flex items-center justify-between w-full sm:w-auto space-x-4 sm:space-x-6 border-t sm:border-t-0 pt-2 sm:pt-0 border-border">
                             <div className="flex items-center border border-border bg-background">
-                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(cartKey, item.quantity - 1)}>-</button>
-                              <span className="px-4 py-2 text-xs font-semibold text-primary">{item.quantity}</span>
-                              <button className="px-3 py-2 hover:bg-surface text-primary" onClick={() => updateQuantity(cartKey, item.quantity + 1)}>+</button>
+                              <button className="px-2 py-1 text-xs hover:bg-surface text-primary" onClick={() => updateQuantity(cartKey, item.quantity - 1)}>-</button>
+                              <span className="px-3 py-1 text-xs font-semibold text-primary">{item.quantity}</span>
+                              <button className="px-2 py-1 text-xs hover:bg-surface text-primary" onClick={() => updateQuantity(cartKey, item.quantity + 1)}>+</button>
                             </div>
                             <div className="text-right">
-                              <button onClick={() => removeFromCart(cartKey)} className="text-[10px] uppercase tracking-[0.2em] text-[#000000] hover:text-primary transition-colors font-bold font-body">Remove</button>
+                              <button onClick={() => removeFromCart(cartKey)} className="text-[9px] uppercase tracking-[0.15em] text-[#000000] hover:text-primary transition-colors font-bold font-body">Remove</button>
                             </div>
                           </div>
                         </div>
                       )})}
 
                       {recommendations && recommendations.length > 0 && (
-                        <div className="pt-12 border-t border-border mt-12">
-                          <h3 className="text-xl font-display font-medium text-primary mb-6 tracking-widest uppercase">
-                            FREQUENTLY BOUGHT TOGETHER
-                          </h3>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                            {recommendations.map(product => (
-                              <div key={product.id} className="scale-95 transform transition-transform duration-300 hover:scale-100">
-                                <ProductCard {...product} />
-                              </div>
-                            ))}
+                        <div className="pt-8 border-t border-border mt-8">
+                          <div className="flex items-baseline justify-between mb-4">
+                            <h3 className="text-sm font-display font-medium text-primary tracking-widest uppercase">
+                              Frequently Bought Together
+                            </h3>
+                            <span className="text-[10px] uppercase tracking-wider text-muted font-bold font-body">
+                              Pairs Well With Your Order
+                            </span>
+                          </div>
+                          <div className="flex overflow-x-auto scrollbar-none gap-3.5 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
+                            {recommendations.map(product => {
+                              const imgSrc = resolveProductImage(product);
+                              return (
+                                <div 
+                                  key={product.id} 
+                                  className="w-40 sm:w-44 flex-shrink-0 bg-surface border border-border p-3 rounded-lg flex flex-col justify-between hover:border-accent/60 transition-colors"
+                                >
+                                  <div>
+                                    <Link to={`/product/${product.slug || product.id}`} className="block aspect-square w-full bg-background rounded-md overflow-hidden mb-2.5 border border-border/50">
+                                      <img
+                                        src={imgSrc}
+                                        alt={product.name}
+                                        loading="lazy"
+                                        className="w-full h-full object-contain p-2 hover:scale-105 transition-transform duration-300"
+                                      />
+                                    </Link>
+                                    <Link to={`/product/${product.slug || product.id}`} className="text-xs font-display font-medium text-primary hover:text-accent transition-colors line-clamp-1 block">
+                                      {product.name}
+                                    </Link>
+                                    <div className="mt-1 flex items-baseline gap-1.5">
+                                      <span className="text-xs font-bold text-primary font-body">
+                                        ₹{product.price?.toLocaleString('en-IN')}
+                                      </span>
+                                      {product.originalPrice && product.originalPrice > product.price && (
+                                        <span className="text-[10px] text-muted line-through font-body">
+                                          ₹{product.originalPrice?.toLocaleString('en-IN')}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      addToCart(product, 1);
+                                      trackAddToCart(product, 1);
+                                    }}
+                                    className="mt-3 w-full py-1.5 px-2 bg-primary text-background hover:bg-accent text-[10px] uppercase font-bold tracking-wider rounded transition-colors text-center"
+                                  >
+                                    + Add to Cart
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

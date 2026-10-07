@@ -22,7 +22,7 @@ const FloatingWhatsApp = () => {
 
   return (
     <div 
-      className="fixed bottom-6 right-6 z-[100] flex flex-col items-center gap-1.5"
+      className="fixed bottom-24 right-6 z-[100] flex flex-col items-center gap-1.5"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

@@ -5,6 +5,7 @@ import { ProductsProvider } from './context/ProductsContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
+import AskSacred from './components/AskSacred';
 import ScrollToTop from './components/ScrollToTop';
 
 // Pages
@@ -76,6 +77,7 @@ function App() {
               <Route path="/bundles/:slug" element={<BundleDetail />} />
             </Routes>
           </main>
+          <AskSacred />
           <FloatingWhatsApp />
           <Footer />
         </div>
