@@ -3,7 +3,7 @@ import { ProductsContext } from '../../context/ProductsContext';
 import { CartContext } from '../../context/CartContext';
 import Button from './Button';
 import { resolveProductImage } from '../../utils/productImageResolver';
-import { getTaxonomyFlatList, taxonomy } from '../../data/taxonomy';
+import { getTaxonomyFlatList, taxonomy, matchesTaxonomy, CANONICAL_TAXONOMY } from '../../data/taxonomy';
 
 const BundleBuilder = () => {
   const { products } = useContext(ProductsContext);
@@ -33,16 +33,14 @@ const BundleBuilder = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   const categories = useMemo(() => {
-    return ['All', ...taxonomy.categories.map(c => c.name)];
+    return ['All', ...CANONICAL_TAXONOMY.map(c => c.name)];
   }, []);
 
   const filteredProducts = useMemo(() => {
     return availableProducts.filter(p => {
       const matchesSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
       if (!matchesSearch) return false;
-      
-      if (selectedCategory === 'All') return true;
-      return p.category && p.category.toLowerCase() === selectedCategory.toLowerCase();
+      return matchesTaxonomy(p, selectedCategory);
     });
   }, [availableProducts, searchQuery, selectedCategory]);
 

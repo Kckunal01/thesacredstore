@@ -89,10 +89,9 @@ const Footer = () => {
             <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Main Menu</h4>
             <nav className="flex flex-col space-y-4 text-sm font-semibold tracking-widest uppercase text-muted">
                <Link to="/" className="text-primary hover:text-accent transition-colors cursor-pointer">Home</Link>
-               <Link to="/shop-crystals" className="text-primary hover:text-accent transition-colors cursor-pointer">Shop Crystals</Link>
+               <Link to="/shop" className="text-primary hover:text-accent transition-colors cursor-pointer">Shop</Link>
                <Link to="/bundles" className="text-primary hover:text-accent transition-colors cursor-pointer">Curated Bundles</Link>
-               <Link to="/book-a-call" className="text-primary hover:text-accent transition-colors cursor-pointer">Book Consultation</Link>
-               <Link to="/blogs" className="text-primary hover:text-accent transition-colors cursor-pointer">Blogs & Insights</Link>
+               <Link to="/book-a-call" className="text-primary hover:text-accent transition-colors cursor-pointer">Book Now</Link>
                <Link to="/aboutus" className="text-primary hover:text-accent transition-colors cursor-pointer">About Us</Link>
             </nav>
           </div>
@@ -101,10 +100,11 @@ const Footer = () => {
           <div className="flex flex-col">
             <h4 className="text-base uppercase tracking-[0.2em] font-bold text-[#ffbd59] mb-6 font-body">Quick Links</h4>
             <nav className="flex flex-col space-y-4 text-sm font-medium tracking-widest uppercase text-muted">
+               <Link to="/blogs" className="text-primary hover:text-accent transition-colors cursor-pointer">Blogs &amp; Insights</Link>
                <Link to="/track-order" className="text-primary hover:text-accent transition-colors cursor-pointer">Track Order</Link>
                <Link to="/privacy-policy" className="text-primary hover:text-accent transition-colors cursor-pointer">Privacy Policy</Link>
                <Link to="/refund-policy" className="text-primary hover:text-accent transition-colors cursor-pointer">Refund Policy</Link>
-               <Link to="/terms-conditions" className="text-primary hover:text-accent transition-colors cursor-pointer">Terms & Conditions</Link>
+               <Link to="/terms-conditions" className="text-primary hover:text-accent transition-colors cursor-pointer">Terms &amp; Conditions</Link>
                <Link to="/bundles#build-your-own-bundle" className="text-primary hover:text-accent transition-colors cursor-pointer">Bundle Builder</Link>
             </nav>
           </div>

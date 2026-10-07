@@ -1,23 +1,46 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingBag, Menu, X, Search, ChevronDown, ChevronRight } from 'lucide-react';
 import { CartContext } from '../context/CartContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CANONICAL_TAXONOMY } from '../data/taxonomy';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isShopDropdownOpen, setIsShopDropdownOpen] = useState(false);
+  const [isMobileShopOpen, setIsMobileShopOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [scrolled, setScrolled] = useState(false);
+
   const location = useLocation();
+  const navigate = useNavigate();
   const { getCartCount } = useContext(CartContext);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close menus on route change
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsSearchOpen(false);
+    setIsShopDropdownOpen(false);
+  }, [location.pathname]);
+
   const isActive = (path) => location.pathname === path;
+  const isShopActive = location.pathname.startsWith('/shop');
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   const NavLink = ({ to, children }) => {
     const active = isActive(to);
@@ -34,7 +57,6 @@ const Header = () => {
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           />
         )}
-        {/* Hover underline for non-active */}
         {!active && (
           <span className="absolute bottom-0 left-0 w-full h-[1px] bg-accent transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out" />
         )}
@@ -42,102 +64,392 @@ const Header = () => {
     );
   };
 
-  const isShopActive = location.pathname.startsWith('/shop');
-
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled ? 'bg-surface/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}>
-      <div className="w-full max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-12">
-          {/* Left: Logo */}
-          <Link to="/" className="flex items-center font-display tracking-[0.15em] uppercase font-medium text-accent hover:text-accent transition-colors">
+    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-background/95 backdrop-blur-md shadow-sm py-2' : 'bg-background/90 backdrop-blur-sm py-3.5'}`}>
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* MOBILE HEADER (Matches Reference Image Exactly) */}
+        <div className="flex md:hidden items-center justify-between h-12">
+          {/* 1. Hamburger / Menu (Left) */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="w-10 h-10 flex items-center justify-center text-primary hover:text-accent transition-colors"
+            aria-label="Toggle navigation menu"
+          >
+            {isMobileMenuOpen ? <X className="w-6 h-6 stroke-[1.5]" /> : <Menu className="w-6 h-6 stroke-[1.5]" />}
+          </button>
+
+          {/* 2. Sacred Store Logo (Centered) */}
+          <Link to="/" className="flex items-center justify-center">
             <picture>
               <source srcSet="/assets/images/Logo-Nav.webp" type="image/webp" />
-              <img src="/assets/images/Logo-Nav.png" alt="Logo-Nav" className="w-16 h-16 object-contain" />
+              <img src="/assets/images/Logo-Nav.png" alt="The Sacred Store" className="h-10 w-auto object-contain" />
             </picture>
           </Link>
 
-          {/* Center: Navigation - Sequence: Home, Shop, Book Now, Blogs */}
-          <nav className="hidden md:flex items-center space-x-10 font-medium text-[11px] tracking-[0.15em] uppercase">
-            <NavLink to="/">Home</NavLink>
-            <div className="relative group py-2 flex flex-col items-center" onMouseEnter={() => setIsShopDropdownOpen(true)} onMouseLeave={() => setIsShopDropdownOpen(false)}>
-              <span className={`text-primary flex items-center transition-colors duration-300 ${isShopActive ? 'text-accent' : 'group-hover:text-accent'}`}>
-                Shop 
-              </span>
-              {isShopActive && (
-                <motion.div 
-                  layoutId="nav-underline" 
-                  className="absolute bottom-0 w-full h-[1px] bg-accent" 
-                  initial={false}
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-              )}
-              {!isShopActive && (
-                <span className="absolute bottom-0 left-0 w-full h-[1px] bg-accent transform scale-x-0 group-hover:scale-x-100 origin-left transition-transform duration-300 ease-out" />
-              )}
-              {/* Dropdown */}
-              <div className={`absolute top-[100%] left-0 mt-2 w-64 bg-surface border border-border shadow-lg transition-all duration-300 ${isShopDropdownOpen ? 'opacity-100 visible translate-y-0 z-20' : 'opacity-0 invisible translate-y-2'}`}>
-                <nav className="flex flex-col space-y-4 text-sm font-medium text-[11px] tracking-[0.15em] uppercase text-muted p-4">
-                  <Link to="/shop-crystals" className="text-primary hover:text-primary transition-colors cursor-pointer">Crystals</Link>
-                  <Link to="/shop-bracelets" className="text-primary hover:text-primary transition-colors cursor-pointer">Bracelets</Link>
-                  <Link to="/shop-utility" className="text-primary hover:text-primary transition-colors cursor-pointer whitespace-nowrap">Utility &amp; Decor</Link>
-                  <Link to="/bundles" className="font-bold text-accent hover:text-accent transition-colors cursor-pointer flex items-center gap-1 border-t border-border/50 pt-2 mt-2 whitespace-nowrap">
-                    ✨ Curated Bundles
-                  </Link>
-                  <Link to="/specialised-crystals" className="font-bold text-accent hover:text-accent transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap">
-                    💎 Specialised Crystals
-                  </Link>
-                </nav>
-              </div>
-            </div>
-            <NavLink to="/book-a-call">Book Now</NavLink>
-            <NavLink to="/blogs">Blogs</NavLink>
-            <NavLink to="/aboutus">About Us</NavLink>
-          </nav>
-
-          {/* Right: Cart and WhatsApp */}
-          <div className="flex items-center space-x-2">
-            <a
-              href="https://wa.me/9554930456"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:text-accent transition-colors w-11 h-11 flex items-center justify-center cursor-pointer"
-              aria-label="Contact WhatsApp"
+          {/* 3. Search & Cart (Right) */}
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="w-10 h-10 flex items-center justify-center text-primary hover:text-accent transition-colors"
+              aria-label="Search"
             >
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-              </svg>
-            </a>
-            <Link to="/checkout" className="relative text-primary hover:text-accent transition-colors group w-11 h-11 flex items-center justify-center cursor-pointer" aria-label="View Cart">
-              <ShoppingBag className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" strokeWidth={1.5} />
+              <Search className="w-5 h-5 stroke-[1.5]" />
+            </button>
+            <Link
+              to="/checkout"
+              className="relative w-10 h-10 flex items-center justify-center text-primary hover:text-accent transition-colors"
+              aria-label="Shopping Cart"
+            >
+              <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
               {getCartCount() > 0 && (
-                <span className="absolute top-1.5 right-1.5 bg-[#000000] text-[#FFBD59] text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                <span className="absolute top-1.5 right-1.5 bg-primary text-[#FFBD59] text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
                   {getCartCount()}
                 </span>
               )}
             </Link>
-            <button 
-              className="md:hidden text-primary hover:text-accent transition-colors w-11 h-11 flex items-center justify-center cursor-pointer" 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle Menu"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" strokeWidth={1.5} /> : <Menu className="w-6 h-6" strokeWidth={1.5} />}
-            </button>
           </div>
         </div>
+
+        {/* DESKTOP HEADER (Clean Adaptive Layout) */}
+        <div className="hidden md:flex items-center justify-between h-14">
+          {/* Left: Logo */}
+          <Link to="/" className="flex items-center">
+            <picture>
+              <source srcSet="/assets/images/Logo-Nav.webp" type="image/webp" />
+              <img src="/assets/images/Logo-Nav.png" alt="The Sacred Store" className="h-12 w-auto object-contain" />
+            </picture>
+          </Link>
+
+          {/* Center: Navigation — Home, Shop, Bundles, Book Now, About Us */}
+          <nav className="flex items-center space-x-8 font-medium text-[11px] tracking-[0.15em] uppercase">
+            <NavLink to="/">Home</NavLink>
+
+            {/* Shop Dropdown with Canonical Hierarchy */}
+            <div
+              className="relative group py-2 flex flex-col items-center"
+              onMouseEnter={() => setIsShopDropdownOpen(true)}
+              onMouseLeave={() => setIsShopDropdownOpen(false)}
+            >
+              <Link
+                to="/shop"
+                className={`text-primary flex items-center gap-1 transition-colors duration-300 ${isShopActive ? 'text-accent' : 'group-hover:text-accent'}`}
+              >
+                Shop <ChevronDown className="w-3 h-3 transition-transform group-hover:rotate-180" />
+              </Link>
+              {isShopActive && (
+                <motion.div
+                  layoutId="nav-underline"
+                  className="absolute bottom-0 w-full h-[1px] bg-accent"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                />
+              )}
+
+              {/* Mega Dropdown */}
+              <div
+                className={`absolute top-[100%] -left-12 mt-2 w-[580px] bg-background border border-border shadow-xl rounded-xl p-6 grid grid-cols-3 gap-6 transition-all duration-300 z-50 ${
+                  isShopDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'
+                }`}
+              >
+                {/* Column 1: Accessories & Tumbles */}
+                <div className="space-y-4">
+                  <div>
+                    <Link
+                      to="/shop?category=Accessories"
+                      className="font-bold text-accent hover:underline block mb-2 text-xs"
+                    >
+                      Accessories
+                    </Link>
+                    <ul className="space-y-1.5 text-[10px] text-muted normal-case tracking-normal">
+                      <li><Link to="/shop?category=Accessories&sub=Bracelets" className="hover:text-primary transition-colors">Bracelets</Link></li>
+                      <li><Link to="/shop?category=Accessories&sub=Pendants" className="hover:text-primary transition-colors">Pendants</Link></li>
+                      <li><Link to="/shop?category=Accessories&sub=Malas" className="hover:text-primary transition-colors">Malas</Link></li>
+                    </ul>
+                  </div>
+                  <div>
+                    <Link
+                      to="/shop?category=Tumbles"
+                      className="font-bold text-accent hover:underline block text-xs"
+                    >
+                      Tumbles
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Column 2: Household & Variety Crystals */}
+                <div className="space-y-4">
+                  <div>
+                    <Link
+                      to="/shop?category=Household"
+                      className="font-bold text-accent hover:underline block mb-2 text-xs"
+                    >
+                      Household
+                    </Link>
+                    <ul className="space-y-1.5 text-[10px] text-muted normal-case tracking-normal">
+                      <li><Link to="/shop?category=Household&sub=Trees" className="hover:text-primary transition-colors">Trees</Link></li>
+                      <li><Link to="/shop?category=Household&sub=Pyramids" className="hover:text-primary transition-colors">Pyramids</Link></li>
+                      <li><Link to="/shop?category=Household&sub=Lamps" className="hover:text-primary transition-colors">Lamps</Link></li>
+                    </ul>
+                  </div>
+                  <div>
+                    <Link
+                      to="/shop?category=Variety Crystals"
+                      className="font-bold text-accent hover:underline block mb-2 text-xs"
+                    >
+                      Variety Crystals
+                    </Link>
+                    <ul className="space-y-1.5 text-[10px] text-muted normal-case tracking-normal">
+                      <li><Link to="/shop?category=Variety Crystals&sub=Clusters" className="hover:text-primary transition-colors">Clusters</Link></li>
+                      <li><Link to="/shop?category=Variety Crystals&sub=Spheres" className="hover:text-primary transition-colors">Spheres</Link></li>
+                      <li><Link to="/shop?category=Variety Crystals&sub=Points" className="hover:text-primary transition-colors">Points</Link></li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Column 3: Cleaning / Charging & Featured Collections */}
+                <div className="space-y-4">
+                  <div>
+                    <Link
+                      to="/shop?category=Cleaning / Charging"
+                      className="font-bold text-accent hover:underline block mb-2 text-xs"
+                    >
+                      Cleaning / Charging
+                    </Link>
+                  </div>
+                  <div className="pt-2 border-t border-border/60">
+                    <Link
+                      to="/bundles"
+                      className="font-bold text-primary hover:text-accent block text-xs flex items-center gap-1 mb-1"
+                    >
+                      ✨ Curated Bundles
+                    </Link>
+                    <Link
+                      to="/festive-offers"
+                      className="font-bold text-accent hover:underline block text-xs"
+                    >
+                      🎁 Festive Offers (30% Off)
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <NavLink to="/bundles">Bundles</NavLink>
+            <NavLink to="/book-a-call">Book Now</NavLink>
+            <NavLink to="/aboutus">About Us</NavLink>
+          </nav>
+
+          {/* Right: Search, WhatsApp & Cart */}
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className="text-primary hover:text-accent transition-colors w-9 h-9 flex items-center justify-center cursor-pointer"
+              aria-label="Search products"
+            >
+              <Search className="w-5 h-5 stroke-[1.5]" />
+            </button>
+            <a
+              href="https://wa.me/9554930456"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:text-accent transition-colors w-9 h-9 flex items-center justify-center cursor-pointer"
+              aria-label="Contact WhatsApp"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+            </a>
+            <Link
+              to="/checkout"
+              className="relative text-primary hover:text-accent transition-colors w-9 h-9 flex items-center justify-center cursor-pointer"
+              aria-label="View Cart"
+            >
+              <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
+              {getCartCount() > 0 && (
+                <span className="absolute top-0 right-0 bg-primary text-[#FFBD59] text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full shadow-sm">
+                  {getCartCount()}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+
+        {/* SEARCH BAR OVERLAY */}
+        <AnimatePresence>
+          {isSearchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden border-t border-border pt-3 pb-2"
+            >
+              <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto relative">
+                <input
+                  type="text"
+                  placeholder="Search crystals, bracelets, bundles..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-surface border border-accent/40 rounded-full px-4 py-2 pl-10 pr-10 text-xs focus:outline-none focus:ring-1 focus:ring-accent text-primary placeholder-muted/60"
+                  autoFocus
+                />
+                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-accent" />
+                <button
+                  type="button"
+                  onClick={() => setIsSearchOpen(false)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-primary"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`md:hidden absolute top-full left-0 w-full bg-surface border-b border-border py-6 px-6 flex flex-col space-y-6 text-[11px] tracking-[0.15em] uppercase font-medium transition-all duration-300 transform origin-top ${isMobileMenuOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0 pointer-events-none'}`}>
-        <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Home</Link>
-        <Link to="/bundles" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-accent hover:text-accent flex items-center gap-1">✨ Curated Bundles</Link>
-        <Link to="/specialised-crystals" onClick={() => setIsMobileMenuOpen(false)} className="font-bold text-accent hover:text-accent flex items-center gap-1">💎 Specialised Crystals</Link>
-        <Link to="/shop-crystals" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Crystals</Link>
-        <Link to="/shop-bracelets" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Bracelets</Link>
-        <Link to="/shop-utility" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent pl-4 border-l border-border">Utility &amp; Decor</Link>
-        <Link to="/book-a-call" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Book Now</Link>
-        <Link to="/blogs" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">Blogs</Link>
-        <Link to="/aboutus" onClick={() => setIsMobileMenuOpen(false)} className="text-primary hover:text-accent">About Us</Link>
-      </div>
+      {/* MOBILE DRAWER NAVIGATION */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden fixed top-full left-0 w-full bg-background border-b border-border shadow-2xl py-6 px-6 max-h-[calc(100vh-64px)] overflow-y-auto"
+          >
+            <nav className="flex flex-col space-y-4 font-display text-base tracking-wider uppercase text-primary">
+              <Link
+                to="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+              >
+                Home
+              </Link>
+
+              {/* Shop Accordion */}
+              <div className="pb-2 border-b border-border/40">
+                <div className="flex items-center justify-between">
+                  <Link
+                    to="/shop"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="hover:text-accent transition-colors font-medium"
+                  >
+                    Shop All
+                  </Link>
+                  <button
+                    onClick={() => setIsMobileShopOpen(!isMobileShopOpen)}
+                    className="p-1 text-accent"
+                    aria-label="Toggle Shop categories"
+                  >
+                    <ChevronDown className={`w-4 h-4 transition-transform ${isMobileShopOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+
+                {isMobileShopOpen && (
+                  <div className="mt-3 pl-3 space-y-3 font-sans text-xs normal-case tracking-normal text-muted border-l border-accent/40">
+                    <div>
+                      <Link
+                        to="/shop?category=Accessories"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="font-bold text-primary block mb-1 uppercase tracking-wider text-[11px]"
+                      >
+                        Accessories
+                      </Link>
+                      <div className="pl-2 space-y-1 text-muted">
+                        <Link to="/shop?category=Accessories&sub=Bracelets" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Bracelets</Link>
+                        <Link to="/shop?category=Accessories&sub=Pendants" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Pendants</Link>
+                        <Link to="/shop?category=Accessories&sub=Malas" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Malas</Link>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Link
+                        to="/shop?category=Tumbles"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="font-bold text-primary block uppercase tracking-wider text-[11px]"
+                      >
+                        Tumbles
+                      </Link>
+                    </div>
+
+                    <div>
+                      <Link
+                        to="/shop?category=Household"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="font-bold text-primary block mb-1 uppercase tracking-wider text-[11px]"
+                      >
+                        Household
+                      </Link>
+                      <div className="pl-2 space-y-1 text-muted">
+                        <Link to="/shop?category=Household&sub=Trees" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Trees</Link>
+                        <Link to="/shop?category=Household&sub=Pyramids" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Pyramids</Link>
+                        <Link to="/shop?category=Household&sub=Lamps" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Lamps</Link>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Link
+                        to="/shop?category=Variety Crystals"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="font-bold text-primary block mb-1 uppercase tracking-wider text-[11px]"
+                      >
+                        Variety Crystals
+                      </Link>
+                      <div className="pl-2 space-y-1 text-muted">
+                        <Link to="/shop?category=Variety Crystals&sub=Clusters" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Clusters</Link>
+                        <Link to="/shop?category=Variety Crystals&sub=Spheres" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Spheres</Link>
+                        <Link to="/shop?category=Variety Crystals&sub=Points" onClick={() => setIsMobileMenuOpen(false)} className="block hover:text-primary">Points</Link>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Link
+                        to="/shop?category=Cleaning / Charging"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="font-bold text-primary block uppercase tracking-wider text-[11px]"
+                      >
+                        Cleaning / Charging
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                to="/bundles"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+              >
+                Bundles
+              </Link>
+              <Link
+                to="/book-a-call"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+              >
+                Book Now
+              </Link>
+              <Link
+                to="/aboutus"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="pb-2 border-b border-border/40 hover:text-accent transition-colors"
+              >
+                About Us
+              </Link>
+            </nav>
+
+            <div className="mt-8 pt-4 border-t border-border/60 text-xs text-muted space-y-2 font-sans normal-case">
+              <p>✨ 100% Reiki Charged &amp; Cleansed</p>
+              <p>📦 Free Delivery across India</p>
+              <div className="pt-2 flex items-center gap-4 text-xs font-bold text-accent">
+                <Link to="/gift-shop" onClick={() => setIsMobileMenuOpen(false)}>Gift Shop</Link>
+                <span>•</span>
+                <Link to="/festive-offers" onClick={() => setIsMobileMenuOpen(false)}>Festive Offers</Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 };
