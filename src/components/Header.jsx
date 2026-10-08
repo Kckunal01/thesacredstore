@@ -1,7 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, ChevronDown, ChevronRight, ArrowRight } from 'lucide-react';
 import { CartContext } from '../context/CartContext';
+import { ProductsContext } from '../context/ProductsContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CANONICAL_TAXONOMY } from '../data/taxonomy';
 
@@ -16,6 +17,7 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { getCartCount } = useContext(CartContext);
+  const { products } = useContext(ProductsContext) || {};
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -276,32 +278,87 @@ const Header = () => {
           </div>
         </div>
 
-        {/* SEARCH BAR OVERLAY */}
+        {/* SEARCH BAR OVERLAY WITH LIVE DYNAMIC RESULTS */}
         <AnimatePresence>
           {isSearchOpen && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-border pt-3 pb-2"
+              className="overflow-visible border-t border-border pt-4 pb-4 relative"
             >
-              <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto relative">
+              <form onSubmit={handleSearchSubmit} className="max-w-2xl mx-auto relative">
                 <input
                   type="text"
-                  placeholder="Search crystals, bracelets, bundles..."
+                  placeholder="Search crystals, bracelets, trees, bundles..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-surface border border-accent/40 rounded-full px-4 py-2 pl-10 pr-10 text-xs focus:outline-none focus:ring-1 focus:ring-accent text-primary placeholder-muted/60"
+                  className="w-full bg-surface border border-accent/40 rounded-full px-5 py-3.5 pl-12 pr-12 text-sm focus:outline-none focus:ring-1 focus:ring-accent text-primary placeholder-muted/60 shadow-sm font-body"
                   autoFocus
                 />
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-accent" />
+                <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-accent" />
                 <button
                   type="button"
                   onClick={() => setIsSearchOpen(false)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-primary"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary p-1"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-5 h-5" />
                 </button>
+
+                {/* Dynamic Live Search Dropdown Results — Bigger & Clean */}
+                {searchQuery.trim().length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-3 bg-background border border-border rounded-2xl shadow-2xl overflow-hidden z-[200] max-h-[480px] overflow-y-auto">
+                    {(() => {
+                      const q = searchQuery.toLowerCase().trim();
+                      const matches = (products || []).filter(p => {
+                        const name = (p.name || '').toLowerCase();
+                        const cat = (p.category || '').toLowerCase();
+                        const desc = (p.description || '').toLowerCase();
+                        return name.includes(q) || cat.includes(q) || desc.includes(q);
+                      }).slice(0, 6);
+
+                      const displayList = matches.length > 0
+                        ? matches
+                        : ((products || []).filter(p => p.is_festive_offer || p.is_new_arrival || p.is_gift_shop).slice(0, 5).length > 0
+                            ? (products || []).filter(p => p.is_festive_offer || p.is_new_arrival || p.is_gift_shop).slice(0, 5)
+                            : (products || []).slice(0, 5));
+
+                      return (
+                        <div className="divide-y divide-border/60">
+                          {displayList.map(product => {
+                            const img = product.image_url || product.imageUrl || (product.images && product.images[0]) || '/assets/images/placeholder.png';
+                            return (
+                              <Link
+                                key={product.id}
+                                to={`/product/${product.slug || product.id}`}
+                                onClick={() => {
+                                  setIsSearchOpen(false);
+                                  setSearchQuery('');
+                                }}
+                                className="flex items-center gap-4 p-4 hover:bg-surface/80 transition-all duration-200 group"
+                              >
+                                <img
+                                  src={img}
+                                  alt={product.name}
+                                  className="w-14 h-14 object-cover rounded-xl border border-border/80 flex-shrink-0 shadow-xs group-hover:scale-105 transition-transform"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="font-display font-medium text-sm text-primary group-hover:text-accent transition-colors truncate">
+                                    {product.name}
+                                  </h5>
+                                  <p className="text-xs text-muted capitalize font-body mt-0.5">
+                                    {product.category}
+                                  </p>
+                                </div>
+                                <ArrowRight className="w-4 h-4 text-muted/60 group-hover:text-accent group-hover:translate-x-1 transition-all flex-shrink-0" />
+                              </Link>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </form>
             </motion.div>
           )}

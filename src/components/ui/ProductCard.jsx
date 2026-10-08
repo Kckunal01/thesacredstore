@@ -66,9 +66,8 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
             <img
               src={mainImage}
               alt={name}
-              loading="eager"
+              loading="lazy"
               decoding="async"
-              fetchpriority="high"
               width="240"
               height="300"
               className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105 p-1"
@@ -112,7 +111,8 @@ const ProductCard = ({ id, slug, name, price, originalPrice, category, stamp, im
       {/* Add to Cart / Out of Stock UI */}
       <div className="flex flex-col opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 px-2 sm:px-4 mt-2">
         {(() => {
-          const productData = products.find(p => p.id === id || p.db_id === id || p.slug === slugify(name));
+          const productList = Array.isArray(products) ? products : [];
+          const productData = productList.find(p => p && (p.id === id || p.db_id === id || (p.name && slugify(p.name) === slugify(name || ''))));
           const stock = productData?.stock ?? null;
           const active = productData?.active ?? true;
           if (stock !== null && stock > 0 && active) {

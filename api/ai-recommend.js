@@ -296,7 +296,7 @@ function answerFollowUp(followUpType) {
 }
 
 // Extract conversation dimensions and constraints
-function extractDimensions(userMessage, history = []) {
+function extractDimensions(userMessage, history = [], catalog = []) {
   // Only extract customer intent from user messages (not from AI assistant questions)
   const userHistory = history.filter(h => h.role === 'user').map(h => h.content || '');
   let fullText = [...userHistory, userMessage].join(' ').toLowerCase();
@@ -323,7 +323,7 @@ function extractDimensions(userMessage, history = []) {
   ];
 
   for (const pat of budgetPatterns) {
-    const match = fullText.match(pat);
+    const match = latestText.match(pat);
     if (match && match[1]) {
       const parsed = parseInt(match[1], 10);
       if (parsed >= 100 && parsed <= 50000) {
@@ -349,87 +349,87 @@ function extractDimensions(userMessage, history = []) {
   // 3. Recipient extraction
   let recipient = null;
   let isGift = false;
-  if (/\b(mom|mother|mummy|maa)\b/.test(fullText)) {
+  if (/\b(mom|mother|mummy|maa)\b/.test(latestText)) {
     recipient = 'mother';
     isGift = true;
-  } else if (/\b(sister|sis)\b/.test(fullText)) {
+  } else if (/\b(sister|sis)\b/.test(latestText)) {
     recipient = 'sister';
     isGift = true;
-  } else if (/\b(girlfriend|gf|partner|wife|fiancée|fiancee)\b/.test(fullText)) {
+  } else if (/\b(girlfriend|gf|partner|wife|fiancée|fiancee)\b/.test(latestText)) {
     recipient = 'girlfriend';
     isGift = true;
-  } else if (/\b(dad|father|papa)\b/.test(fullText)) {
+  } else if (/\b(dad|father|papa)\b/.test(latestText)) {
     recipient = 'father';
     isGift = true;
-  } else if (/\b(boyfriend|bf|husband)\b/.test(fullText)) {
+  } else if (/\b(boyfriend|bf|husband)\b/.test(latestText)) {
     recipient = 'boyfriend';
     isGift = true;
-  } else if (/\b(friend|colleague|boss)\b/.test(fullText)) {
+  } else if (/\b(friend|colleague|boss)\b/.test(latestText)) {
     recipient = 'friend';
     isGift = true;
-  } else if (/\b(myself|for me|my own|i want for myself)\b/.test(fullText)) {
+  } else if (/\b(myself|for me|my own|i want for myself)\b/.test(latestText)) {
     recipient = 'self';
     isGift = false;
-  } else if (/\b(gift|gifting|present)\b/.test(fullText)) {
+  } else if (/\b(gift|gifting|present)\b/.test(latestText)) {
     isGift = true;
   }
 
   // 4. Occasion
   let occasion = null;
-  if (/\b(birthday|bday)\b/.test(fullText)) occasion = 'birthday';
-  else if (/\b(anniversary)\b/.test(fullText)) occasion = 'anniversary';
-  else if (/\b(new job|promotion|career|interview|exam|startup|business)\b/.test(fullText)) occasion = 'new beginnings & career';
-  else if (/\b(housewarming|new home|griha pravesh)\b/.test(fullText)) occasion = 'home blessing';
-  else if (/\b(diwali|festive|navratri|festivity)\b/.test(fullText)) occasion = 'festive celebration';
+  if (/\b(birthday|bday)\b/.test(latestText)) occasion = 'birthday';
+  else if (/\b(anniversary)\b/.test(latestText)) occasion = 'anniversary';
+  else if (/\b(new job|promotion|career|interview|exam|startup|business)\b/.test(latestText)) occasion = 'new beginnings & career';
+  else if (/\b(housewarming|new home|griha pravesh)\b/.test(latestText)) occasion = 'home blessing';
+  else if (/\b(diwali|festive|navratri|festivity)\b/.test(latestText)) occasion = 'festive celebration';
 
   // 5. Negative constraints (no jewelry)
-  const noJewelry = /(doesn't|does not|dont|do not)\s+wear\s+(jewelry|jewellery|bracelets?|pendants?|ornaments?)/i.test(fullText) ||
-                    /(no|without)\s+(jewelry|jewellery|bracelets?|pendants?)/i.test(fullText) ||
-                    /(not|isn't into|doesn't like)\s+(jewelry|jewellery)/i.test(fullText);
+  const noJewelry = /(doesn't|does not|dont|do not)\s+wear\s+(jewelry|jewellery|bracelets?|pendants?|ornaments?)/i.test(latestText) ||
+                    /(no|without)\s+(jewelry|jewellery|bracelets?|pendants?)/i.test(latestText) ||
+                    /(not|isn't into|doesn't like)\s+(jewelry|jewellery)/i.test(latestText);
 
   // 6. Placement preference (wearable vs home)
   let placement = null;
-  if (/\b(wear|wearable|on me|wrist|neck|carry|pocket)\b/i.test(fullText) && !noJewelry) {
+  if (/\b(wear|wearable|on me|wrist|neck|carry|pocket)\b/i.test(latestText) && !noJewelry) {
     placement = 'wearable';
-  } else if (/\b(home|house|room|desk|table|keep around|decor|space|bedside)\b/i.test(fullText)) {
+  } else if (/\b(home|house|room|desk|table|keep around|decor|space|bedside)\b/i.test(latestText)) {
     placement = 'home';
   }
 
-  // 7. Explicit category / form factor
+  // 7. Explicit category / form factor (evaluate latestText strictly so user context switches dynamically)
   let preferredCategory = null;
-  if (!noJewelry) {
-    if (/\b(bracelets?|wrist)\b/i.test(fullText)) preferredCategory = 'Bracelets';
-    else if (/\b(pendants?|necklace|locket)\b/i.test(fullText)) preferredCategory = 'Pendants';
-    else if (/\b(malas?|japamala)\b/i.test(fullText)) preferredCategory = 'Mala';
+  if (/\b(trees?)\b/i.test(latestText)) preferredCategory = 'Crystal Trees';
+  else if (/\b(pyramids?)\b/i.test(latestText)) preferredCategory = 'Crystal Pyramids';
+  else if (/\b(lamps?|lights?)\b/i.test(latestText)) preferredCategory = 'Lamps';
+  else if (/\b(tumbles?|pocket stones?)\b/i.test(latestText)) preferredCategory = 'Tumbles';
+  else if (/\b(bowls?|plates?|chargings?|sound|singing bowl)\b/i.test(latestText)) preferredCategory = 'Charging Items';
+  else if (/\b(raw|clusters?|specimens?)\b/i.test(latestText)) preferredCategory = 'Cluster';
+  else if (!noJewelry) {
+    if (/\b(bracelets?|wrist)\b/i.test(latestText)) preferredCategory = 'Bracelets';
+    else if (/\b(pendants?|necklace|locket)\b/i.test(latestText)) preferredCategory = 'Pendants';
+    else if (/\b(malas?|japamala)\b/i.test(latestText)) preferredCategory = 'Mala';
   }
-  if (/\b(trees?)\b/i.test(fullText)) preferredCategory = 'Crystal Trees';
-  else if (/\b(pyramids?)\b/i.test(fullText)) preferredCategory = 'Crystal Pyramids';
-  else if (/\b(lamps?|lights?)\b/i.test(fullText)) preferredCategory = 'Lamps';
-  else if (/\b(tumbles?|pocket stones?)\b/i.test(fullText)) preferredCategory = 'Tumbles';
-  else if (/\b(bowls?|plates?|chargings?|sound|singing bowl)\b/i.test(fullText)) preferredCategory = 'Charging Items';
-  else if (/\b(raw|clusters?|specimens?)\b/i.test(fullText)) preferredCategory = 'Cluster';
 
-  // 8. Intent & Themes
+  // 8. Intent & Themes — extract from latestText ONLY to prevent stale intent accumulation
   const intents = [];
-  if (/\b(stress|calm|calming|peace|peaceful|anxiety|relax|sleep|insomnia|rest|gentle|sooth|tired|hectic|overwhelmed)\b/i.test(fullText)) {
+  if (/\b(stress|calm|calming|peace|peaceful|anxiety|relax|sleep|insomnia|rest|gentle|sooth|tired|hectic|overwhelmed)\b/i.test(latestText)) {
     intents.push('calm');
   }
-  if (/\b(protect|protection|evil eye|negative|negativity|shield|ward|nazar|safe|grounding|ground)\b/i.test(fullText)) {
+  if (/\b(protect|protection|evil eye|negative|negativity|shield|ward|nazar|safe|grounding|ground)\b/i.test(latestText)) {
     intents.push('protection');
   }
-  if (/\b(money|wealth|abundance|prosperity|financial|rich|luck|job|career|success|grow|growth|manifest|business|promotion)\b/i.test(fullText)) {
+  if (/\b(money|wealth|abundance|prosperity|financial|rich|luck|job|career|success|grow|growth|manifest|business|promotion)\b/i.test(latestText)) {
     intents.push('abundance');
   }
-  if (/\b(love|heart|romance|compassion|kindness|relationship|affection|emotional healing|care)\b/i.test(fullText)) {
+  if (/\b(love|heart|romance|compassion|kindness|relationship|affection|emotional healing|care)\b/i.test(latestText)) {
     intents.push('love');
   }
-  if (/\b(focus|clarity|concentration|study|student|mind|decision|memory)\b/i.test(fullText)) {
+  if (/\b(focus|clarity|concentration|study|student|mind|decision|memory)\b/i.test(latestText)) {
     intents.push('clarity');
   }
-  if (/\b(energy|confidence|courage|motivation|vitality|strength|action)\b/i.test(fullText)) {
+  if (/\b(energy|confidence|courage|motivation|vitality|strength|action)\b/i.test(latestText)) {
     intents.push('confidence');
   }
-  if (/\b(balance|chakra|harmony|alignment|all in one|holistic)\b/i.test(fullText)) {
+  if (/\b(balance|chakra|harmony|alignment|all in one|holistic)\b/i.test(latestText)) {
     intents.push('balance');
   }
 
@@ -471,11 +471,74 @@ function extractDimensions(userMessage, history = []) {
     isCategoryBrowse = 'cleansing';
   }
 
+  // 10.5 Direct product match / Typo resolution / Gibberish detection
+  let directProductKeyword = null;
+  let isGibberish = false;
+
+  const cleanInput = latestText.replace(/[^a-z0-9]/g, '');
+  if (cleanInput.length >= 4 && !/[aeiouy]{2,}/i.test(cleanInput) && !/\b(amethyst|selenite|pyrite|citrine|quartz|jasper|tourmaline|aventurine|carnelian|obsidian|hematite|fluorite|sodalite|howlite|agate|tiger|tree|trees|pyramid|pyramids|lamp|lamps|tumble|tumbles|cluster|clusters|jube|coin|mala|malas|pendant|pendants|bracelet|bracelets|ring|rings|necklace)\b/i.test(latestText)) {
+    const vowels = (cleanInput.match(/[aeiouy]/g) || []).length;
+    const vowelRatio = vowels / cleanInput.length;
+    if (vowelRatio < 0.15 || /(.)\\1{3,}/.test(cleanInput) || /^(asdf|qwer|zxcv|hjkl|dfgh|fghj|sdfg|cvbn|bnmk)/i.test(cleanInput)) {
+      isGibberish = true;
+    }
+  }
+
+  const typoMap = {
+    'amethist': 'amethyst', 'amathyst': 'amethyst', 'amethystt': 'amethyst', 'amthyst': 'amethyst', 'ametyst': 'amethyst',
+    'selnite': 'selenite', 'selanite': 'selenite', 'selenit': 'selenite',
+    'pyrit': 'pyrite', 'pirite': 'pyrite', 'pyritee': 'pyrite',
+    'citrin': 'citrine', 'citren': 'citrine', 'sitrine': 'citrine',
+    'jube': 'jube coin', 'jbee': 'jube coin', 'juube': 'jube coin', 'joob': 'jube coin',
+    'tourmalin': 'tourmaline', 'turmaline': 'tourmaline', 'tormaline': 'tourmaline',
+    'aventurin': 'aventurine', 'aventren': 'aventurine',
+    'carneliann': 'carnelian', 'carnelon': 'carnelian',
+    'obsidien': 'obsidian', 'obsidan': 'obsidian',
+    'braclet': 'bracelet', 'braslet': 'bracelet', 'bracelat': 'bracelet',
+    'pedant': 'pendant', 'pendent': 'pendant', 'pendantt': 'pendant',
+  };
+
+  let effectiveTextLatest = latestText;
+  Object.keys(typoMap).forEach(typo => {
+    if (new RegExp(`\\b${typo}\\b`, 'i').test(latestText)) {
+      effectiveTextLatest += ' ' + typoMap[typo];
+    }
+  });
+
+  // Base keywords (general categories and common synonyms)
+  const baseKeywords = [
+    'amethyst', 'selenite', 'pyrite', 'citrine', 'rose quartz', 'clear quartz',
+    'black tourmaline', 'tiger eye', 'tiger\'s eye', 'green aventurine', 'green jade',
+    'carnelian', 'obsidian', 'sodalite', 'hematite', 'fluorite', 'howlite',
+    'agate', 'blue lace agate', 'rutile', 'rutile quartz', 'lapis', 'lapis lazuli',
+    'labradorite', 'sunstone', 'moonstone', 'malachite', 'rhodonite', 'rhodochrosite',
+    'jasper', 'red jasper', 'bloodstone', 'amazonite', 'apatite', 'aquamarine',
+    'jube coin', 'jube', 'money magnet', '7 chakra', 'tree', 'trees', 'pyramid',
+    'pyramids', 'lamp', 'lamps', 'tumble', 'tumbles', 'cluster', 'clusters',
+    'pendant', 'pendants', 'bracelet', 'bracelets', 'mala', 'malas', 'tower', 'sphere',
+    'plate', 'bowl', 'freeform', 'raw'
+  ];
+
+  // Dynamically add all actual product names from the catalog (lowercased)
+  const catalogNames = catalog.map(p => (p.name || '').toLowerCase());
+  
+  // Sort by length descending so longer specific names match first (e.g. "amethyst crystal tree" matches before "amethyst")
+  const allKeywords = [...new Set([...catalogNames, ...baseKeywords])].filter(k => k.length > 2).sort((a, b) => b.length - a.length);
+
+  // Evaluate latest turn strictly for direct product keyword
+  for (const kw of allKeywords) {
+    if (effectiveTextLatest.includes(kw)) {
+      directProductKeyword = kw;
+      break;
+    }
+  }
+
   // 11. Explicit request for options check
   const isExplicitProductRequest = /\b(give me|show me|recommend|options|choices|what can i buy|suggest|products|pieces)\b/i.test(latestText) ||
                                   budget !== null ||
                                   preferredCategory !== null ||
-                                  requestedCount !== null;
+                                  requestedCount !== null ||
+                                  directProductKeyword !== null;
 
   // 12. Check if user provided sufficient context to recommend
   const hasSufficientRecommendationContext = (intents.length > 0) ||
@@ -483,6 +546,7 @@ function extractDimensions(userMessage, history = []) {
                                             (budget !== null) ||
                                             (requestedCount !== null) ||
                                             isExplicitProductRequest ||
+                                            directProductKeyword !== null ||
                                             (isGift && recipient && recipient !== 'self' && occasion);
 
   return {
@@ -495,6 +559,8 @@ function extractDimensions(userMessage, history = []) {
     noJewelry,
     placement,
     preferredCategory,
+    directProductKeyword,
+    isGibberish,
     intents,
     faqTopic,
     isCategoryBrowse,
@@ -559,7 +625,7 @@ function generateRecommendationReason(product, dimensions) {
 
 // HARD CONSTRAINT CATALOG FILTER & RANKING
 function filterAndRankProducts(catalog, dimensions) {
-  const { budget, noJewelry, placement, preferredCategory, intents, recipient, isGift } = dimensions;
+  const { budget, noJewelry, placement, preferredCategory, directProductKeyword, isGibberish, intents, recipient, isGift } = dimensions;
 
   // STEP 1: HARD BUDGET FILTER — Strictly <= budget
   let pool = catalog;
@@ -604,12 +670,36 @@ function filterAndRankProducts(catalog, dimensions) {
     }
   }
 
+  // STEP 4.5: HARD DIRECT KEYWORD FILTER — when user searches a specific crystal name
+  if (directProductKeyword) {
+    const kw = directProductKeyword.toLowerCase();
+    const keywordMatches = pool.filter(p => {
+      const nameLower = (p.name || '').toLowerCase();
+      const catLower = (p.category || '').toLowerCase();
+      const descLower = (p.description || '').toLowerCase();
+      return nameLower.includes(kw) || catLower.includes(kw) || descLower.includes(kw);
+    });
+    if (keywordMatches.length > 0) {
+      pool = keywordMatches;
+    }
+  }
+
   // STEP 5: SCORE PRODUCTS
   const scored = pool.map(p => {
     let score = 10;
     const nameLower = (p.name || '').toLowerCase();
     const descLower = ((p.description || '') + ' ' + (p.effect || '') + ' ' + (p.intentions || '') + ' ' + (p.chakra || '')).toLowerCase();
     const catLower = (p.category || '').toLowerCase();
+
+    // Direct product / crystal keyword match boost
+    if (directProductKeyword && (nameLower.includes(directProductKeyword) || catLower.includes(directProductKeyword))) {
+      score += 150;
+    }
+
+    // Featured product boost for gibberish / unknown requests
+    if (isGibberish && (p.is_festive_offer || p.is_new_arrival || p.is_gift_shop)) {
+      score += 60;
+    }
 
     // Category preference match
     if (preferredCategory && catLower.includes(preferredCategory.toLowerCase())) {
@@ -894,7 +984,7 @@ function generateConciergeResponse(dimensions, rankedProducts, catalog, original
   }
 
   // 6. MULTI-QUESTION CLARIFYING FLOW WHEN INTENT IS KNOWN BUT FORM FACTOR IS AMBIGUOUS
-  if (!isExplicitProductRequest && intents.length > 0 && !placement && !preferredCategory && budget === null && historyLength <= 2) {
+  if (!dimensions.directProductKeyword && !isExplicitProductRequest && intents.length > 0 && !placement && !preferredCategory && budget === null && historyLength <= 2) {
     const intentName = intents[0];
     return {
       message: `That sounds like a meaningful intention for ${intentName} ✨\n\nBefore I pick out pieces from our collection: would you prefer something wearable that you can carry throughout the day (like an intentional bracelet or pendant), or a sacred anchor for your room or work desk (like a crystal tree, pyramid, or lamp)?`,
@@ -909,7 +999,11 @@ function generateConciergeResponse(dimensions, rankedProducts, catalog, original
   // 8. BUILD PERSONALIZED CONCIERGE MESSAGE
   let intro = '';
 
-  if (recipient === 'mother') {
+  if (dimensions.isGibberish) {
+    intro = "Here are some of our most loved featured tools & crystal pieces from The Sacred Store:";
+  } else if (dimensions.directProductKeyword) {
+    intro = `Here are the matching ${dimensions.directProductKeyword} options from our sanctuary collection:`;
+  } else if (recipient === 'mother') {
     intro += occasion ? `For your mother's ${occasion}, ` : "Choosing something meaningful for your mother is truly special. ";
     intro += "I've selected pieces that feel nurturing, gentle, and deeply heart-centered";
   } else if (recipient === 'sister') {
@@ -1013,7 +1107,7 @@ export default async function handler(req, res) {
     }
 
     // 2. Extract dimensions & intent
-    const dimensions = extractDimensions(sanitizedMessage, sanitizedHistory);
+    const dimensions = extractDimensions(sanitizedMessage, sanitizedHistory, catalog);
 
     // 3. Filter & rank products (ENFORCING HARD BUDGET FILTER)
     const rankedCandidates = filterAndRankProducts(catalog, dimensions);

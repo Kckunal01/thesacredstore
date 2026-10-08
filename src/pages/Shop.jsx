@@ -54,15 +54,17 @@ const Shop = ({ initialCategory = null, initialFilter = null, pageTitle = null, 
   };
 
   const displayedProducts = useMemo(() => {
-    let list = products.filter(p => p && p.id && p.name && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle && p.active !== false && p.visible !== false);
+    let list = (Array.isArray(products) ? products : []).filter(p => p && p.id && p.name && p.category?.toLowerCase() !== 'bundles' && !p.isBundle && !p.isCustomBundle && p.active !== false && p.visible !== false);
 
     // Global search: searches across ALL products from all categories
     if (querySearch.trim() !== '') {
       const q = querySearch.toLowerCase().trim();
       list = list.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        (p.category && p.category.toLowerCase().includes(q)) ||
-        (p.description && p.description.toLowerCase().includes(q))
+        (p.name || '').toLowerCase().includes(q) ||
+        (p.category || '').toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
+        (p.effect || '').toLowerCase().includes(q) ||
+        (p.intentions || '').toLowerCase().includes(q)
       );
       return list;
     }

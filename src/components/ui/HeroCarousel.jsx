@@ -3,6 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const slides = [
   {
+    id: 0,
+    desktop: '/assets/images/Carousel/Desktop/carosuel 0.png',
+    mobile: '/assets/images/Carousel/Mobile/Carosuel 0.png',
+    objectPositionDesktop: 'center',
+    objectPositionMobile: 'center 15%',
+  },
+  {
     id: 1,
     desktop: '/assets/images/Carousel/Desktop/carousel 1.png',
     mobile: '/assets/images/Carousel/Mobile/Carosuel 1.png',
@@ -11,7 +18,7 @@ const slides = [
   },
   {
     id: 2,
-    desktop: '/assets/images/Carousel/Desktop/carousel 2.png',
+    desktop: '/assets/images/Carousel/Desktop/carosuel 2.png',
     mobile: '/assets/images/Carousel/Mobile/Carosuel 2.png',
     objectPositionDesktop: 'center',
     objectPositionMobile: 'center 15%',
@@ -33,12 +40,12 @@ const HeroCarousel = () => {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Autoplay — infinite loop
+  // Autoplay — 5 seconds infinite loop
   useEffect(() => {
     if (isPaused) return;
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % slides.length);
-    }, 7000);
+    }, 5000);
     return () => clearInterval(interval);
   }, [isPaused]);
 
@@ -86,8 +93,9 @@ const HeroCarousel = () => {
               <img
                 src={encodeURI(slide.desktop)}
                 alt=""
-                loading={currentIndex === 0 ? 'eager' : 'lazy'}
+                loading="eager"
                 fetchpriority={currentIndex === 0 ? 'high' : 'auto'}
+                decoding="async"
                 className="w-full h-full object-cover"
                 style={{
                   objectPosition: isMobile ? slide.objectPositionMobile : slide.objectPositionDesktop,
@@ -98,18 +106,31 @@ const HeroCarousel = () => {
         </AnimatePresence>
       </div>
 
-      {/* Pagination dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {slides.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            aria-label={`Go to slide ${idx + 1}`}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              currentIndex === idx ? 'w-8 bg-accent' : 'w-2 bg-muted/40'
-            }`}
-          />
-        ))}
+      {/* Pagination indicators (Dots for inactive, Progress pill for active) */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2.5 items-center">
+        {slides.map((_, idx) => {
+          const isActive = currentIndex === idx;
+          return (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`relative rounded-full transition-all duration-300 cursor-pointer overflow-hidden ${
+                isActive ? 'h-1.5 w-8 bg-white/30' : 'h-1.5 w-1.5 bg-white/50'
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  key={`progress-${currentIndex}`}
+                  initial={{ width: '0%' }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 5, ease: 'linear' }}
+                  className="absolute left-0 top-0 h-full bg-accent"
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
